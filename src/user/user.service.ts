@@ -24,4 +24,12 @@ export class UserService {
 
     return user;
   }
+
+  async checkUserExist(id: number): Promise<boolean> {
+    const user: User = await this.userRepository.findOne({
+      attributes: ['id'],
+      where: { id },
+    });
+    return !!user;
+  }
 }

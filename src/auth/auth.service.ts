@@ -17,6 +17,7 @@ export abstract class Tokens {
 
 export abstract class AuthResponse {
   readonly accessToken: string;
+  readonly refreshToken: string;
   readonly user: User;
 }
 
@@ -132,7 +133,11 @@ export class AuthService {
 
     delete user.dataValues.password;
 
-    return { accessToken: tokens.accessToken, user };
+    return {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      user,
+    };
   }
 
   private async updateToken(

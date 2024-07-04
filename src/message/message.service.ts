@@ -7,12 +7,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { User } from '../user/user.model';
 import { Error, ErrorType } from '../error.class';
 import { ChatService } from '../chat/chat.service';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class MessageService {
   constructor(
     @InjectModel(Message.name) private messageModel: Model<Message>,
     private chatService: ChatService,
+    private userService: UserService,
   ) {}
 
   async sendMessage(
@@ -37,6 +39,17 @@ export class MessageService {
           chatId: sendMessageDto.toChatId,
         });
       if (!userExistInChat) {
+        throw new HttpException(
+          new Error(ErrorType.BadFields),
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    } else {
+      // If to user then check if user exist
+      const userExist: boolean = await this.userService.checkUserExist(
+        sendMessageDto.toUserId,
+      );
+      if (!userExist) {
         throw new HttpException(
           new Error(ErrorType.BadFields),
           HttpStatus.BAD_REQUEST,
