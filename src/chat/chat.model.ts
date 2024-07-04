@@ -1,5 +1,9 @@
 import { Column, DataType, Model, Table } from 'sequelize-typescript';
 
+export enum ChatType {
+  user,
+}
+
 @Table({ tableName: 'chat', underscored: true, timestamps: false })
 export class Chat extends Model<Chat> {
   @Column({
@@ -9,4 +13,7 @@ export class Chat extends Model<Chat> {
     primaryKey: true,
   })
   id: number;
+
+  @Column({ type: DataType.INTEGER, allowNull: false })
+  type: ChatType;
 }

@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Message } from '../schemas/message.schema';
+import { Message } from './message.model';
 import { Model } from 'mongoose';
 import { SendMessageDto } from './dto/send-message.dto';
 import { v4 as uuidv4 } from 'uuid';
@@ -8,6 +8,7 @@ import { User } from '../user/user.model';
 import { Error, ErrorType } from '../error.class';
 import { ChatService } from '../chat/chat.service';
 import { UserService } from '../user/user.service';
+import { Chat } from '../chat/chat.model';
 
 @Injectable()
 export class MessageService {
@@ -32,6 +33,8 @@ export class MessageService {
       );
     }
 
+    let chatId: number | undefined;
+
     // If to chat then check if user exist in this chat
     if (sendMessageDto.toChatId) {
       const userExistInChat: boolean =
@@ -44,24 +47,16 @@ export class MessageService {
           HttpStatus.BAD_REQUEST,
         );
       }
+      chatId = sendMessageDto.toChatId;
     } else {
-      // If to user then check if user exist
-      const userExist: boolean = await this.userService.checkUserExist(
-        sendMessageDto.toUserId,
-      );
-      if (!userExist) {
-        throw new HttpException(
-          new Error(ErrorType.BadFields),
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+      // If to user then check if user exist else create new chat
+      const chatExist: Chat = await this.chatService.getChatWithUser(user, {
+        userId: sendMessageDto.toUserId,
+      });
+      chatId = chatExist.id;
     }
 
     // Save message
-    const chatId: string = sendMessageDto.toChatId
-      ? `chat_${sendMessageDto.toChatId}`
-      : `user_${sendMessageDto.toUserId}`;
-
     const uuid: string = uuidv4();
 
     const messageDto = {

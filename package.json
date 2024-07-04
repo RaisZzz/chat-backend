@@ -37,6 +37,7 @@
     "pg-safe-numbers": "^0.7.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
+    "sequelize": "^6.37.3",
     "uuid": "^10.0.0"
   },
   "devDependencies": {
