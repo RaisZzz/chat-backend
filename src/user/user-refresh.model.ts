@@ -39,4 +39,18 @@ export class UserRefresh extends Model<UserRefresh> {
 
   @ForeignKey(() => User)
   userId: number;
+
+  @Column({
+    type: DataType.BIGINT,
+    allowNull: false,
+    defaultValue: Math.floor(Date.now() / 1000),
+  })
+  declare createdAt: number;
+
+  @Column({
+    type: DataType.BIGINT,
+    allowNull: false,
+    defaultValue: Math.floor(Date.now() / 1000),
+  })
+  declare updatedAt: number;
 }

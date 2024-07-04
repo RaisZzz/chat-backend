@@ -1,7 +1,7 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
-import { User } from "./user.model";
-import { Error, ErrorType } from "../error.class";
-import { InjectModel } from "@nestjs/sequelize";
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { User } from './user.model';
+import { Error, ErrorType } from '../error.class';
+import { InjectModel } from '@nestjs/sequelize';
 
 @Injectable()
 export class UserService {
@@ -11,7 +11,7 @@ export class UserService {
     const user: User = await this.userRepository.findOne({
       where: { id },
       attributes: {
-        exclude: ["password"],
+        exclude: ['password'],
       },
     });
 
