@@ -6,9 +6,10 @@ import { GetChatWithUserDto } from './dto/get-chat-with-user.dto';
 import { Chat, ChatType } from './chat.model';
 import { Sequelize } from 'sequelize-typescript';
 import { UserService } from '../user/user.service';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Error, ErrorType } from '../error.class';
 
+@Injectable()
 export class ChatService {
   constructor(
     private sequelize: Sequelize,

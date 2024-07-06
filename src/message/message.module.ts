@@ -12,6 +12,7 @@ import {
 } from './message-received.model';
 import { MessageSendService } from './services/message-send.service';
 import { MessageSetReceivedService } from './services/message-set-received.service';
+import { BullModule } from '@nestjs/bull';
 
 @Module({
   imports: [
@@ -25,6 +26,9 @@ import { MessageSetReceivedService } from './services/message-set-received.servi
         schema: messageReceivedModel,
       },
     ]),
+    BullModule.registerQueue({
+      name: 'messageQueue',
+    }),
     UserModule,
     AuthModule,
     ChatModule,

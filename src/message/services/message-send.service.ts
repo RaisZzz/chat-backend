@@ -9,10 +9,13 @@ import { SendMessageDto } from '../dto/send-message.dto';
 import { User } from '../../user/user.model';
 import { Chat } from '../../chat/chat.model';
 import { Error, ErrorType } from '../../error.class';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 @Injectable()
 export class MessageSendService {
   constructor(
+    @InjectQueue('messageQueue') private readonly messageQueue: Queue,
     @InjectModel(Message.name) private messageModel: Model<Message>,
     @InjectModel(MessageReceived.name)
     private chatService: ChatService,
@@ -67,6 +70,8 @@ export class MessageSendService {
     };
 
     const message = new this.messageModel(messageDto);
-    return await message.save();
+    await message.save();
+    await this.messageQueue.add('sendMessage', message);
+    return message;
   }
 }
