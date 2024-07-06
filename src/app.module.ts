@@ -7,6 +7,7 @@ import { UserRefresh } from './user/user-refresh.model';
 import { ConfigModule } from '@nestjs/config';
 import { Chat } from './chat/chat.model';
 import { ChatUser } from './chat/chat-user.model';
+import { BullModule } from '@nestjs/bull';
 
 @Module({
   imports: [
@@ -35,6 +36,12 @@ import { ChatUser } from './chat/chat-user.model';
       autoLoadModels: true,
     }),
     MongooseModule.forRoot(String(process.env.MONGODB_URL)),
+    BullModule.forRoot({
+      redis: {
+        host: 'localhost',
+        port: 6379,
+      },
+    }),
     MessageModule,
   ],
 })

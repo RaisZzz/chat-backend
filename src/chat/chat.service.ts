@@ -53,6 +53,7 @@ export class ChatService {
       );
     }
 
+    // Check user has chat with another user
     const [chatResponse] = await this.sequelize.query(`
       SELECT * FROM "chat"
       WHERE type = ${ChatType.user}
@@ -73,6 +74,7 @@ export class ChatService {
       return chats[0];
     }
 
+    // Create new chat with user
     const newChat: Chat = await this.chatRepository.create({
       type: ChatType.user,
     });
