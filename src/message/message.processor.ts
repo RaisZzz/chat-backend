@@ -7,8 +7,10 @@ export class MessageProcessor {
   constructor(private readonly socketGateway: SocketGateway) {}
 
   @Process('sendMessage')
-  async handleSendMessage(job: Job) {
+  async handleSendMessage(job: Job): Promise<void> {
+    console.log('00');
     const message = job.data;
+    console.log('01');
     this.socketGateway.sendMessage(1, message);
   }
 }

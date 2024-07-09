@@ -3,13 +3,16 @@ import { Message } from './message.model';
 import { SendMessageDto } from './dto/send-message.dto';
 import { User } from '../user/user.model';
 import { MessageSendService } from './services/message-send.service';
-import { MessageSetReceivedService } from './services/message-set-received.service';
+import { MessageSetUnreceivedService } from './services/message-set-unreceived.service';
+import { SendUnreceivedMessagesService } from './services/send-unreceived-messages.service';
+import { SuccessInterface } from '../base/success.interface';
 
 @Injectable()
 export class MessageService {
   constructor(
     private messageSendService: MessageSendService,
-    private messageSetReceivedService: MessageSetReceivedService,
+    private messageSetReceivedService: MessageSetUnreceivedService,
+    private sendUnreceivedMessagesService: SendUnreceivedMessagesService,
   ) {}
 
   sendMessage = async (
@@ -23,4 +26,7 @@ export class MessageService {
     userId: number,
   ): Promise<void> =>
     this.messageSetReceivedService.setMessageReceived(messageUuid, userId);
+
+  sendUnreceivedMessages = async (userId: number): Promise<SuccessInterface> =>
+    this.sendUnreceivedMessagesService.sendAll(userId);
 }

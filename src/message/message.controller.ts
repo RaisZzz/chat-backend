@@ -1,5 +1,4 @@
 import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
-import { MessageService } from './message.service';
 import { SendMessageDto } from './dto/send-message.dto';
 import { Message } from './message.model';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';

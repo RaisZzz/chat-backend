@@ -4,11 +4,12 @@ import { Model } from 'mongoose';
 import { MessageReceived } from '../message-received.model';
 
 @Injectable()
-export class MessageSetReceivedService {
+export class MessageSetUnreceivedService {
   constructor(
     @InjectModel(MessageReceived.name)
     private messageReceivedModel: Model<MessageReceived>,
   ) {}
+
   async setMessageReceived(messageUuid: string, userId: number): Promise<void> {
     const messageReceivedExist: MessageReceived =
       await this.messageReceivedModel.findOne({

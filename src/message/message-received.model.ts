@@ -1,15 +1,19 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { SchemaTypes } from 'mongoose';
 
 @Schema()
 export class MessageReceived {
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true, unique: true, type: SchemaTypes.String })
   uuid: string;
 
-  @Prop({ required: true, type: String })
+  @Prop({ required: true, type: SchemaTypes.String })
   messageUuid: string;
 
-  @Prop({ required: true, type: Number })
+  @Prop({ required: true, type: SchemaTypes.BigInt })
   userId: number;
+
+  @Prop({ required: true, type: SchemaTypes.Boolean })
+  received: boolean;
 }
 
 export const messageReceivedModel =

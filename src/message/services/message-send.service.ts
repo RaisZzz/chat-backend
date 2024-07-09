@@ -1,9 +1,13 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  OnModuleInit,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 import { Message } from '../message.model';
-import { MessageReceived } from '../message-received.model';
 import { ChatService } from '../../chat/chat.service';
 import { SendMessageDto } from '../dto/send-message.dto';
 import { User } from '../../user/user.model';
@@ -17,7 +21,6 @@ export class MessageSendService {
   constructor(
     @InjectQueue('messageQueue') private readonly messageQueue: Queue,
     @InjectModel(Message.name) private messageModel: Model<Message>,
-    @InjectModel(MessageReceived.name)
     private chatService: ChatService,
   ) {}
 
@@ -71,7 +74,9 @@ export class MessageSendService {
 
     const message = new this.messageModel(messageDto);
     await message.save();
-    await this.messageQueue.add('sendMessage', message);
+    console.log(1);
+    this.messageQueue.add('sendMessage', { message });
+    console.log(2);
     return message;
   }
 }

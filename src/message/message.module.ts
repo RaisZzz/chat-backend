@@ -11,8 +11,9 @@ import {
   messageReceivedModel,
 } from './message-received.model';
 import { MessageSendService } from './services/message-send.service';
-import { MessageSetReceivedService } from './services/message-set-received.service';
+import { MessageSetUnreceivedService } from './services/message-set-unreceived.service';
 import { BullModule } from '@nestjs/bull';
+import { SendUnreceivedMessagesService } from './services/send-unreceived-messages.service';
 
 @Module({
   imports: [
@@ -33,7 +34,12 @@ import { BullModule } from '@nestjs/bull';
     AuthModule,
     ChatModule,
   ],
-  providers: [MessageService, MessageSendService, MessageSetReceivedService],
+  providers: [
+    MessageService,
+    MessageSendService,
+    MessageSetUnreceivedService,
+    SendUnreceivedMessagesService,
+  ],
   controllers: [MessageController],
 })
 export class MessageModule {}
