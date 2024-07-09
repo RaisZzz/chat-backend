@@ -3,13 +3,10 @@ import { SchemaTypes } from 'mongoose';
 
 @Schema()
 export class MessageReceived {
-  @Prop({ required: true, unique: true, type: SchemaTypes.String })
-  uuid: string;
-
   @Prop({ required: true, type: SchemaTypes.String })
   messageUuid: string;
 
-  @Prop({ required: true, type: SchemaTypes.BigInt })
+  @Prop({ required: true, type: SchemaTypes.Number })
   userId: number;
 
   @Prop({ required: true, type: SchemaTypes.Boolean })

@@ -2,7 +2,6 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
-  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
@@ -11,7 +10,6 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '../user/user.model';
 import { InjectModel } from '@nestjs/sequelize';
 import { Message } from '../message/message.model';
-import { MessageService } from '../message/message.service';
 import { HttpException, HttpStatus } from '@nestjs/common';
 
 @WebSocketGateway({
@@ -26,7 +24,6 @@ export class SocketGateway
   constructor(
     private jwtService: JwtService,
     @InjectModel(User) private userRepository: typeof User,
-    private messageService: MessageService,
   ) {}
 
   @WebSocketServer()
@@ -68,7 +65,6 @@ export class SocketGateway
 
       if (userExist) {
         this.connectedUsers[String(jwtUser.id)] = client.id;
-        this.messageService.sendUnreceivedMessages(jwtUser.id);
         console.log(
           `
             User #${jwtUser.id} connected with:
@@ -91,17 +87,6 @@ export class SocketGateway
 
   sendMessage = (userId: number, message: Message): void =>
     this.sendSocket('message', userId, message);
-
-  @SubscribeMessage('message-received')
-  socketReceived(client: Socket, data: any): void {
-    if (!data || !data.messageUuid) return;
-
-    const userId: string = this.getUserIdBySocket(client);
-    this.messageService.setMessageReceived(
-      data.messageUuid,
-      parseInt(userId) || 0,
-    );
-  }
 
   afterInit(server: Server): void {
     console.log('WEBSOCKETS INIT');

@@ -9,10 +9,10 @@ export class Message {
   @Prop({ type: SchemaTypes.String })
   text: string;
 
-  @Prop({ required: true, type: SchemaTypes.BigInt })
+  @Prop({ required: true, type: SchemaTypes.Number })
   ownerId: number;
 
-  @Prop({ required: true, type: SchemaTypes.BigInt })
+  @Prop({ required: true, type: SchemaTypes.Number })
   chatId: number;
 }
 

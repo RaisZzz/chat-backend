@@ -2,11 +2,13 @@ import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { SendMessageDto } from './dto/send-message.dto';
 import { Message } from './message.model';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { MessageSendService } from './services/message-send.service';
+import { SetMessageReceivedDto } from './dto/set-message-received.dto';
+import { MessageService } from './message.service';
+import { SuccessInterface } from '../base/success.interface';
 
 @Controller('message')
 export class MessageController {
-  constructor(private messageSendService: MessageSendService) {}
+  constructor(private messageService: MessageService) {}
 
   @Post('send')
   @UseGuards(JwtAuthGuard)
@@ -14,6 +16,18 @@ export class MessageController {
     @Req() req,
     @Body() sendMessageDto: SendMessageDto,
   ): Promise<Message> {
-    return this.messageSendService.sendMessage(req.user, sendMessageDto);
+    return this.messageService.sendMessage(req.user, sendMessageDto);
+  }
+
+  @Post('set-received')
+  @UseGuards(JwtAuthGuard)
+  setMessageReceived(
+    @Req() req,
+    @Body() setMessageReceivedDto: SetMessageReceivedDto,
+  ): Promise<SuccessInterface> {
+    return this.messageService.setMessageReceived(
+      req.user,
+      setMessageReceivedDto,
+    );
   }
 }

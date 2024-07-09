@@ -10,7 +10,10 @@ export class MessageSetUnreceivedService {
     private messageReceivedModel: Model<MessageReceived>,
   ) {}
 
-  async setMessageReceived(messageUuid: string, userId: number): Promise<void> {
+  async setMessageUnreceived(
+    messageUuid: string,
+    userId: number,
+  ): Promise<void> {
     const messageReceivedExist: MessageReceived =
       await this.messageReceivedModel.findOne({
         messageUuid,

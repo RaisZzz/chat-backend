@@ -22,7 +22,6 @@ import { BullModule } from '@nestjs/bull';
           instance.dataValues.updatedAt = Math.floor(Date.now() / 1000);
         },
         beforeCreate(instance, options) {
-          console.log(instance);
           instance.dataValues.createdAt = Math.floor(Date.now() / 1000);
           instance.dataValues.updatedAt = Math.floor(Date.now() / 1000);
         },

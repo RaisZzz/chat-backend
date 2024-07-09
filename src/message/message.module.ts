@@ -12,8 +12,8 @@ import {
 } from './message-received.model';
 import { MessageSendService } from './services/message-send.service';
 import { MessageSetUnreceivedService } from './services/message-set-unreceived.service';
-import { BullModule } from '@nestjs/bull';
 import { SendUnreceivedMessagesService } from './services/send-unreceived-messages.service';
+import { WebsocketsModule } from '../websockets/websockets.module';
 
 @Module({
   imports: [
@@ -27,12 +27,10 @@ import { SendUnreceivedMessagesService } from './services/send-unreceived-messag
         schema: messageReceivedModel,
       },
     ]),
-    BullModule.registerQueue({
-      name: 'messageQueue',
-    }),
     UserModule,
     AuthModule,
     ChatModule,
+    WebsocketsModule,
   ],
   providers: [
     MessageService,
@@ -41,5 +39,6 @@ import { SendUnreceivedMessagesService } from './services/send-unreceived-messag
     SendUnreceivedMessagesService,
   ],
   controllers: [MessageController],
+  exports: [MessageService],
 })
 export class MessageModule {}
