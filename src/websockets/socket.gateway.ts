@@ -10,7 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '../user/user.model';
 import { InjectModel } from '@nestjs/sequelize';
 import { Message } from '../message/message.model';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus, Logger } from '@nestjs/common';
 
 @WebSocketGateway({
   pingTimeout: 1000,
@@ -21,6 +21,8 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 export class SocketGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
+  private readonly logger: Logger = new Logger(SocketGateway.name);
+
   constructor(
     private jwtService: JwtService,
     @InjectModel(User) private userRepository: typeof User,
@@ -43,37 +45,50 @@ export class SocketGateway
 
   async handleDisconnect(client: Socket): Promise<void> {
     console.log(`Client disconnected: ${client.id}`);
-    const userId: string = this.getUserIdBySocket(client);
-    delete this.connectedUsers[userId];
+    try {
+      const userId: string = this.getUserIdBySocket(client);
+      delete this.connectedUsers[userId];
+    } catch (e) {}
   }
 
   async handleConnection(client: Socket): Promise<void> {
-    console.log('SOCKET TRY CONNECT');
-    const firebaseToken = client.handshake.query.firebaseToken;
+    console.log('SOCKET TRY CONNECT', client.handshake.query.token);
 
     // Get user by token
     let jwtUser;
 
     try {
-      jwtUser = this.jwtService.verify(String(client.handshake.query.token));
-    } catch (e) {}
+      const accessOptions = {
+        expiresIn: parseInt(process.env.JWT_ACCESS_EXPIRE) || 0,
+        secret: process.env.JWT_ACCESS_SECRET,
+      };
+      jwtUser = await this.jwtService.verifyAsync(
+        String(client.handshake.query.token),
+        accessOptions,
+      );
+    } catch (e) {
+      client.disconnect();
+    }
 
-    if (jwtUser?.id) {
+    if (jwtUser?.sub) {
       const userExist = await this.userRepository.count({
-        where: { id: jwtUser.id },
+        where: { id: jwtUser.sub },
       });
 
       if (userExist) {
-        this.connectedUsers[String(jwtUser.id)] = client.id;
+        this.connectedUsers[String(jwtUser.sub)] = client.id;
         console.log(
           `
-            User #${jwtUser.id} connected with:
+            User #${jwtUser.sub} connected with:
             token: ${client.handshake.query.token},
-            socket: ${client.id},
-            firebase token: ${firebaseToken}
+            socket: ${client.id}
           `,
         );
+      } else {
+        client.disconnect();
       }
+    } else {
+      client.disconnect();
     }
   }
 
@@ -81,14 +96,31 @@ export class SocketGateway
     const socket = this.connectedUsers[String(userId)];
     if (!socket) return;
 
-    console.log(`SEND SOCKET ${eventName} TO USER #${userId}`);
+    this.log(`SEND '${eventName}' TO USER #${userId}`);
     this.server.to(socket).emit(eventName, data);
   }
 
-  sendMessage = (userId: number, message: Message): void =>
-    this.sendSocket('message', userId, message);
+  sendMessage = (userId: number, messages: Message[]): void =>
+    this.sendSocket('message', userId, messages);
 
-  afterInit(server: Server): void {
-    console.log('WEBSOCKETS INIT');
+  sendChat = (userId: number, chats: Record<any, any>[]): void =>
+    this.sendSocket('chat', userId, chats);
+
+  afterInit = (server: Server): void => this.log('INIT');
+
+  private log(message?: any, ...optionalParams: any[]): void {
+    console.log(
+      this.socketConsoleColor,
+      '[WEBSOCKETS] -',
+      this.resetConsoleColor,
+      new Date().toISOString(),
+      this.socketConsoleColor,
+      message,
+      ...optionalParams,
+      this.resetConsoleColor,
+    );
   }
+
+  private socketConsoleColor = '\x1b[36m';
+  private resetConsoleColor = '\x1b[0m';
 }

@@ -97,24 +97,31 @@ export class AuthService {
   }
 
   async userUpdateToken(request, ip: string): Promise<Tokens> {
-    const refreshToken = request.headers?.cookie
-      ?.toString()
-      .split('refreshToken=')[1]
-      .split(';')[0];
+    try {
+      const refreshToken = request.headers?.cookie
+        ?.toString()
+        .split('refreshToken=')[1]
+        .split(';')[0];
 
-    const tokenExist: UserRefresh = await this.userRefreshRepository.findOne({
-      where: { ip, refreshToken },
-      include: [User],
-    });
+      const tokenExist: UserRefresh = await this.userRefreshRepository.findOne({
+        where: { ip, refreshToken },
+        include: [User],
+      });
 
-    if (!tokenExist) {
+      if (!tokenExist) {
+        throw new HttpException(
+          new Error(ErrorType.TokenInvalid),
+          HttpStatus.FORBIDDEN,
+        );
+      }
+
+      return await this.updateToken(tokenExist.user, ip, refreshToken);
+    } catch (e) {
       throw new HttpException(
         new Error(ErrorType.TokenInvalid),
         HttpStatus.FORBIDDEN,
       );
     }
-
-    return await this.updateToken(tokenExist.user, ip, refreshToken);
   }
 
   private async authData(

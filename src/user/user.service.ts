@@ -2,10 +2,18 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { User } from './user.model';
 import { Error, ErrorType } from '../error.class';
 import { InjectModel } from '@nestjs/sequelize';
+import { OffsetDto } from '../base/offset.dto';
 
 @Injectable()
 export class UserService {
   constructor(@InjectModel(User) private userRepository: typeof User) {}
+
+  async getUsers(offsetDto: OffsetDto): Promise<User[]> {
+    return await this.userRepository.findAll({
+      offset: offsetDto.offset,
+      limit: 20,
+    });
+  }
 
   async getUser(id: number): Promise<User> {
     const user: User = await this.userRepository.findOne({

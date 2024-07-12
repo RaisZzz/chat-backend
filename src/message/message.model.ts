@@ -14,6 +14,9 @@ export class Message {
 
   @Prop({ required: true, type: SchemaTypes.Number })
   chatId: number;
+
+  @Prop({ required: true, type: SchemaTypes.Number })
+  createdAt: number;
 }
 
 export const messageModel = SchemaFactory.createForClass(Message);

@@ -1,7 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { v4 as uuidv4 } from 'uuid';
 import { Message } from '../message.model';
 import { ChatService } from '../../chat/chat.service';
 import { SendMessageDto } from '../dto/send-message.dto';
@@ -9,6 +8,9 @@ import { User } from '../../user/user.model';
 import { Chat } from '../../chat/chat.model';
 import { Error, ErrorType } from '../../error.class';
 import { SocketGateway } from '../../websockets/socket.gateway';
+import { ChatUser } from '../../chat/chat-user.model';
+import { MessageSetUnreceivedService } from './message-set-unreceived.service';
+import { Sequelize } from 'sequelize-typescript';
 
 @Injectable()
 export class MessageSendService {
@@ -16,6 +18,8 @@ export class MessageSendService {
     @InjectModel(Message.name) private messageModel: Model<Message>,
     private chatService: ChatService,
     private socketGateway: SocketGateway,
+    private messageSetUnreceivedService: MessageSetUnreceivedService,
+    private sequelize: Sequelize,
   ) {}
 
   async sendMessage(
@@ -33,44 +37,73 @@ export class MessageSendService {
       );
     }
 
-    let chatId: number | undefined;
+    let chat: Chat | undefined;
 
     // If to chat then check if user exist in this chat
     if (sendMessageDto.toChatId) {
-      const userExistInChat: boolean =
-        await this.chatService.checkUserExistInChat(user, {
-          chatId: sendMessageDto.toChatId,
-        });
-      if (!userExistInChat) {
+      chat = await this.chatService.checkUserExistInChat(user, {
+        chatId: sendMessageDto.toChatId,
+      });
+      if (!chat) {
         throw new HttpException(
           new Error(ErrorType.BadFields),
           HttpStatus.BAD_REQUEST,
         );
       }
-      chatId = sendMessageDto.toChatId;
     } else {
       // If to user then check if user exist else create new chat
-      const chatExist: Chat = await this.chatService.getChatWithUser(user, {
+      chat = await this.chatService.getChatWithUser(user, {
         userId: sendMessageDto.toUserId,
       });
-      chatId = chatExist.id;
     }
 
     // Save message
-    const uuid: string = uuidv4();
-
     const messageDto = {
-      uuid,
-      chatId,
+      uuid: sendMessageDto.uuid,
+      chatId: chat.id,
       ownerId: user.id,
       text: sendMessageDto.text,
+      createdAt: Date.now(),
     };
 
     const message = new this.messageModel(messageDto);
     await message.save();
-    console.log(1);
-    this.socketGateway.sendMessage(1, message);
-    console.log(2);
+    const messageJson = message.toJSON();
+    this.sendMessageToAllUsersInChat(messageJson);
     return message;
+  }
+
+  private async sendMessageToAllUsersInChat(message: Message): Promise<void> {
+    const chatUsers: ChatUser[] = await this.chatService.getAllChatUsers(
+      message.chatId,
+    );
+    for (let i = 0; i < chatUsers.length; i++) {
+      const userId = chatUsers[i].userId;
+      await this.messageSetUnreceivedService.setMessageUnreceived(
+        message.chatId,
+        message.uuid,
+        userId,
+      );
+
+      // Get chat info
+      const [chatInfoRes] = await this.sequelize.query(`
+        SELECT *,
+        (SELECT login FROM "user" where id = (
+          CASE 
+            WHEN users[1] = ${chatUsers[i].userId} THEN users[2]
+            ELSE users[1]
+          END
+        )) as "title"
+        FROM
+        (SELECT *,
+          (SELECT ARRAY(SELECT user_id FROM "chat_user" WHERE chat_id = "chat".id)) as "users"
+          FROM "chat"
+          WHERE id = ${message.chatId}
+        ) asd
+        LIMIT 1;
+      `);
+      message['chat'] = chatInfoRes[0] as Chat;
+      this.socketGateway.sendMessage(userId, [message]);
+    }
   }
 }

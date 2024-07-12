@@ -11,6 +11,7 @@ export class MessageSetUnreceivedService {
   ) {}
 
   async setMessageUnreceived(
+    chatId: number,
     messageUuid: string,
     userId: number,
   ): Promise<void> {
@@ -19,11 +20,25 @@ export class MessageSetUnreceivedService {
         messageUuid,
         userId,
       });
-    if (messageReceivedExist) return;
+    if (messageReceivedExist) {
+      if (messageReceivedExist.received) {
+        await this.messageReceivedModel.updateOne(
+          {
+            messageUuid,
+            userId,
+          },
+          { received: false },
+        );
+        return;
+      }
+      return;
+    }
 
     const messageReceived = new this.messageReceivedModel({
+      chatId,
       messageUuid,
       userId,
+      received: false,
     });
     await messageReceived.save();
   }

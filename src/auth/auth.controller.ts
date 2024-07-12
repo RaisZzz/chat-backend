@@ -1,4 +1,12 @@
-import { Post, Controller, Body, UseGuards, Req, Res } from '@nestjs/common';
+import {
+  Post,
+  Controller,
+  Body,
+  UseGuards,
+  Req,
+  Res,
+  Head,
+} from '@nestjs/common';
 import { AuthResponse, AuthService, Tokens } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -9,6 +17,11 @@ import { Response } from 'express';
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
+
+  @Head('ping')
+  ping() {
+    return true;
+  }
 
   @Post('/')
   @UseGuards(JwtAuthGuard)

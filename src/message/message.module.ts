@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Message, messageModel } from './message.model';
 import { MessageService } from './message.service';
@@ -14,9 +14,12 @@ import { MessageSendService } from './services/message-send.service';
 import { MessageSetUnreceivedService } from './services/message-set-unreceived.service';
 import { SendUnreceivedMessagesService } from './services/send-unreceived-messages.service';
 import { WebsocketsModule } from '../websockets/websockets.module';
+import { Chat } from '../chat/chat.model';
+import { SequelizeModule } from '@nestjs/sequelize';
 
 @Module({
   imports: [
+    SequelizeModule.forFeature([Chat]),
     MongooseModule.forFeature([
       {
         name: Message.name,

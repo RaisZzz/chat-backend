@@ -1,15 +1,17 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { SchemaTypes } from 'mongoose';
 
 @Schema()
 export class MessageReceived {
-  @Prop({ required: true, type: SchemaTypes.String })
+  @Prop({ required: true, type: String })
   messageUuid: string;
 
-  @Prop({ required: true, type: SchemaTypes.Number })
+  @Prop({ required: true, type: Number })
   userId: number;
 
-  @Prop({ required: true, type: SchemaTypes.Boolean })
+  @Prop({ required: true, type: Number })
+  chatId: number;
+
+  @Prop({ required: true, type: Boolean })
   received: boolean;
 }
 
