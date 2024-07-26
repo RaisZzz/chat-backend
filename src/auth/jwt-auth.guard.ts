@@ -31,7 +31,7 @@ export class JwtAuthGuard implements CanActivate {
     let user;
     try {
       const accessOptions = {
-        expiresIn: parseInt(process.env.JWT_ACCESS_EXPIRE) || 0,
+        expiresIn: process.env.JWT_ACCESS_EXPIRE,
         secret: process.env.JWT_ACCESS_SECRET,
       };
       user = await this.jwtService.verifyAsync(token, accessOptions);

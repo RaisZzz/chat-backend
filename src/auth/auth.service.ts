@@ -9,17 +9,18 @@ import { JwtService } from '@nestjs/jwt';
 import { Error, ErrorType } from 'src/error.class';
 import { Response } from 'express';
 import { SmsService, SmsType } from '../sms/sms.service';
+import { City } from '../city/city.model';
 
 export abstract class Tokens {
   readonly accessToken: string;
   readonly refreshToken: string;
-  readonly refreshExpire: number;
 }
 
 export abstract class AuthResponse {
   readonly accessToken: string;
   readonly refreshToken: string;
   readonly user: User;
+  readonly data: Record<string, Record<string, any>[]>;
 }
 
 const userRegisterSmsTime = 600;
@@ -28,6 +29,7 @@ const userRegisterSmsTime = 600;
 export class AuthService {
   constructor(
     @InjectModel(User) private userRepository: typeof User,
+    @InjectModel(City) private cityRepository: typeof City,
     @InjectModel(UserRefresh) private userRefreshRepository: typeof UserRefresh,
     private jwtService: JwtService,
     private smsService: SmsService,
@@ -45,6 +47,12 @@ export class AuthService {
       const registerTime: number = 600 - (today - user.createdAt);
       this.setUserDeleteTimeout(user, registerTime);
     }
+  }
+
+  private async getDataItems(): Promise<Record<string, Record<string, any>[]>> {
+    const cities: City[] = await this.cityRepository.findAll();
+
+    return { cities };
   }
 
   async auth(user: User, ip: string, res: Response): Promise<AuthResponse> {
@@ -214,7 +222,6 @@ export class AuthService {
       path: '/auth',
       domain: 'localhost',
       httpOnly: true,
-      maxAge: tokens.refreshExpire * 1000,
     });
 
     delete user.dataValues.password;
@@ -223,6 +230,7 @@ export class AuthService {
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       user,
+      data: await this.getDataItems(),
     };
   }
 
@@ -239,13 +247,13 @@ export class AuthService {
       });
 
     const accessOptions = {
-      expiresIn: parseInt(process.env.JWT_ACCESS_EXPIRE) || 0,
+      expiresIn: process.env.JWT_ACCESS_EXPIRE,
       secret: process.env.JWT_ACCESS_SECRET,
     };
 
     const payload = { id: user.id };
     const refreshOptions = {
-      expiresIn: parseInt(process.env.JWT_REFRESH_EXPIRE) || 0,
+      expiresIn: process.env.JWT_REFRESH_EXPIRE,
       secret: process.env.JWT_REFRESH_SECRET,
     };
 
@@ -302,7 +310,6 @@ export class AuthService {
     return {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
-      refreshExpire: parseInt(process.env.JWT_REFRESH_EXPIRE) || 0,
     };
   }
 }

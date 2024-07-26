@@ -55,7 +55,7 @@ export class UserReactionService {
     }
 
     // Check user has super likes on balance
-    if (user.superLikes < 0) {
+    if (sendDto.isLiked && user.superLikes <= 0) {
       throw new HttpException(
         new Error(ErrorType.SuperLikesCount),
         HttpStatus.FORBIDDEN,
@@ -64,6 +64,7 @@ export class UserReactionService {
 
     // Check liked user exist
     const recipientExist: User = await this.userRepository.findOne({
+      attributes: { exclude: ['phone', 'password', 'code'] },
       where: { id: sendDto.toUserId },
     });
     if (!recipientExist) {
@@ -79,9 +80,12 @@ export class UserReactionService {
     });
 
     if (reaction) {
+      console.log(Date.now());
+      reaction.changed('updatedAt', true);
       await reaction.update({
         isLiked: sendDto.isLiked,
         superLikeMsg: sendDto.superLikeMsg,
+        updatedAt: Date.now(),
       });
     } else {
       reaction = await this.userReactionRepository.create({
@@ -135,8 +139,19 @@ export class UserReactionService {
       reaction.id,
       userReactionReceivedType,
     );
-    this.socketGateway.sendUserReaction(user.id, [reaction]);
+    this.setUserReactionUnreceived(
+      sendDto.toUserId,
+      reaction.id,
+      userReactionReceivedType,
+    );
+
+    reaction.dataValues['user'] = user.toJSON();
     this.socketGateway.sendUserReaction(sendDto.toUserId, [reaction]);
+
+    reaction.dataValues['user'] = recipientExist.toJSON();
+    this.socketGateway.sendUserReaction(user.id, [reaction]);
+
+    console.log(recipientExist.firstName, reaction.dataValues['user']);
 
     return reaction;
   }

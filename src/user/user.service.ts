@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { User } from './user.model';
 import { InjectModel } from '@nestjs/sequelize';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -24,6 +24,10 @@ import { Report } from '../report/report.model';
 import { SmsDto } from './dto/sms.dto';
 import { SuccessInterface } from '../base/success.interface';
 import { GetUserByPhoneDto } from './dto/get-user-by-phone.dto';
+import { UploadPhotoDto } from './dto/upload-photo.dto';
+import { Error, ErrorType } from '../error.class';
+import { Image } from '../image/image.model';
+import { ImageService } from '../image/image.service';
 
 export class CheckUserExistResponse {
   readonly userRegistered: boolean;
@@ -33,16 +37,24 @@ export class CheckUserExistResponse {
 export class UserService {
   constructor(
     @InjectModel(User) private userRepository: typeof User,
+    @InjectModel(Image) private imageRepository: typeof Image,
     @InjectModel(Report) private reportRepository: typeof Report,
     @InjectModel(UserReaction)
     private userReactionRepository: typeof UserReaction,
     private sequelize: Sequelize,
     private redisService: RedisService,
+    private imageService: ImageService,
     private socketGateway: SocketGateway,
   ) {}
 
-  async checkUserExist(checkDto: GetUserByPhoneDto): Promise<CheckUserExistResponse> {
-    return { userRegistered: !!(await this.userRepository.findOne({where: { phone: checkDto.phone }})) };
+  async checkUserExist(
+    checkDto: GetUserByPhoneDto,
+  ): Promise<CheckUserExistResponse> {
+    return {
+      userRegistered: !!(await this.userRepository.findOne({
+        where: { phone: checkDto.phone },
+      })),
+    };
   }
 
   async getUsers(user: User, getUsersDto: GetUsersDto): Promise<User[]> {
@@ -73,10 +85,15 @@ export class UserService {
     const sexCondition = user.sex === 0 ? 1 : 0;
 
     // Get users that should not display
+    const userReactionsLastDate: Date = new Date();
+    userReactionsLastDate.setMinutes(userReactionsLastDate.getMinutes() - 5);
     const userReactions: UserReaction[] =
       await this.userReactionRepository.findAll({
         attributes: ['recipientId'],
-        where: { senderId: user.id },
+        where: {
+          senderId: user.id,
+          updatedAt: { [Op.gt]: userReactionsLastDate.getTime() },
+        },
       });
     const userReports: Report[] = await this.reportRepository.findAll({
       attributes: ['reportedId'],
@@ -380,6 +397,78 @@ export class UserService {
     const success: boolean = user.code === checkDto.code;
     if (success) await user.update({ code_confirmed: true, code: null });
     return { success };
+  }
+
+  async updatePhotosRequest(
+    user: User,
+    photos: [Express.Multer.File],
+    uploadPhotoDto: UploadPhotoDto,
+  ) {
+    // Validate photos array
+    if (!photos.length) {
+      throw new HttpException(
+        new Error(ErrorType.FilesCount),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const imageTypes: string[] = ['image/jpeg', 'image/png'];
+    const photo: Express.Multer.File = photos[0];
+    if (!imageTypes.includes(photo.mimetype)) {
+      throw new HttpException(
+        new Error(ErrorType.FileType),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return await this.updatePhoto(user, photo, uploadPhotoDto);
+  }
+
+  private async updatePhoto(
+    user: User,
+    photo: Express.Multer.File,
+    uploadPhotoDto: UploadPhotoDto,
+  ): Promise<Image> {
+    const photos = { ...user.photos };
+    let editPhotoIndex =
+      uploadPhotoDto.index >= 0 &&
+      uploadPhotoDto.index < 6 &&
+      !!photos[uploadPhotoDto.index]
+        ? uploadPhotoDto.index
+        : null;
+    let file: Image;
+
+    if (
+      Object.values(photos).length >= 6 &&
+      (editPhotoIndex === null || editPhotoIndex > 5)
+    ) {
+      editPhotoIndex = 5;
+    }
+
+    if (editPhotoIndex != null) {
+      // Delete old photo
+      try {
+        const deletedImage: Image = await this.imageRepository.findOne({
+          where: { id: photos[editPhotoIndex] },
+        });
+        await this.imageService.deleteFile(deletedImage);
+      } catch (e) {}
+
+      file = await this.imageService.saveFile(photo, user.id);
+      photos[editPhotoIndex] = file.id;
+    } else {
+      file = await this.imageService.saveFile(photo, user.id);
+      photos[Object.keys(photos).length] = file.id;
+    }
+
+    await user.update({
+      photos,
+      verified: false,
+      tryVerifiedAt: null,
+      verifyAnsweredAt: null,
+    });
+
+    return file;
   }
 
   private async getUserOnline(userId: number): Promise<boolean | number> {

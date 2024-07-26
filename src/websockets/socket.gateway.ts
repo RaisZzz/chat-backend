@@ -65,7 +65,7 @@ export class SocketGateway
 
     try {
       const accessOptions = {
-        expiresIn: parseInt(process.env.JWT_ACCESS_EXPIRE) || 0,
+        expiresIn: process.env.JWT_ACCESS_EXPIRE,
         secret: process.env.JWT_ACCESS_SECRET,
       };
       jwtUser = await this.jwtService.verifyAsync(
@@ -104,6 +104,9 @@ export class SocketGateway
   }
 
   private sendSocket(eventName: string, userId: number, data: any): void {
+    this.log(
+      `TRY SEND SOCKET '${eventName}' ${userId} ${JSON.stringify(this.connectedUsers)}`,
+    );
     const socket = this.connectedUsers[String(userId)];
     if (!socket) return;
 

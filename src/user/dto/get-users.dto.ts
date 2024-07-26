@@ -12,6 +12,13 @@ import { ApiProperty } from '@nestjs/swagger';
 export class GetUsersDto {
   @IsInt({ each: true })
   @IsOptional()
+  @Transform((value) => {
+    if (!Array.isArray(value.value)) {
+      return value.value ? JSON.parse(value.value) || [] : [];
+    } else {
+      return value.value;
+    }
+  })
   readonly usersIds: number[];
 
   @IsArray()

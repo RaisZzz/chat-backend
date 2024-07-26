@@ -7,6 +7,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { UserRefresh } from 'src/user/user-refresh.model';
 import { UserModule } from 'src/user/user.module';
 import { SmsModule } from '../sms/sms.module';
+import { City } from '../city/city.model';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { SmsModule } from '../sms/sms.module';
       secret: process.env.SECRET,
       signOptions: { expiresIn: '60s' },
     }),
-    SequelizeModule.forFeature([User, UserRefresh]),
+    SequelizeModule.forFeature([User, UserRefresh, City]),
     forwardRef(() => UserModule),
     SmsModule,
   ],

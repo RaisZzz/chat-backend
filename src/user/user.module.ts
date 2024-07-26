@@ -8,13 +8,16 @@ import { WebsocketsModule } from '../websockets/websockets.module';
 import { RedisModule } from '../redis/redis.module';
 import { UserReaction } from '../user-reaction/user-reaction.model';
 import { Report } from '../report/report.model';
+import { ImageModule } from '../image/image.module';
+import { Image } from '../image/image.model';
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([User, UserReaction, Report]),
+    SequelizeModule.forFeature([User, UserReaction, Report, Image]),
     forwardRef(() => AuthModule),
     WebsocketsModule,
     RedisModule,
+    ImageModule,
   ],
   controllers: [UserController],
   providers: [UserService],

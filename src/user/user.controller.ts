@@ -3,9 +3,12 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Query,
   Req,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -17,6 +20,11 @@ import { NoSmsGuard } from './no-sms.guard';
 import { SmsDto } from './dto/sms.dto';
 import { SuccessInterface } from '../base/success.interface';
 import { GetUserByPhoneDto } from './dto/get-user-by-phone.dto';
+import { ApiOperation } from '@nestjs/swagger';
+import { Step } from './step.decorator';
+import { StepGuard } from './step.guard';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { UploadPhotoDto } from './dto/upload-photo.dto';
 
 @Controller('user')
 export class UserController {
@@ -46,5 +54,26 @@ export class UserController {
     @Body() checkSmsDto: SmsDto,
   ): Promise<SuccessInterface> {
     return this.userService.checkSmsCode(req.user, checkSmsDto);
+  }
+
+  @ApiOperation({ summary: 'Загрузка фото' })
+  @Put('/upload_photo')
+  @Step(2)
+  @UseGuards(JwtAuthGuard, StepGuard, SmsGuard)
+  @UseInterceptors(
+    FilesInterceptor('photos', 1, {
+      limits: { fileSize: 10 * 1024 * 1024 },
+    }),
+  )
+  uploadPhoto(
+    @Body() uploadPhotoDto: UploadPhotoDto,
+    @UploadedFiles() photos: [Express.Multer.File],
+    @Req() req,
+  ) {
+    return this.userService.updatePhotosRequest(
+      req.user,
+      photos,
+      uploadPhotoDto,
+    );
   }
 }

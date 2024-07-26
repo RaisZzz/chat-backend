@@ -90,8 +90,13 @@ export class ChatService {
         userId: secondUserId,
         chatId: chat.id,
       });
+
+      const fakeUser = new User();
+      fakeUser.id = firstUserId;
+      fakeUser.dataValues.id = firstUserId;
+
       await this.messageService.sendMessage(
-        new User(),
+        fakeUser,
         {
           uuid: uuidv4(),
           text: '',
