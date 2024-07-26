@@ -1,11 +1,12 @@
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsNotEmpty, IsString } from 'class-validator';
+import { BaseDto } from '../../base/base.dto';
 
-export class LoginDto {
-    @IsString()
-    @IsNotEmpty()
-    readonly login: string;
+export class LoginDto extends BaseDto {
+  @IsString()
+  @IsNotEmpty()
+  readonly phone: string;
 
-    @IsString()
-    @IsNotEmpty()
-    readonly password: string;
+  @IsString()
+  @IsNotEmpty()
+  readonly password: string;
 }

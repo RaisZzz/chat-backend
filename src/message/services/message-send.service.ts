@@ -1,8 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectModel as InjectMongooseModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Message } from '../message.model';
-import { ChatService } from '../../chat/chat.service';
+import { Message, SystemMessageType } from '../message.model';
 import { SendMessageDto } from '../dto/send-message.dto';
 import { User } from '../../user/user.model';
 import { Chat } from '../../chat/chat.model';
@@ -11,13 +10,25 @@ import { SocketGateway } from '../../websockets/socket.gateway';
 import { ChatUser } from '../../chat/chat-user.model';
 import { MessageSetUnreceivedService } from './message-set-unreceived.service';
 import { Sequelize } from 'sequelize-typescript';
+import { Image } from '../../image/image.model';
+import { ImageService } from '../../image/image.service';
+import { Voice } from '../../voice/voice.model';
+import { VoiceService } from '../../voice/voice.service';
+import { InjectModel } from '@nestjs/sequelize';
+import { NotificationsService } from '../../notifications/notifications.service';
+import { NotificationType } from '../../notifications/notification-type.enum';
 
 @Injectable()
 export class MessageSendService {
   constructor(
-    @InjectModel(Message.name) private messageModel: Model<Message>,
-    private chatService: ChatService,
+    @InjectModel(User) private userRepository: typeof User,
+    @InjectModel(Chat) private chatRepository: typeof Chat,
+    @InjectModel(ChatUser) private chatUserRepository: typeof ChatUser,
+    @InjectMongooseModel(Message.name) private messageModel: Model<Message>,
     private socketGateway: SocketGateway,
+    private imageService: ImageService,
+    private notificationService: NotificationsService,
+    private voiceService: VoiceService,
     private messageSetUnreceivedService: MessageSetUnreceivedService,
     private sequelize: Sequelize,
   ) {}
@@ -25,11 +36,22 @@ export class MessageSendService {
   async sendMessage(
     user: User,
     sendMessageDto: SendMessageDto,
+    systemId: SystemMessageType = SystemMessageType.Default,
+    reportId: number | null = null,
+    photos: [Express.Multer.File] | null = null,
+    voice: [Express.Multer.File] | null = null,
   ): Promise<Message> {
-    // Check only to chat or to user
+    sendMessageDto.text = sendMessageDto.text
+      .trim()
+      .replace(/\n+/g, '\n')
+      .replace(/ +/g, ' ');
+
     if (
-      (!sendMessageDto.toChatId && !sendMessageDto.toUserId) ||
-      (sendMessageDto.toChatId && sendMessageDto.toUserId)
+      !sendMessageDto.text.length &&
+      !(Array.isArray(photos) && photos.length) &&
+      !(Array.isArray(voice) && voice.length) &&
+      !systemId &&
+      !reportId
     ) {
       throw new HttpException(
         new Error(ErrorType.BadFields),
@@ -37,25 +59,36 @@ export class MessageSendService {
       );
     }
 
-    let chat: Chat | undefined;
-
-    // If to chat then check if user exist in this chat
-    if (sendMessageDto.toChatId) {
-      chat = await this.chatService.checkUserExistInChat(user, {
-        chatId: sendMessageDto.toChatId,
-      });
-      if (!chat) {
-        throw new HttpException(
-          new Error(ErrorType.BadFields),
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-    } else {
-      // If to user then check if user exist else create new chat
-      chat = await this.chatService.getChatWithUser(user, {
-        userId: sendMessageDto.toUserId,
-      });
+    const chat: Chat = await this.chatRepository.findOne({
+      where: { id: sendMessageDto.toChatId },
+    });
+    if (!chat) {
+      throw new HttpException(
+        new Error(ErrorType.Forbidden),
+        HttpStatus.FORBIDDEN,
+      );
     }
+    const chatUser: ChatUser = await this.chatUserRepository.findOne({
+      where: { chatId: chat.id, userId: user.id },
+    });
+    if (!chatUser) {
+      throw new HttpException(
+        new Error(ErrorType.Forbidden),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    const imagesIds: number[] = await this.saveMessageImages(
+      user.id,
+      photos,
+      sendMessageDto.uuid,
+    );
+
+    const voiceId: number | null = await this.saveMessageVoice(
+      voice,
+      user.id,
+      sendMessageDto.uuid,
+    );
 
     // Save message
     const messageDto = {
@@ -63,6 +96,10 @@ export class MessageSendService {
       chatId: chat.id,
       ownerId: user.id,
       text: sendMessageDto.text,
+      systemId,
+      reportId,
+      imagesIds,
+      voiceId,
       createdAt: Date.now(),
     };
 
@@ -73,10 +110,15 @@ export class MessageSendService {
     return message;
   }
 
-  private async sendMessageToAllUsersInChat(message: Message): Promise<void> {
-    const chatUsers: ChatUser[] = await this.chatService.getAllChatUsers(
-      message.chatId,
-    );
+  async sendMessageToAllUsersInChat(message: Message): Promise<void> {
+    const user: User = await this.userRepository.findOne({
+      attributes: ['firstName', 'lastName', 'sex'],
+      where: { id: message.ownerId },
+    });
+
+    const chatUsers: ChatUser[] = await this.chatUserRepository.findAll({
+      where: { chatId: message.chatId },
+    });
     for (let i = 0; i < chatUsers.length; i++) {
       const userId = chatUsers[i].userId;
       await this.messageSetUnreceivedService.setMessageUnreceived(
@@ -88,7 +130,7 @@ export class MessageSendService {
       // Get chat info
       const [chatInfoRes] = await this.sequelize.query(`
         SELECT *,
-        (SELECT login FROM "user" where id = (
+        (SELECT first_name FROM "user" where id = (
           CASE 
             WHEN users[1] = ${chatUsers[i].userId} THEN users[2]
             ELSE users[1]
@@ -102,8 +144,86 @@ export class MessageSendService {
         ) asd
         LIMIT 1;
       `);
-      message['chat'] = chatInfoRes[0] as Chat;
+      const chat: Chat = chatInfoRes[0] as Chat;
+      message['chat'] = chat;
       this.socketGateway.sendMessage(userId, [message]);
+
+      if (userId !== message.ownerId) {
+        this.notificationService.sendNotification(
+          {
+            from: message.ownerId,
+            to: userId,
+            type: NotificationType.message,
+            title: `${user.firstName} ${user.lastName}`,
+            body: `Отправил${user.sex === 0 ? 'а' : ''} вам сообщение`,
+          },
+          true,
+          chat,
+        );
+      }
     }
+  }
+
+  private async saveMessageImages(
+    userId: number,
+    photos: [Express.Multer.File] | null,
+    messageUuid: string,
+  ): Promise<number[]> {
+    const imagesIds: number[] = [];
+
+    if (!Array.isArray(photos)) return [];
+
+    if (!photos.length) return [];
+
+    if (photos.length > 10) {
+      throw new HttpException(
+        new Error(ErrorType.FilesCount),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const imageTypes: string[] = ['image/jpeg', 'image/png'];
+    photos.forEach((photo) => {
+      if (!imageTypes.includes(photo.mimetype)) {
+        throw new HttpException(
+          new Error(ErrorType.FileType),
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    });
+
+    for (const photo of photos) {
+      const file: Image = await this.imageService.saveFile(
+        photo,
+        `message_${messageUuid}_${userId}`,
+      );
+      imagesIds.push(file.id);
+    }
+
+    return imagesIds;
+  }
+
+  private async saveMessageVoice(
+    voices: [Express.Multer.File] | null,
+    userId: number,
+    messageUuid: string,
+  ): Promise<number | null> {
+    if (!Array.isArray(voices)) return;
+    if (!voices.length) return;
+
+    const voiceTypes: string[] = ['audio/mp4'];
+    if (!voiceTypes.includes(voices[0].mimetype)) {
+      throw new HttpException(
+        new Error(ErrorType.FileType),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const voiceModel: Voice = await this.voiceService.saveFile(
+      voices[0],
+      `voice_${messageUuid}_${userId}`,
+    );
+
+    return voiceModel.id;
   }
 }

@@ -6,16 +6,15 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UserService } from '../user/user.service';
 import { Error, ErrorType } from 'src/error.class';
-import { AuthService } from './auth.service';
+import { InjectModel } from '@nestjs/sequelize';
+import { User } from '../user/user.model';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(
+    @InjectModel(User) private userRepository: typeof User,
     private jwtService: JwtService,
-    private userService: UserService,
-    private authService: AuthService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -40,7 +39,9 @@ export class JwtAuthGuard implements CanActivate {
       this.unauthorizedError();
     }
 
-    request.user = await this.userService.getUser(user?.sub);
+    request.user = await this.userRepository.findOne({
+      where: { id: user?.id },
+    });
     request.token = token;
     if (!request.user) {
       this.unauthorizedError();

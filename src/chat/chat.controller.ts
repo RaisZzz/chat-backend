@@ -25,15 +25,6 @@ export class ChatController {
     return this.chatService.getAllChatsForUser(req.user, offsetDto);
   }
 
-  @Delete('delete')
-  @UseGuards(JwtAuthGuard)
-  deleteChat(
-    @Req() req,
-    @Body() deleteDto: GetChatDto,
-  ): Promise<SuccessInterface> {
-    return this.chatService.deleteChat(req.user, deleteDto);
-  }
-
   @Post('set-received')
   @UseGuards(JwtAuthGuard)
   setChatReceived(

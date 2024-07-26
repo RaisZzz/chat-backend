@@ -10,7 +10,10 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '../user/user.model';
 import { InjectModel } from '@nestjs/sequelize';
 import { Message } from '../message/message.model';
-import { HttpException, HttpStatus, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus } from '@nestjs/common';
+import { RedisService } from '../redis/redis.service';
+import { Report } from '../report/report.model';
+import { Notification } from '../notifications/notifications.model';
 
 @WebSocketGateway({
   pingTimeout: 1000,
@@ -21,10 +24,9 @@ import { HttpException, HttpStatus, Logger } from '@nestjs/common';
 export class SocketGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
-  private readonly logger: Logger = new Logger(SocketGateway.name);
-
   constructor(
     private jwtService: JwtService,
+    private redisService: RedisService,
     @InjectModel(User) private userRepository: typeof User,
   ) {}
 
@@ -32,6 +34,9 @@ export class SocketGateway
   server: Server;
 
   private connectedUsers: Record<string, string> = {};
+
+  getUserConnected = (userId: number): string | undefined =>
+    this.connectedUsers[userId];
 
   private getUserIdBySocket(client: Socket): string {
     const userConnectedIndex: number = Object.values(
@@ -43,11 +48,12 @@ export class SocketGateway
     return Object.keys(this.connectedUsers)[userConnectedIndex];
   }
 
-  async handleDisconnect(client: Socket): Promise<void> {
+  handleDisconnect(client: Socket): void {
     console.log(`Client disconnected: ${client.id}`);
     try {
       const userId: string = this.getUserIdBySocket(client);
       delete this.connectedUsers[userId];
+      this.redisService.hSet(String(userId), 'online', String(Date.now()));
     } catch (e) {}
   }
 
@@ -70,16 +76,21 @@ export class SocketGateway
       client.disconnect();
     }
 
-    if (jwtUser?.sub) {
+    if (jwtUser?.id) {
       const userExist = await this.userRepository.count({
-        where: { id: jwtUser.sub },
+        where: { id: jwtUser.id },
       });
 
       if (userExist) {
-        this.connectedUsers[String(jwtUser.sub)] = client.id;
+        this.connectedUsers[String(jwtUser.id)] = client.id;
+        this.redisService.hSet(
+          String(jwtUser.id),
+          'online',
+          String(Date.now()),
+        );
         console.log(
           `
-            User #${jwtUser.sub} connected with:
+            User #${jwtUser.id} connected with:
             token: ${client.handshake.query.token},
             socket: ${client.id}
           `,
@@ -105,6 +116,20 @@ export class SocketGateway
 
   sendChat = (userId: number, chats: Record<any, any>[]): void =>
     this.sendSocket('chat', userId, chats);
+
+  sendUserReaction = (
+    userId: number,
+    userReactions: Record<any, any>[],
+  ): void => this.sendSocket('userReaction', userId, userReactions);
+
+  sendUpdateData = (userId: number) =>
+    this.sendSocket('updateData', userId, null);
+
+  sendReport = (userId: number, report: Report) =>
+    this.sendSocket('report', userId, report.toJSON());
+
+  sendNotification = (notification: Notification) =>
+    this.sendSocket('notification', notification.to, notification.toJSON());
 
   afterInit = (server: Server): void => this.log('INIT');
 

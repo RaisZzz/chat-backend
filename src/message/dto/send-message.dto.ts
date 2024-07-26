@@ -1,10 +1,4 @@
-import {
-  IsInt,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  IsUUID,
-} from 'class-validator';
+import { IsInt, IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 export class SendMessageDto {
   @IsUUID(4)
@@ -15,10 +9,5 @@ export class SendMessageDto {
   text: string;
 
   @IsInt()
-  @IsOptional()
-  toUserId?: number;
-
-  @IsInt()
-  @IsOptional()
-  toChatId?: number;
+  toChatId: number;
 }

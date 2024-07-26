@@ -16,10 +16,15 @@ import { SendUnreceivedMessagesService } from './services/send-unreceived-messag
 import { WebsocketsModule } from '../websockets/websockets.module';
 import { Chat } from '../chat/chat.model';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { User } from '../user/user.model';
+import { ImageModule } from '../image/image.module';
+import { VoiceModule } from '../voice/voice.module';
+import { ChatUser } from '../chat/chat-user.model';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([Chat]),
+    SequelizeModule.forFeature([User, Chat, ChatUser]),
     MongooseModule.forFeature([
       {
         name: Message.name,
@@ -32,8 +37,10 @@ import { SequelizeModule } from '@nestjs/sequelize';
     ]),
     UserModule,
     AuthModule,
-    ChatModule,
     WebsocketsModule,
+    ImageModule,
+    VoiceModule,
+    NotificationsModule,
   ],
   providers: [
     MessageService,

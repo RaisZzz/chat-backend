@@ -13,6 +13,7 @@ import { RegisterDto } from './dto/register.dto';
 import { RealIP } from 'nestjs-real-ip';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { Response } from 'express';
+import { OptionalJwtAuthGuard } from './optional-jwt.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -43,12 +44,14 @@ export class AuthController {
   }
 
   @Post('register')
+  @UseGuards(OptionalJwtAuthGuard)
   register(
+    @Req() req,
     @RealIP() ip: string,
     @Body() registerDto: RegisterDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<AuthResponse> {
-    return this.authService.register(registerDto, ip, response);
+    return this.authService.register(registerDto, ip, response, req.user);
   }
 
   @Post('updateToken')

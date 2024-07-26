@@ -33,7 +33,7 @@ export class SendUnreceivedMessagesService {
     // Get chats info
     const [chatsResponse] = await this.sequelize.query(`
       SELECT *,
-      (SELECT login FROM "user" where id = (
+      (SELECT first_name FROM "user" where id = (
         CASE 
           WHEN users[1] = ${userId} THEN users[2]
           ELSE users[1]

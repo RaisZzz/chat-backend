@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { ChatUser } from './chat-user.model';
 import { ChatService } from './chat.service';
@@ -14,6 +14,8 @@ import {
   MessageReceived,
   messageReceivedModel,
 } from '../message/message-received.model';
+import { User } from '../user/user.model';
+import { MessageModule } from '../message/message.module';
 
 @Module({
   imports: [
@@ -27,10 +29,11 @@ import {
         schema: messageReceivedModel,
       },
     ]),
-    SequelizeModule.forFeature([Chat, ChatUser, ChatReceived]),
+    SequelizeModule.forFeature([User, Chat, ChatUser, ChatReceived]),
     UserModule,
     AuthModule,
     WebsocketsModule,
+    MessageModule,
   ],
   providers: [ChatService],
   exports: [ChatService],

@@ -3,20 +3,19 @@ import { InjectModel as InjectMongooseModel } from '@nestjs/mongoose';
 import { GetChatDto } from './dto/get-chat.dto';
 import { ChatUser } from './chat-user.model';
 import { User } from '../user/user.model';
-import { GetChatWithUserDto } from './dto/get-chat-with-user.dto';
 import { Chat, ChatType } from './chat.model';
 import { Sequelize } from 'sequelize-typescript';
-import { UserService } from '../user/user.service';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Error, ErrorType } from '../error.class';
+import { Injectable } from '@nestjs/common';
 import { OffsetDto } from '../base/offset.dto';
-import { Message } from '../message/message.model';
+import { Message, SystemMessageType } from '../message/message.model';
 import { Model } from 'mongoose';
 import { SuccessInterface } from '../base/success.interface';
 import { ChatReceived, ChatReceivedType } from './chat-received.model';
 import { SocketGateway } from '../websockets/socket.gateway';
 import { Op } from 'sequelize';
 import { MessageReceived } from '../message/message-received.model';
+import { MessageService } from '../message/message.service';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class ChatService {
@@ -29,8 +28,8 @@ export class ChatService {
     @InjectModel(ChatUser) private chatUserRepository: typeof ChatUser,
     @InjectModel(ChatReceived)
     private chatReceivedRepository: typeof ChatReceived,
-    private userService: UserService,
     private socketGateway: SocketGateway,
+    private messageService: MessageService,
   ) {}
 
   async checkUserExistInChat(
@@ -52,64 +51,57 @@ export class ChatService {
     return null;
   }
 
-  async getChatWithUser(
-    user: User,
-    getChatWithUserDto: GetChatWithUserDto,
+  async createChatWithTwoUsers(
+    firstUserId: number,
+    secondUserId: number,
   ): Promise<Chat> {
-    // TODO: Favorites messages
-    if (getChatWithUserDto.userId === user.id) {
-      throw new HttpException(
-        'Favorites not unimplemented',
-        HttpStatus.SERVICE_UNAVAILABLE,
-      );
-    }
-
-    // Check user exist
-    const userExist: boolean = await this.userService.checkUserExist(
-      getChatWithUserDto.userId,
-    );
-    if (!userExist) {
-      throw new HttpException(
-        new Error(ErrorType.BadFields),
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
     // Check user has chat with another user
     const [chatResponse] = await this.sequelize.query(`
       SELECT * FROM "chat"
       WHERE type = ${ChatType.user}
       AND EXISTS (
         SELECT id FROM "chat_user"   
-        WHERE user_id = ${user.id}
+        WHERE user_id = ${firstUserId}
         AND chat_id = "chat".id
       )
       AND EXISTS (
         SELECT id FROM "chat_user"   
-        WHERE user_id = ${getChatWithUserDto.userId}
+        WHERE user_id = ${secondUserId}
         AND chat_id = "chat".id
       )
       LIMIT 1
     `);
     const chats: Chat[] = chatResponse as Chat[];
+
+    let chat: Chat;
+
     if (chats.length) {
-      return chats[0];
+      chat = chats[0];
+    } else {
+      // Create new chat with user
+      chat = await this.chatRepository.create({
+        type: ChatType.user,
+      });
+      await this.chatUserRepository.create({
+        userId: firstUserId,
+        chatId: chat.id,
+      });
+      await this.chatUserRepository.create({
+        userId: secondUserId,
+        chatId: chat.id,
+      });
+      await this.messageService.sendMessage(
+        new User(),
+        {
+          uuid: uuidv4(),
+          text: '',
+          toChatId: chat.id,
+        },
+        SystemMessageType.ChatCreated,
+      );
     }
 
-    // Create new chat with user
-    const newChat: Chat = await this.chatRepository.create({
-      type: ChatType.user,
-    });
-    await this.chatUserRepository.create({
-      userId: user.id,
-      chatId: newChat.id,
-    });
-    await this.chatUserRepository.create({
-      userId: getChatWithUserDto.userId,
-      chatId: newChat.id,
-    });
-
-    return newChat;
+    return chat;
   }
 
   async getAllChatUsers(chatId: number): Promise<ChatUser[]> {
@@ -121,7 +113,7 @@ export class ChatService {
   async getAllChatsForUser(user: User, offsetDto: OffsetDto): Promise<Chat[]> {
     const [chatsResponse] = await this.sequelize.query(`
       SELECT *,
-      (SELECT login FROM "user" where id = (
+      (SELECT first_name FROM "user" where id = (
         CASE 
           WHEN users[1] = ${user.id} THEN users[2]
           ELSE users[1]
@@ -152,17 +144,11 @@ export class ChatService {
     return chats;
   }
 
-  async deleteChat(
-    user: User,
-    deleteDto: GetChatDto,
-  ): Promise<SuccessInterface> {
-    const chatExist: Chat = await this.checkUserExistInChat(user, deleteDto);
-    if (!chatExist) {
-      throw new HttpException(
-        new Error(ErrorType.BadFields),
-        HttpStatus.FORBIDDEN,
-      );
-    }
+  async deleteChat(chatId: number): Promise<SuccessInterface> {
+    const chatExist: Chat = await this.chatRepository.findOne({
+      where: { id: chatId },
+    });
+    if (!chatExist) return;
 
     const chatUsers: ChatUser[] = await this.chatUserRepository.findAll({
       attributes: ['chatId', 'userId'],
@@ -199,6 +185,27 @@ export class ChatService {
     });
 
     return { success: true };
+  }
+
+  async getChatWithTwoUsers(
+    firstUserId: number,
+    secondUserId: number,
+  ): Promise<Chat> {
+    const [chatsResponse] = await this.sequelize.query(`
+      SELECT * FROM
+      (SELECT *,
+        (SELECT ARRAY(SELECT user_id FROM "chat_user" WHERE chat_id = "chat".id)) as "users"
+        FROM "chat"
+      ) asd
+      WHERE users = ARRAY[${firstUserId}, ${secondUserId}]
+      OR users = ARRAY[${secondUserId}, ${firstUserId}]
+    `);
+    const chats: Chat[] = chatsResponse as Chat[];
+    if (chats.length) {
+      return chats[0];
+    } else {
+      return null;
+    }
   }
 
   async sendAllUnreceivedChats(user: User): Promise<SuccessInterface> {
@@ -250,7 +257,6 @@ export class ChatService {
     userId: number,
     type: ChatReceivedType,
   ): Promise<ChatReceived> {
-    console.log(chatId, userId, type);
     let chatReceived: ChatReceived = await this.chatReceivedRepository.findOne({
       where: { chatId, userId },
     });

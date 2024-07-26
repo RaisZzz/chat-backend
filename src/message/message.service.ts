@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Message } from './message.model';
+import { Message, SystemMessageType } from './message.model';
 import { SendMessageDto } from './dto/send-message.dto';
 import { User } from '../user/user.model';
 import { MessageSendService } from './services/message-send.service';
@@ -7,41 +7,53 @@ import { MessageSetUnreceivedService } from './services/message-set-unreceived.s
 import { SendUnreceivedMessagesService } from './services/send-unreceived-messages.service';
 import { SuccessInterface } from '../base/success.interface';
 import { SetMessageReceivedDto } from './dto/set-message-received.dto';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectModel as InjectMongooseModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { MessageReceived } from './message-received.model';
 import { GetMessagesDto } from './dto/get-messages.dto';
-import { ChatService } from 'src/chat/chat.service';
 import { Chat } from '../chat/chat.model';
+import { SetMessageLikeDto } from './dto/set-like.dto';
+import { Error, ErrorType } from '../error.class';
+import { InjectModel } from '@nestjs/sequelize';
+import { ChatUser } from '../chat/chat-user.model';
 
 @Injectable()
 export class MessageService {
   constructor(
-    @InjectModel(Message.name) private messageModel: Model<Message>,
-    @InjectModel(MessageReceived.name)
+    @InjectModel(Chat) private chatRepository: typeof Chat,
+    @InjectModel(ChatUser) private chatUserRepository: typeof ChatUser,
+    @InjectMongooseModel(Message.name) private messageModel: Model<Message>,
+    @InjectMongooseModel(MessageReceived.name)
     private messageReceivedModel: Model<MessageReceived>,
     private messageSendService: MessageSendService,
     private messageSetReceivedService: MessageSetUnreceivedService,
     private sendUnreceivedMessagesService: SendUnreceivedMessagesService,
-    private chatService: ChatService,
   ) {}
 
   sendMessage = async (
     user: User,
     sendMessageDto: SendMessageDto,
+    systemId: SystemMessageType = SystemMessageType.Default,
+    reportId: number | null = null,
+    photos: [Express.Multer.File] | null = null,
+    voice: [Express.Multer.File] | null = null,
   ): Promise<Message> =>
-    this.messageSendService.sendMessage(user, sendMessageDto);
+    this.messageSendService.sendMessage(
+      user,
+      sendMessageDto,
+      systemId,
+      reportId,
+      photos,
+      voice,
+    );
 
   sendUnreceivedMessages = async (userId: number): Promise<SuccessInterface> =>
     this.sendUnreceivedMessagesService.sendAll(userId);
 
   async getAll(user: User, getDto: GetMessagesDto): Promise<Message[]> {
-    const userExistInChat: Chat = await this.chatService.checkUserExistInChat(
-      user,
-      {
-        chatId: getDto.chatId,
-      },
-    );
+    const userExistInChat: ChatUser = await this.chatUserRepository.findOne({
+      where: { chatId: getDto.chatId, userId: user.id },
+    });
     if (!userExistInChat) {
       throw new HttpException('No', HttpStatus.FORBIDDEN);
     }
@@ -53,6 +65,45 @@ export class MessageService {
       null,
       { sort: { createdAt: -1 }, limit: 20, skip: getDto.offset },
     );
+  }
+
+  async setMessageLike(
+    user: User,
+    setLikeDto: SetMessageLikeDto,
+  ): Promise<SuccessInterface> {
+    const message: Message = await this.messageModel.findOne({
+      uuid: setLikeDto.messageUuid,
+    });
+    if (message.ownerId !== user.id) {
+      const chat: Chat = await this.chatRepository.findOne({
+        where: { id: message.chatId },
+      });
+      if (!chat) {
+        throw new HttpException(
+          new Error(ErrorType.Forbidden),
+          HttpStatus.FORBIDDEN,
+        );
+      }
+      const chatUser: ChatUser = await this.chatUserRepository.findOne({
+        where: { chatId: chat.id, userId: user.id },
+      });
+      if (!chatUser) {
+        throw new HttpException(
+          new Error(ErrorType.Forbidden),
+          HttpStatus.FORBIDDEN,
+        );
+      }
+    }
+
+    await this.messageModel.updateOne(
+      { uuid: message.uuid },
+      { liked: setLikeDto.like },
+    );
+    message.liked = setLikeDto.like;
+
+    this.messageSendService.sendMessageToAllUsersInChat(message);
+
+    return { success: true };
   }
 
   async setMessageReceived(

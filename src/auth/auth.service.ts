@@ -8,6 +8,7 @@ import { RegisterDto } from './dto/register.dto';
 import { JwtService } from '@nestjs/jwt';
 import { Error, ErrorType } from 'src/error.class';
 import { Response } from 'express';
+import { SmsService, SmsType } from '../sms/sms.service';
 
 export abstract class Tokens {
   readonly accessToken: string;
@@ -21,13 +22,30 @@ export abstract class AuthResponse {
   readonly user: User;
 }
 
+const userRegisterSmsTime = 600;
+
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User) private userRepository: typeof User,
     @InjectModel(UserRefresh) private userRefreshRepository: typeof UserRefresh,
     private jwtService: JwtService,
-  ) {}
+    private smsService: SmsService,
+  ) {
+    this.checkUnconfirmedUsers();
+  }
+
+  private async checkUnconfirmedUsers() {
+    const users: User[] = await this.userRepository.findAll({
+      attributes: ['id', 'createdAt'],
+      where: { code_confirmed: false },
+    });
+    for (const user of users) {
+      const today: number = Date.now();
+      const registerTime: number = 600 - (today - user.createdAt);
+      this.setUserDeleteTimeout(user, registerTime);
+    }
+  }
 
   async auth(user: User, ip: string, res: Response): Promise<AuthResponse> {
     return await this.authData(user, ip, res);
@@ -37,28 +55,61 @@ export class AuthService {
     registerDto: RegisterDto,
     ip: string,
     res: Response,
+    user: User | null,
   ): Promise<AuthResponse> {
-    const userExist: User = await this.userRepository.findOne({
-      where: {
-        login: registerDto.login,
-      },
-    });
-
-    if (userExist) {
-      throw new HttpException(
-        new Error(ErrorType.UserExist),
-        HttpStatus.FORBIDDEN,
-      );
-    }
+    let newUser: User | null = user;
 
     const hashPassword = await bcrypt.hash(registerDto.password, 5);
 
-    const user: User = await this.userRepository.create({
-      login: registerDto.login,
-      password: hashPassword,
-    });
+    if (newUser) {
+      if (newUser.sex !== registerDto.sex) {
+        await newUser.update({
+          familyPositionId: null,
+          organisationId: null,
+        });
+        await newUser.$set('placeWishes', []);
+      }
+      await newUser.update({
+        firstName: registerDto.firstName,
+        lastName: registerDto.lastName,
+        phone: registerDto.phone,
+        birthdate: registerDto.birthdate,
+        sex: registerDto.sex,
+        password: hashPassword,
+        platform: registerDto.platform,
+        v: registerDto.v,
+        device: registerDto.device,
+      });
+    } else {
+      const userExist: User = await this.userRepository.findOne({
+        where: { phone: registerDto.phone },
+      });
+      if (userExist) {
+        throw new HttpException(
+          new Error(ErrorType.UserExist),
+          HttpStatus.FORBIDDEN,
+        );
+      }
 
-    return await this.authData(user, ip, res);
+      newUser = await this.userRepository.create({
+        firstName: registerDto.firstName,
+        lastName: registerDto.lastName,
+        phone: registerDto.phone,
+        birthdate: registerDto.birthdate,
+        sex: registerDto.sex,
+        password: hashPassword,
+        platform: registerDto.platform,
+        v: registerDto.v,
+        device: registerDto.device,
+      });
+      this.setUserDeleteTimeout(newUser, userRegisterSmsTime);
+
+      const smsCode: string = this.generateSmsCode();
+      await newUser.update({ code: smsCode });
+      this.smsService.sendSmsCode(newUser.phone, SmsType.auth, smsCode, 'ru');
+    }
+
+    return await this.authData(newUser, ip, res);
   }
 
   async login(
@@ -68,9 +119,7 @@ export class AuthService {
   ): Promise<AuthResponse> {
     // Check that user exist
     const user: User = await this.userRepository.findOne({
-      where: {
-        login: loginDto.login,
-      },
+      where: { phone: loginDto.phone },
     });
 
     if (!user) {
@@ -124,6 +173,36 @@ export class AuthService {
     }
   }
 
+  private generateSmsCode(): string {
+    // TODO: REMOVE TEST
+    return '0000';
+    let code = '';
+    for (let i = 0; i < 4; i++) {
+      const number = Math.round(Math.random() * 10);
+      code += number >= 0 && number <= 9 ? number : 9;
+    }
+    if (code.length !== 4) {
+      code = '4023';
+    }
+    return code;
+  }
+
+  private setUserDeleteTimeout(user: User, time: number) {
+    setTimeout(async () => {
+      const userCheck: User = await this.userRepository.findOne({
+        where: { id: user.id },
+      });
+
+      if (!userCheck || !userCheck.code_confirmed) {
+        try {
+          await userCheck.destroy();
+        } catch (e) {
+          console.log(e);
+        }
+      }
+    }, time * 1000);
+  }
+
   private async authData(
     user: User,
     ip: string,
@@ -164,7 +243,7 @@ export class AuthService {
       secret: process.env.JWT_ACCESS_SECRET,
     };
 
-    const payload = { sub: user.id, login: user.login };
+    const payload = { id: user.id };
     const refreshOptions = {
       expiresIn: parseInt(process.env.JWT_REFRESH_EXPIRE) || 0,
       secret: process.env.JWT_REFRESH_SECRET,
