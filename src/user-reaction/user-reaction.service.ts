@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { UserReaction } from './user-reaction.model';
-import { User } from '../user/user.model';
+import { excludedUserAttributes, User } from '../user/user.model';
 import { SendUserReactionDto } from './dto/send-user-reaction.dto';
 import { Error, ErrorType } from '../error.class';
 import { ChatService } from '../chat/chat.service';
@@ -14,6 +14,7 @@ import { SuccessInterface } from '../base/success.interface';
 import { SetUserReactionReceivedDto } from './dto/set-received.dto';
 import { SocketGateway } from '../websockets/socket.gateway';
 import { Op } from 'sequelize';
+import { OffsetDto } from '../base/offset.dto';
 
 @Injectable()
 export class UserReactionService {
@@ -26,6 +27,37 @@ export class UserReactionService {
     private chatService: ChatService,
     private socketGateway: SocketGateway,
   ) {}
+
+  async getAllUserReactions(
+    user: User,
+    offsetDto: OffsetDto,
+  ): Promise<UserReaction[]> {
+    // Get only incoming likes reactions
+    const userReactions: UserReaction[] =
+      await this.userReactionRepository.findAll({
+        where: {
+          recipientId: user.id,
+          isLiked: true,
+        },
+        offset: offsetDto.offset,
+        limit: 20,
+      });
+
+    for (let i = 0; i < userReactions.length; i++) {
+      const userReaction: UserReaction = userReactions[i];
+      const anotherUserId: number =
+        userReaction.recipientId === user.id
+          ? userReaction.senderId
+          : userReaction.recipientId;
+
+      userReaction['user'] = await this.userRepository.findOne({
+        attributes: { exclude: excludedUserAttributes },
+        where: { id: anotherUserId },
+      });
+    }
+
+    return userReactions;
+  }
 
   async send(user: User, sendDto: SendUserReactionDto): Promise<UserReaction> {
     if (typeof sendDto.superLikeMsg === 'string') {
@@ -64,7 +96,7 @@ export class UserReactionService {
 
     // Check liked user exist
     const recipientExist: User = await this.userRepository.findOne({
-      attributes: { exclude: ['phone', 'password', 'code'] },
+      attributes: { exclude: excludedUserAttributes },
       where: { id: sendDto.toUserId },
     });
     if (!recipientExist) {

@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { User } from './user.model';
+import { excludedUserAttributes, User } from './user.model';
 import { InjectModel } from '@nestjs/sequelize';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Op } from 'sequelize';
@@ -317,7 +317,7 @@ export class UserService {
           [this.sequelize.literal(`${distanceQuery}`), 'distance'],
           [this.sequelize.literal(ageQuery), 'age'],
         ],
-        exclude: ['password', 'code'],
+        exclude: excludedUserAttributes,
       },
       include: includeQuery,
       where: whereQuery,

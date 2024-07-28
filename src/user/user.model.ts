@@ -29,6 +29,17 @@ import { Children } from '../children/children.model';
 import { Image } from '../image/image.model';
 import { UserVerificationImages } from '../image/user-verification-image.model';
 
+export const excludedUserAttributes: string[] = [
+  'phone',
+  'password',
+  'code',
+  'codeConfirmed',
+  'superLikes',
+  'returns',
+  'device',
+  'v',
+];
+
 @Table({ tableName: 'user', underscored: true })
 export class User extends Model<User, CreateUserDto> {
   @ApiProperty({ example: 1, description: 'ID пользователя' })

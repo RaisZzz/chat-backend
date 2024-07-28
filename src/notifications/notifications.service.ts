@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { CreateNotificationDto } from './dto/send-notification.dto';
 import { FirebaseService } from '../firebase/firebase.service';
 import { SocketGateway } from '../websockets/socket.gateway';
-import { User } from '../user/user.model';
+import { excludedUserAttributes, User } from '../user/user.model';
 import { InjectModel } from '@nestjs/sequelize';
 import { Chat } from 'src/chat/chat.model';
 import { Notification } from './notifications.model';
@@ -110,7 +110,7 @@ export class NotificationsService {
         const userFrom = await this.userRepository.findOne({
           where: { id: notification.from },
           include: { all: true },
-          attributes: { exclude: ['password', 'code'] },
+          attributes: { exclude: excludedUserAttributes },
         });
 
         if (userFrom) {

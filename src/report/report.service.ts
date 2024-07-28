@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { SendReportDto } from './dto/send-report.dto';
 import { InjectModel } from '@nestjs/sequelize';
 import { Report } from './report.model';
-import { User } from '../user/user.model';
+import { excludedUserAttributes, User } from '../user/user.model';
 import { Chat } from '../chat/chat.model';
 import { Op } from 'sequelize';
 import { ChatService } from '../chat/chat.service';
@@ -103,12 +103,12 @@ export class ReportService {
             {
               model: User,
               as: 'owner',
-              attributes: { exclude: ['password'] },
+              attributes: { exclude: excludedUserAttributes },
             },
             {
               model: User,
               as: 'reported',
-              attributes: { exclude: ['password'] },
+              attributes: { exclude: excludedUserAttributes },
             },
           ],
         })
@@ -157,12 +157,12 @@ export class ReportService {
         {
           model: User,
           as: 'owner',
-          attributes: { exclude: ['password'] },
+          attributes: { exclude: excludedUserAttributes },
         },
         {
           model: User,
           as: 'reported',
-          attributes: { exclude: ['password'] },
+          attributes: { exclude: excludedUserAttributes },
           where: userWhere,
         },
       ],
