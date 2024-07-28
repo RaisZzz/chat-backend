@@ -39,7 +39,7 @@ export class UserReactionService {
           recipientId: user.id,
           isLiked: true,
         },
-        offset: offsetDto.offset,
+        offset: parseInt(offsetDto.offset.toString()) || 0,
         limit: 20,
       });
 
@@ -50,10 +50,12 @@ export class UserReactionService {
           ? userReaction.senderId
           : userReaction.recipientId;
 
-      userReaction['user'] = await this.userRepository.findOne({
+      const anotherUser: User = await this.userRepository.findOne({
         attributes: { exclude: excludedUserAttributes },
         where: { id: anotherUserId },
       });
+      userReaction['user'] = anotherUser;
+      userReaction.dataValues['user'] = anotherUser;
     }
 
     return userReactions;
@@ -75,19 +77,8 @@ export class UserReactionService {
       );
     }
 
-    // If like check message exist
-    if (
-      sendDto.isLiked &&
-      (!sendDto.superLikeMsg || !sendDto.superLikeMsg.length)
-    ) {
-      throw new HttpException(
-        new Error(ErrorType.BadFields, { field: 'superLikeMsg' }),
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
     // Check user has super likes on balance
-    if (sendDto.isLiked && user.superLikes <= 0) {
+    if (sendDto.superLikeMsg && user.superLikes <= 0) {
       throw new HttpException(
         new Error(ErrorType.SuperLikesCount),
         HttpStatus.FORBIDDEN,
@@ -106,13 +97,29 @@ export class UserReactionService {
       );
     }
 
+    // If not super like, then check another user like exist
+    const recipientReaction: UserReaction =
+      await this.userReactionRepository.findOne({
+        where: { senderId: sendDto.toUserId, recipientId: user.id },
+      });
+
+    if (
+      sendDto.isLiked &&
+      !sendDto.superLikeMsg &&
+      (!recipientReaction || !recipientReaction.isLiked)
+    ) {
+      throw new HttpException(
+        new Error(ErrorType.BadFields),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     // Create or update reaction
     let reaction: UserReaction = await this.userReactionRepository.findOne({
       where: { senderId: user.id, recipientId: sendDto.toUserId },
     });
 
     if (reaction) {
-      console.log(Date.now());
       reaction.changed('updatedAt', true);
       await reaction.update({
         isLiked: sendDto.isLiked,
@@ -127,11 +134,6 @@ export class UserReactionService {
         superLikeMsg: sendDto.superLikeMsg,
       });
     }
-
-    const recipientReaction: UserReaction =
-      await this.userReactionRepository.findOne({
-        where: { senderId: sendDto.toUserId, recipientId: user.id },
-      });
 
     if (!sendDto.isLiked) {
       // Delete chat if dislike

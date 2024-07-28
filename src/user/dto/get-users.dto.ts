@@ -261,10 +261,8 @@ export class GetUsersDto {
   })
   @Transform((value) => {
     if (!Array.isArray(value.value)) {
-      console.log(1);
       return value.value ? JSON.parse(value.value) || [] : [];
     } else {
-      console.log(2);
       return value.value;
     }
   })
