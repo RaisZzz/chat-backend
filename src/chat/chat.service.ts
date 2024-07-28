@@ -155,6 +155,8 @@ export class ChatService {
     });
     if (!chatExist) return;
 
+    this.messageService.deleteAllMessageReceivedData(chatExist.id);
+
     const chatUsers: ChatUser[] = await this.chatUserRepository.findAll({
       attributes: ['chatId', 'userId'],
       where: {

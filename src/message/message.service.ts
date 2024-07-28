@@ -146,4 +146,8 @@ export class MessageService {
 
     return { success: true };
   }
+
+  async deleteAllMessageReceivedData(chatId: number): Promise<void> {
+    await this.messageReceivedModel.deleteMany({ chatId });
+  }
 }
