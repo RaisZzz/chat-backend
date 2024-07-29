@@ -3,7 +3,7 @@ import { InjectModel as InjectMongooseModel } from '@nestjs/mongoose';
 import { GetChatDto } from './dto/get-chat.dto';
 import { ChatUser } from './chat-user.model';
 import { User } from '../user/user.model';
-import { Chat, ChatType } from './chat.model';
+import { Chat, chatInfoPsqlQuery, ChatType } from './chat.model';
 import { Sequelize } from 'sequelize-typescript';
 import { Injectable } from '@nestjs/common';
 import { OffsetDto } from '../base/offset.dto';
@@ -118,12 +118,7 @@ export class ChatService {
   async getAllChatsForUser(user: User, offsetDto: OffsetDto): Promise<Chat[]> {
     const [chatsResponse] = await this.sequelize.query(`
       SELECT *,
-      (SELECT first_name FROM "user" where id = (
-        CASE 
-          WHEN users[1] = ${user.id} THEN users[2]
-          ELSE users[1]
-        END
-      )) as "title"
+      ${chatInfoPsqlQuery(user.id)}
       FROM
       (SELECT *,
         (SELECT ARRAY(SELECT user_id FROM "chat_user" WHERE chat_id = "chat".id)) as "users"

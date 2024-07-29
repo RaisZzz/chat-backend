@@ -231,10 +231,30 @@ export class UserReactionService {
       );
     }
 
-    for (let i = 0; i < Math.ceil(userReactions.length / 20); i++) {
+    const userReactionsIds: number[] = userReactions.map((r) =>
+      user.id === r.recipientId ? r.senderId : r.recipientId,
+    );
+    const userReactionsUsers: User[] = await this.userRepository.findAll({
+      attributes: { exclude: excludedUserAttributes },
+      where: { id: { [Op.in]: userReactionsIds } },
+    });
+    const userReactionsWithUser: UserReaction[] = userReactions.map(
+      (reaction: UserReaction) => {
+        const anotherUserId: number =
+          user.id === reaction.recipientId
+            ? reaction.senderId
+            : reaction.recipientId;
+        reaction.dataValues['user'] = userReactionsUsers.find(
+          (u) => u.id === anotherUserId,
+        );
+        return reaction;
+      },
+    );
+
+    for (let i = 0; i < Math.ceil(userReactionsWithUser.length / 20); i++) {
       this.socketGateway.sendUserReaction(
         user.id,
-        [...userReactions].splice(i * 20, 20),
+        [...userReactionsWithUser].splice(i * 20, 20),
       );
     }
 

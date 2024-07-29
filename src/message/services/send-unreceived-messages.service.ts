@@ -5,7 +5,7 @@ import { MessageReceived } from '../message-received.model';
 import { InjectModel as InjectMongooseModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { SocketGateway } from '../../websockets/socket.gateway';
-import { Chat } from '../../chat/chat.model';
+import { Chat, chatInfoPsqlQuery } from '../../chat/chat.model';
 import { Sequelize } from 'sequelize-typescript';
 
 @Injectable()
@@ -33,12 +33,7 @@ export class SendUnreceivedMessagesService {
     // Get chats info
     const [chatsResponse] = await this.sequelize.query(`
       SELECT *,
-      (SELECT first_name FROM "user" where id = (
-        CASE 
-          WHEN users[1] = ${userId} THEN users[2]
-          ELSE users[1]
-        END
-      )) as "title"
+      ${chatInfoPsqlQuery(userId)}
       FROM
       (SELECT *,
         (SELECT ARRAY(SELECT user_id FROM "chat_user" WHERE chat_id = "chat".id)) as "users"

@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { Message, SystemMessageType } from '../message.model';
 import { SendMessageDto } from '../dto/send-message.dto';
 import { User } from '../../user/user.model';
-import { Chat } from '../../chat/chat.model';
+import { Chat, chatInfoPsqlQuery } from '../../chat/chat.model';
 import { Error, ErrorType } from '../../error.class';
 import { SocketGateway } from '../../websockets/socket.gateway';
 import { ChatUser } from '../../chat/chat-user.model';
@@ -41,20 +41,24 @@ export class MessageSendService {
     photos: [Express.Multer.File] | null = null,
     voice: [Express.Multer.File] | null = null,
   ): Promise<Message> {
-    sendMessageDto.text = sendMessageDto.text
-      .trim()
-      .replace(/\n+/g, '\n')
-      .replace(/ +/g, ' ');
+    if (sendMessageDto.text) {
+      sendMessageDto.text = sendMessageDto.text
+        .trim()
+        .replace(/\n+/g, '\n')
+        .replace(/ +/g, ' ');
+    }
+
+    console.log(photos);
 
     if (
-      !sendMessageDto.text.length &&
+      !sendMessageDto.text?.length &&
       !(Array.isArray(photos) && photos.length) &&
       !(Array.isArray(voice) && voice.length) &&
       !systemId &&
       !reportId
     ) {
       throw new HttpException(
-        new Error(ErrorType.BadFields),
+        new Error(ErrorType.BadFields, { fields: 'text, photos, voice' }),
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -130,12 +134,7 @@ export class MessageSendService {
       // Get chat info
       const [chatInfoRes] = await this.sequelize.query(`
         SELECT *,
-        (SELECT first_name FROM "user" where id = (
-          CASE 
-            WHEN users[1] = ${chatUsers[i].userId} THEN users[2]
-            ELSE users[1]
-          END
-        )) as "title"
+        ${chatInfoPsqlQuery(chatUsers[i].userId)}
         FROM
         (SELECT *,
           (SELECT ARRAY(SELECT user_id FROM "chat_user" WHERE chat_id = "chat".id)) as "users"
