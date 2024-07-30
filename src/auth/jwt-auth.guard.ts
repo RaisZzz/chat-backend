@@ -40,6 +40,7 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     request.user = await this.userRepository.findOne({
+      include: { all: true },
       where: { id: user?.id },
     });
     request.token = token;

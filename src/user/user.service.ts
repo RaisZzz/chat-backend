@@ -99,10 +99,20 @@ export class UserService {
       attributes: ['reportedId'],
       where: { ownerId: user.id },
     });
+    const [chatsWithUser] = await this.sequelize.query(`
+      SELECT user_id FROM "chat_user"
+      WHERE user_id <> ${user.id}
+      AND chat_id IN (
+        SELECT chat_id FROM "chat_user"
+        WHERE user_id = ${user.id}
+      )
+    `);
+
     const userIds: number[] = [
       user.id,
       ...userReactions.map((r) => r.recipientId),
       ...userReports.map((r) => r.reportedId),
+      ...chatsWithUser.map((c) => parseInt(c['user_id']) || 0),
     ];
     if (Array.isArray(getUsersDto.usersIds)) {
       getUsersDto.usersIds.forEach((id) => {
@@ -118,6 +128,7 @@ export class UserService {
       step: 5,
     };
 
+    // Filter
     let placeWishesWhere;
 
     if (

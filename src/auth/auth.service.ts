@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcryptjs';
 import { InjectModel } from '@nestjs/sequelize';
-import { User } from 'src/user/user.model';
+import { excludedUserAttributes, User } from 'src/user/user.model';
 import { UserRefresh } from 'src/user/user-refresh.model';
 import { RegisterDto } from './dto/register.dto';
 import { JwtService } from '@nestjs/jwt';
@@ -10,6 +10,30 @@ import { Error, ErrorType } from 'src/error.class';
 import { Response } from 'express';
 import { SmsService, SmsType } from '../sms/sms.service';
 import { City } from '../city/city.model';
+import { Education } from '../education/education.model';
+import { Speciality } from '../speciality/speciality.model';
+import { OrganisationType } from '../organisation-type/organisation.model';
+import { FamilyPosition } from '../family-position/family-position.model';
+import { Parents } from '../parents/parents.model';
+import { Religion } from '../religion/religion.model';
+import { PlaceWish } from '../place-wish/place-wish.model';
+import { Interest } from '../interest/interest.model';
+import { Language } from '../language/language.model';
+import { Children } from '../children/children.model';
+
+abstract class AuthData {
+  readonly cities: City[];
+  readonly educations: Education[];
+  readonly specialities: Speciality[];
+  readonly organisationTypes: OrganisationType[];
+  readonly familyPositions: FamilyPosition[];
+  readonly parents: Parents[];
+  readonly religions: Religion[];
+  readonly placeWishes: PlaceWish[];
+  readonly interests: Interest[];
+  readonly languages: Language[];
+  readonly childrens: Children[];
+}
 
 export abstract class Tokens {
   readonly accessToken: string;
@@ -20,23 +44,13 @@ export abstract class AuthResponse {
   readonly accessToken: string;
   readonly refreshToken: string;
   readonly user: User;
-  readonly data: Record<string, Record<string, any>[]>;
+  readonly data: AuthData;
 }
 
 const userRegisterSmsTime = 600;
 
 @Injectable()
 export class AuthService {
-  constructor(
-    @InjectModel(User) private userRepository: typeof User,
-    @InjectModel(City) private cityRepository: typeof City,
-    @InjectModel(UserRefresh) private userRefreshRepository: typeof UserRefresh,
-    private jwtService: JwtService,
-    private smsService: SmsService,
-  ) {
-    this.checkUnconfirmedUsers();
-  }
-
   private async checkUnconfirmedUsers() {
     const users: User[] = await this.userRepository.findAll({
       attributes: ['id', 'createdAt'],
@@ -49,10 +63,58 @@ export class AuthService {
     }
   }
 
-  private async getDataItems(): Promise<Record<string, Record<string, any>[]>> {
-    const cities: City[] = await this.cityRepository.findAll();
+  constructor(
+    @InjectModel(User) private userRepository: typeof User,
+    @InjectModel(UserRefresh) private userRefreshRepository: typeof UserRefresh,
+    private jwtService: JwtService,
+    private smsService: SmsService,
 
-    return { cities };
+    @InjectModel(City) private cityRepository: typeof City,
+    @InjectModel(Education) private educationRepository: typeof Education,
+    @InjectModel(Speciality) private specialityRepository: typeof Speciality,
+    @InjectModel(OrganisationType)
+    private organisationTypeRepository: typeof OrganisationType,
+    @InjectModel(FamilyPosition)
+    private familyPositionRepository: typeof FamilyPosition,
+    @InjectModel(Parents) private parentsRepository: typeof Parents,
+    @InjectModel(Religion) private religionRepository: typeof Religion,
+    @InjectModel(PlaceWish) private placeWishRepository: typeof PlaceWish,
+    @InjectModel(Interest) private interestRepository: typeof Interest,
+    @InjectModel(Language) private languageRepository: typeof Language,
+    @InjectModel(Children) private childrenRepository: typeof Children,
+  ) {
+    this.checkUnconfirmedUsers();
+  }
+
+  private async getDataItems(): Promise<AuthData> {
+    const cities: City[] = await this.cityRepository.findAll();
+    const educations: Education[] = await this.educationRepository.findAll();
+    const specialities: Speciality[] =
+      await this.specialityRepository.findAll();
+    const organisationTypes: OrganisationType[] =
+      await this.organisationTypeRepository.findAll();
+    const familyPositions: FamilyPosition[] =
+      await this.familyPositionRepository.findAll();
+    const parents: Parents[] = await this.parentsRepository.findAll();
+    const religions: Religion[] = await this.religionRepository.findAll();
+    const placeWishes: PlaceWish[] = await this.placeWishRepository.findAll();
+    const interests: Interest[] = await this.interestRepository.findAll();
+    const languages: Language[] = await this.languageRepository.findAll();
+    const childrens: Children[] = await this.childrenRepository.findAll();
+
+    return {
+      cities,
+      educations,
+      specialities,
+      organisationTypes,
+      familyPositions,
+      parents,
+      religions,
+      placeWishes,
+      interests,
+      languages,
+      childrens,
+    };
   }
 
   async auth(user: User, ip: string, res: Response): Promise<AuthResponse> {
@@ -90,6 +152,7 @@ export class AuthService {
       });
     } else {
       const userExist: User = await this.userRepository.findOne({
+        include: { all: true },
         where: { phone: registerDto.phone },
       });
       if (userExist) {
@@ -127,6 +190,7 @@ export class AuthService {
   ): Promise<AuthResponse> {
     // Check that user exist
     const user: User = await this.userRepository.findOne({
+      include: { all: true },
       where: { phone: loginDto.phone },
     });
 
@@ -224,7 +288,9 @@ export class AuthService {
       httpOnly: true,
     });
 
-    delete user.dataValues.password;
+    excludedUserAttributes.forEach(
+      (attribute) => delete user.dataValues[attribute],
+    );
 
     return {
       accessToken: tokens.accessToken,

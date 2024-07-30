@@ -34,8 +34,6 @@ export const excludedUserAttributes: string[] = [
   'password',
   'code',
   'codeConfirmed',
-  'superLikes',
-  'returns',
   'device',
   'v',
 ];
