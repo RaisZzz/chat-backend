@@ -7,10 +7,13 @@ import { Model } from 'mongoose';
 import { SocketGateway } from '../../websockets/socket.gateway';
 import { Chat, chatInfoPsqlQuery } from '../../chat/chat.model';
 import { Sequelize } from 'sequelize-typescript';
+import { InjectModel } from '@nestjs/sequelize';
+import { Voice } from '../../voice/voice.model';
 
 @Injectable()
 export class SendUnreceivedMessagesService {
   constructor(
+    @InjectModel(Voice) private voiceRepository: typeof Voice,
     @InjectMongooseModel(Message.name) private messageModel: Model<Message>,
     @InjectMongooseModel(MessageReceived.name)
     private messageReceivedModel: Model<MessageReceived>,
@@ -47,9 +50,14 @@ export class SendUnreceivedMessagesService {
       return { ...m }['_doc'];
     });
 
-    messagesWithChat.forEach((m) => {
+    for (const m of messagesWithChat) {
       m['chat'] = chats.find((c) => c.id === m.chatId);
-    });
+      if (m.voiceId) {
+        m['voice'] = await this.voiceRepository.findOne({
+          where: { id: m.voiceId },
+        });
+      }
+    }
 
     // Send messages
     for (let i = 0; i < Math.ceil(messagesWithChat.length / 20); i++) {

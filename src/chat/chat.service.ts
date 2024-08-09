@@ -16,6 +16,7 @@ import { Op } from 'sequelize';
 import { MessageReceived } from '../message/message-received.model';
 import { MessageService } from '../message/message.service';
 import { v4 as uuidv4 } from 'uuid';
+import { Voice } from '../voice/voice.model';
 
 @Injectable()
 export class ChatService {
@@ -25,6 +26,7 @@ export class ChatService {
     @InjectMongooseModel(MessageReceived.name)
     private messageReceivedModel: Model<MessageReceived>,
     @InjectModel(Chat) private chatRepository: typeof Chat,
+    @InjectModel(Voice) private voiceRepository: typeof Voice,
     @InjectModel(ChatUser) private chatUserRepository: typeof ChatUser,
     @InjectModel(ChatReceived)
     private chatReceivedRepository: typeof ChatReceived,
@@ -132,13 +134,23 @@ export class ChatService {
 
     for (let i = 0; i < chats.length; i++) {
       const chat: Chat = chats[i];
-      chat['lastMessage'] = await this.messageModel.findOne(
+
+      const message = await this.messageModel.findOne(
         {
           chatId: chat.id,
         },
         null,
         { sort: { createdAt: -1 } },
       );
+      if (message && message.voiceId) {
+        const messageJson = { ...message }['_doc'];
+        messageJson['voice'] = (
+          await this.voiceRepository.findOne({
+            where: { id: messageJson.voiceId },
+          })
+        ).toJSON();
+        chat['lastMessage'] = messageJson;
+      }
     }
 
     return chats;

@@ -34,6 +34,7 @@ import { UserReaction } from './user-reaction/user-reaction.model';
 import { Report } from './report/report.model';
 import { ReportModule } from './report/report.module';
 import { UserReactionReceived } from './user-reaction/user-reaction-received.model';
+import { VoiceModule } from './voice/voice.module';
 
 @Module({
   imports: [
@@ -100,6 +101,7 @@ import { UserReactionReceived } from './user-reaction/user-reaction-received.mod
     MessageModule,
     UserReactionModule,
     ReportModule,
+    VoiceModule,
   ],
 })
 export class AppModule {}

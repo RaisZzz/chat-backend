@@ -1,11 +1,10 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Message, messageModel } from './message.model';
 import { MessageService } from './message.service';
 import { MessageController } from './message.controller';
 import { UserModule } from '../user/user.module';
 import { AuthModule } from '../auth/auth.module';
-import { ChatModule } from '../chat/chat.module';
 import {
   MessageReceived,
   messageReceivedModel,
@@ -21,10 +20,11 @@ import { ImageModule } from '../image/image.module';
 import { VoiceModule } from '../voice/voice.module';
 import { ChatUser } from '../chat/chat-user.model';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { Voice } from '../voice/voice.model';
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([User, Chat, ChatUser]),
+    SequelizeModule.forFeature([User, Chat, ChatUser, Voice]),
     MongooseModule.forFeature([
       {
         name: Message.name,

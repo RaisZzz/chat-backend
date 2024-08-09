@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  StreamableFile,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Voice } from './voice.model';
 import { readFileSync, unlinkSync, writeFileSync } from 'fs';
@@ -14,6 +19,7 @@ const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const ffmpeg = require('fluent-ffmpeg');
 ffmpeg.setFfmpegPath(ffmpegPath);
+import { createReadStream } from 'fs';
 
 @Injectable()
 export class VoiceService {
@@ -26,14 +32,8 @@ export class VoiceService {
       },
     });
 
-    const voiceBuffer: Buffer = readFileSync(
-      join(process.cwd(), `/${voice.path}`),
-    );
-
-    const stream: Duplex = new Duplex();
-    stream.push(voiceBuffer);
-    stream.push(null);
-    return stream.pipe(res);
+    const file = createReadStream(join(process.cwd(), `/${voice.path}`));
+    file.pipe(res);
   }
 
   async saveFile(voice: Express.Multer.File, key?: string | number) {
@@ -54,7 +54,7 @@ export class VoiceService {
       );
     }
 
-    const waveFormLines: number[] = await getAudioSamplesFormFilePath(path, 50);
+    const waveFormLines: number[] = await getAudioSamplesFormFilePath(path, 14);
 
     // Save voice info to database
     return await this.voiceRepository.create({

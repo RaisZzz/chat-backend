@@ -6,7 +6,7 @@ import { GetVoiceDto } from './dto/get-voice.dto';
 export class VoiceController {
   constructor(private voiceService: VoiceService) {}
 
-  @Get('')
+  @Get('/')
   // @UseGuards(JwtAuthGuard, SmsGuard)
   async getVoice(@Query() getVoiceDto: GetVoiceDto, @Res() res) {
     return this.voiceService.getFile(getVoiceDto, res);

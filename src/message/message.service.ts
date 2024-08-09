@@ -16,11 +16,13 @@ import { SetMessageLikeDto } from './dto/set-like.dto';
 import { Error, ErrorType } from '../error.class';
 import { InjectModel } from '@nestjs/sequelize';
 import { ChatUser } from '../chat/chat-user.model';
+import { Voice } from '../voice/voice.model';
 
 @Injectable()
 export class MessageService {
   constructor(
     @InjectModel(Chat) private chatRepository: typeof Chat,
+    @InjectModel(Voice) private voiceRepository: typeof Voice,
     @InjectModel(ChatUser) private chatUserRepository: typeof ChatUser,
     @InjectMongooseModel(Message.name) private messageModel: Model<Message>,
     @InjectMongooseModel(MessageReceived.name)
@@ -58,13 +60,28 @@ export class MessageService {
       throw new HttpException('No', HttpStatus.FORBIDDEN);
     }
 
-    return this.messageModel.find(
+    const messages: Message[] = await this.messageModel.find(
       {
         chatId: getDto.chatId,
       },
       null,
       { sort: { createdAt: -1 }, limit: 20, skip: getDto.offset },
     );
+    const newMessages = messages.map((m) => {
+      return { ...m }['_doc'];
+    });
+
+    for (const m of newMessages) {
+      if (m.voiceId) {
+        m['voice'] = (
+          await this.voiceRepository.findOne({
+            where: { id: m.voiceId },
+          })
+        ).toJSON();
+      }
+    }
+
+    return newMessages;
   }
 
   async setMessageLike(

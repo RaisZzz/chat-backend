@@ -23,6 +23,7 @@ export class MessageSendService {
   constructor(
     @InjectModel(User) private userRepository: typeof User,
     @InjectModel(Chat) private chatRepository: typeof Chat,
+    @InjectModel(Voice) private voiceRepository: typeof Voice,
     @InjectModel(ChatUser) private chatUserRepository: typeof ChatUser,
     @InjectMongooseModel(Message.name) private messageModel: Model<Message>,
     private socketGateway: SocketGateway,
@@ -48,7 +49,7 @@ export class MessageSendService {
         .replace(/ +/g, ' ');
     }
 
-    console.log(photos);
+    console.log(sendMessageDto.text, photos, voice);
 
     if (
       !sendMessageDto.text?.length &&
@@ -145,6 +146,12 @@ export class MessageSendService {
       `);
       const chat: Chat = chatInfoRes[0] as Chat;
       message['chat'] = chat;
+      if (message.voiceId) {
+        message['voice'] = await this.voiceRepository.findOne({
+          where: { id: message.voiceId },
+        });
+      }
+
       this.socketGateway.sendMessage(userId, [message]);
 
       if (userId !== message.ownerId) {
