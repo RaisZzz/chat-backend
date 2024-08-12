@@ -14,6 +14,8 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { RedisService } from '../redis/redis.service';
 import { Report } from '../report/report.model';
 import { Notification } from '../notifications/notifications.model';
+import { Chat } from '../chat/chat.model';
+import { Sequelize } from 'sequelize-typescript';
 
 @WebSocketGateway({
   pingTimeout: 1000,
@@ -28,6 +30,7 @@ export class SocketGateway
     private jwtService: JwtService,
     private redisService: RedisService,
     @InjectModel(User) private userRepository: typeof User,
+    private sequelize: Sequelize,
   ) {}
 
   @WebSocketServer()
@@ -54,6 +57,7 @@ export class SocketGateway
       const userId: string = this.getUserIdBySocket(client);
       delete this.connectedUsers[userId];
       this.redisService.hSet(String(userId), 'online', String(Date.now()));
+      this.sendUserOnline(parseInt(userId), Date.now());
     } catch (e) {}
   }
 
@@ -83,11 +87,9 @@ export class SocketGateway
 
       if (userExist) {
         this.connectedUsers[String(jwtUser.id)] = client.id;
-        this.redisService.hSet(
-          String(jwtUser.id),
-          'online',
-          String(Date.now()),
-        );
+        const newOnline = String(Date.now());
+        this.redisService.hSet(String(jwtUser.id), 'online', newOnline);
+        this.sendUserOnline(jwtUser.id, true);
         console.log(
           `
             User #${jwtUser.id} connected with:
@@ -133,6 +135,23 @@ export class SocketGateway
 
   sendNotification = (notification: Notification) =>
     this.sendSocket('notification', notification.to, notification.toJSON());
+
+  async sendUserOnline(userId: number, online: any) {
+    const [userIds] = await this.sequelize.query(`
+      SELECT user_id FROM "chat_user"
+      WHERE chat_id IN (
+        SELECT chat_id FROM "chat_user"
+        WHERE user_id = ${userId}
+      )
+      AND user_id <> ${userId}
+    `);
+    for (const toUser of userIds) {
+      this.sendSocket('userOnline', parseInt(String(toUser['user_id'])) || 0, {
+        userId,
+        online,
+      });
+    }
+  }
 
   afterInit = (server: Server): void => this.log('INIT');
 

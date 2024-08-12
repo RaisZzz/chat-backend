@@ -118,7 +118,7 @@ export class MessageService {
     );
     message.liked = setLikeDto.like;
 
-    this.messageSendService.sendMessageToAllUsersInChat(message);
+    this.messageSendService.sendMessageToAllUsersInChat({ ...message }['_doc']);
 
     return { success: true };
   }

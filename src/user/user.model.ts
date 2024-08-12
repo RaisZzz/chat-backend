@@ -33,7 +33,6 @@ export const excludedUserAttributes: string[] = [
   'phone',
   'password',
   'code',
-  'codeConfirmed',
   'device',
   'v',
 ];

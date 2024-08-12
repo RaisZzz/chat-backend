@@ -482,6 +482,26 @@ export class UserService {
     return file;
   }
 
+  async getAnotherUsersOnline(user: User): Promise<Record<number, any>> {
+    const usersOnline: Record<number, any> = {};
+
+    const [userIds] = await this.sequelize.query(`
+      SELECT user_id FROM "chat_user"
+      WHERE chat_id IN (
+        SELECT chat_id FROM "chat_user"
+        WHERE user_id = ${user.id}
+      )
+      AND user_id <> ${user.id}
+    `);
+    for (const toUser of userIds) {
+      usersOnline[toUser['user_id']] = await this.getUserOnline(
+        toUser['user_id'],
+      );
+    }
+
+    return usersOnline;
+  }
+
   private async getUserOnline(userId: number): Promise<boolean | number> {
     if (this.socketGateway.getUserConnected(userId)) return true;
 

@@ -111,11 +111,12 @@ export class MessageSendService {
     const message = new this.messageModel(messageDto);
     await message.save();
     const messageJson = message.toJSON();
-    this.sendMessageToAllUsersInChat(messageJson);
+    this.sendMessageToAllUsersInChat({ ...messageJson });
     return message;
   }
 
   async sendMessageToAllUsersInChat(message: Message): Promise<void> {
+    console.log('SEND MESSAGE TO ALL', message);
     const user: User = await this.userRepository.findOne({
       attributes: ['firstName', 'lastName', 'sex'],
       where: { id: message.ownerId },
@@ -147,9 +148,11 @@ export class MessageSendService {
       const chat: Chat = chatInfoRes[0] as Chat;
       message['chat'] = chat;
       if (message.voiceId) {
-        message['voice'] = await this.voiceRepository.findOne({
-          where: { id: message.voiceId },
-        });
+        message['voice'] = (
+          await this.voiceRepository.findOne({
+            where: { id: message.voiceId },
+          })
+        ).toJSON();
       }
 
       this.socketGateway.sendMessage(userId, [message]);

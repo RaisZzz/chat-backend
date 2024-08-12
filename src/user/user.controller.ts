@@ -41,6 +41,12 @@ export class UserController {
     return this.userService.getUsers(req.user, getUsersDto);
   }
 
+  @Get('get_users_online')
+  @UseGuards(JwtAuthGuard, SmsGuard)
+  getAnotherUsersOnline(@Req() req): Promise<Record<number, any>> {
+    return this.userService.getAnotherUsersOnline(req.user);
+  }
+
   @Post('update_info')
   @UseGuards(JwtAuthGuard, SmsGuard)
   updateInfo(@Req() req, @Body() updateUserDto: UpdateUserDto): Promise<User> {
@@ -57,7 +63,7 @@ export class UserController {
   }
 
   @ApiOperation({ summary: 'Загрузка фото' })
-  @Put('/upload_photo')
+  @Put('upload_photo')
   @Step(2)
   @UseGuards(JwtAuthGuard, StepGuard, SmsGuard)
   @UseInterceptors(

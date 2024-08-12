@@ -58,7 +58,8 @@ export class AuthService {
     });
     for (const user of users) {
       const today: number = Date.now();
-      const registerTime: number = 600 - (today - user.createdAt);
+      const registerTime: number =
+        userRegisterSmsTime - (today - user.createdAt) / 1000;
       this.setUserDeleteTimeout(user, registerTime);
     }
   }
