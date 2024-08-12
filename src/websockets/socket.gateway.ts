@@ -2,6 +2,7 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
+  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
@@ -135,6 +136,31 @@ export class SocketGateway
 
   sendNotification = (notification: Notification) =>
     this.sendSocket('notification', notification.to, notification.toJSON());
+
+  sendWriting = (userId: number, writingUserId: number) =>
+    this.sendSocket('writing', userId, writingUserId);
+
+  @SubscribeMessage('writing')
+  async onWriting(client: Socket, data) {
+    if (!data || !data.chatId) return;
+
+    const connectedUserIndex: number = Object.values(
+      this.connectedUsers,
+    ).findIndex((s) => s == client.id);
+
+    if (connectedUserIndex < 0) return;
+
+    const userId: string = Object.keys(this.connectedUsers)[connectedUserIndex];
+
+    const [userIds] = await this.sequelize.query(`
+      SELECT user_id FROM "chat_user"
+      WHERE chat_id = ${data.chatId}
+      AND user_id <> ${userId}
+    `);
+    for (const toUser of userIds) {
+      this.sendWriting(toUser['user_id'], parseInt(userId));
+    }
+  }
 
   async sendUserOnline(userId: number, online: any) {
     const [userIds] = await this.sequelize.query(`
