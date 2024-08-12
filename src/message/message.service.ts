@@ -17,6 +17,8 @@ import { Error, ErrorType } from '../error.class';
 import { InjectModel } from '@nestjs/sequelize';
 import { ChatUser } from '../chat/chat-user.model';
 import { Voice } from '../voice/voice.model';
+import { ReadMessagesDto } from './dto/read-messages.dto';
+import { SocketGateway } from '../websockets/socket.gateway';
 
 @Injectable()
 export class MessageService {
@@ -30,6 +32,7 @@ export class MessageService {
     private messageSendService: MessageSendService,
     private messageSetReceivedService: MessageSetUnreceivedService,
     private sendUnreceivedMessagesService: SendUnreceivedMessagesService,
+    private socketGateway: SocketGateway,
   ) {}
 
   sendMessage = async (
@@ -159,6 +162,44 @@ export class MessageService {
           };
         }),
       );
+    }
+
+    return { success: true };
+  }
+
+  async readChatMessages(
+    user: User,
+    readDto: ReadMessagesDto,
+  ): Promise<SuccessInterface> {
+    const usersInChat: ChatUser[] = await this.chatUserRepository.findAll({
+      where: { chatId: readDto.chatId },
+    });
+
+    if (!usersInChat.map((c) => c.userId).includes(user.id)) {
+      throw new HttpException(
+        new Error(ErrorType.Forbidden),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    await this.messageModel.updateMany(
+      {
+        chatId: readDto.chatId,
+        ownerId: { $ne: user.id },
+      },
+      {
+        isRead: true,
+      },
+    );
+
+    for (const chatUser of usersInChat) {
+      if (chatUser.userId !== user.id) {
+        this.socketGateway.sendUserReadChat(
+          chatUser.userId,
+          user.id,
+          readDto.chatId,
+        );
+      }
     }
 
     return { success: true };

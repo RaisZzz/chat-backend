@@ -18,6 +18,9 @@ import { PlaceWish } from '../place-wish/place-wish.model';
 import { Interest } from '../interest/interest.model';
 import { Language } from '../language/language.model';
 import { Children } from '../children/children.model';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Message, messageModel } from '../message/message.model';
+import { WebsocketsModule } from '../websockets/websockets.module';
 
 @Module({
   imports: [
@@ -26,6 +29,12 @@ import { Children } from '../children/children.model';
       secret: process.env.SECRET,
       signOptions: { expiresIn: '60s' },
     }),
+    MongooseModule.forFeature([
+      {
+        name: Message.name,
+        schema: messageModel,
+      },
+    ]),
     SequelizeModule.forFeature([
       User,
       UserRefresh,
@@ -43,6 +52,7 @@ import { Children } from '../children/children.model';
     ]),
     forwardRef(() => UserModule),
     SmsModule,
+    WebsocketsModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

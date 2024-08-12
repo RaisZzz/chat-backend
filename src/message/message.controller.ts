@@ -18,6 +18,8 @@ import { SuccessInterface } from '../base/success.interface';
 import { GetMessagesDto } from './dto/get-messages.dto';
 import { SetMessageLikeDto } from './dto/set-like.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { SmsGuard } from '../user/sms.guard';
+import { ReadMessagesDto } from './dto/read-messages.dto';
 
 @Controller('message')
 export class MessageController {
@@ -77,6 +79,15 @@ export class MessageController {
       req.user,
       setMessageReceivedDto,
     );
+  }
+
+  @Post('read-messages')
+  @UseGuards(JwtAuthGuard, SmsGuard)
+  readMessages(
+    @Req() req,
+    @Body() readDto: ReadMessagesDto,
+  ): Promise<SuccessInterface> {
+    return this.messageService.readChatMessages(req.user, readDto);
   }
 
   @Post('send-unreceived')

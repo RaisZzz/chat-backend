@@ -140,6 +140,9 @@ export class SocketGateway
   sendWriting = (userId: number, writingUserId: number) =>
     this.sendSocket('writing', userId, writingUserId);
 
+  sendUserReadChat = (userId: number, readedUserId: number, chatId: number) =>
+    this.sendSocket('userReadChat', userId, { chatId, readedUserId });
+
   @SubscribeMessage('writing')
   async onWriting(client: Socket, data) {
     if (!data || !data.chatId) return;

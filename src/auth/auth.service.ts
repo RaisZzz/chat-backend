@@ -20,6 +20,10 @@ import { PlaceWish } from '../place-wish/place-wish.model';
 import { Interest } from '../interest/interest.model';
 import { Language } from '../language/language.model';
 import { Children } from '../children/children.model';
+import { Sequelize } from 'sequelize-typescript';
+import { InjectModel as InjectMongooseModel } from '@nestjs/mongoose';
+import { Message } from '../message/message.model';
+import { Model } from 'mongoose';
 
 abstract class AuthData {
   readonly cities: City[];
@@ -45,6 +49,7 @@ export abstract class AuthResponse {
   readonly refreshToken: string;
   readonly user: User;
   readonly data: AuthData;
+  readonly chatsUnread: Record<string, number>;
 }
 
 const userRegisterSmsTime = 600;
@@ -66,9 +71,11 @@ export class AuthService {
 
   constructor(
     @InjectModel(User) private userRepository: typeof User,
+    @InjectMongooseModel(Message.name) private messageModel: Model<Message>,
     @InjectModel(UserRefresh) private userRefreshRepository: typeof UserRefresh,
     private jwtService: JwtService,
     private smsService: SmsService,
+    private sequelize: Sequelize,
 
     @InjectModel(City) private cityRepository: typeof City,
     @InjectModel(Education) private educationRepository: typeof Education,
@@ -293,11 +300,25 @@ export class AuthService {
       (attribute) => delete user.dataValues[attribute],
     );
 
+    const chatsUnread: Record<string, number> = {};
+    const [userChats] = await this.sequelize.query(`
+      SELECT chat_id FROM "chat_user"
+      WHERE user_id = ${user.id}
+    `);
+    for (const chat of userChats) {
+      chatsUnread[chat['chat_id']] = await this.messageModel.countDocuments({
+        chatId: chat['chat_id'],
+        ownerId: { $ne: user.id },
+        isRead: false,
+      });
+    }
+
     return {
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       user,
       data: await this.getDataItems(),
+      chatsUnread,
     };
   }
 
