@@ -353,22 +353,23 @@ export class UserService {
     updateUserDto: UpdateUserDto,
   ): Promise<User> {
     await user.update({
-      firstName: updateUserDto.firstName,
-      lastName: updateUserDto.lastName,
-      birthdate: updateUserDto.birthdate,
-      geo_lat: updateUserDto.geo_lat,
-      geo_lon: updateUserDto.geo_lon,
-      livePlaceId: updateUserDto.livePlaceId,
-      birthPlaceId: updateUserDto.birthPlaceId,
-      parentsId: updateUserDto.parentsId,
-      organisationId: updateUserDto.organisationId,
-      familyPositionId: updateUserDto.familyPositionId,
-      religionId: updateUserDto.religionId,
-      hasChildrenId: updateUserDto.hasChildrenId,
-      readNamaz: updateUserDto.readNamaz,
-      wearsHijab: updateUserDto.wearsHijab,
-      hasParents: updateUserDto.hasParents,
-      requirements: updateUserDto.requirements,
+      firstName: updateUserDto.firstName ?? user.firstName,
+      lastName: updateUserDto.lastName ?? user.lastName,
+      birthdate: updateUserDto.birthdate ?? user.birthdate,
+      geo_lat: updateUserDto.geo_lat ?? user.geo_lat,
+      geo_lon: updateUserDto.geo_lon ?? user.geo_lon,
+      livePlaceId: updateUserDto.livePlaceId ?? user.livePlaceId,
+      birthPlaceId: updateUserDto.birthPlaceId ?? user.birthPlaceId,
+      parentsId: updateUserDto.parentsId ?? user.parentsId,
+      organisationId: updateUserDto.organisationId ?? user.organisationId,
+      familyPositionId: updateUserDto.familyPositionId ?? user.familyPositionId,
+      religionId: updateUserDto.religionId ?? user.religionId,
+      hasChildrenId: updateUserDto.hasChildrenId ?? user.hasChildrenId,
+      readNamaz: updateUserDto.readNamaz ?? user.readNamaz,
+      wearsHijab: updateUserDto.wearsHijab ?? user.wearsHijab,
+      hasParents: updateUserDto.hasParents ?? user.hasParents,
+      requirements: updateUserDto.requirements ?? user.requirements,
+      educationId: updateUserDto.educationId ?? user.educationId,
     });
 
     if (
@@ -379,10 +380,10 @@ export class UserService {
     }
 
     if (
-      Array.isArray(updateUserDto.educationsIds) &&
-      updateUserDto.educationsIds.length
+      Array.isArray(updateUserDto.placeWishesIds) &&
+      updateUserDto.placeWishesIds.length
     ) {
-      await user.$set('education', updateUserDto.educationsIds);
+      await user.$set('placeWishes', updateUserDto.placeWishesIds);
     }
 
     if (

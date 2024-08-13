@@ -23,7 +23,10 @@ import { GetUserByPhoneDto } from './dto/get-user-by-phone.dto';
 import { ApiOperation } from '@nestjs/swagger';
 import { Step } from './step.decorator';
 import { StepGuard } from './step.guard';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import {
+  FileFieldsInterceptor,
+  FilesInterceptor,
+} from '@nestjs/platform-express';
 import { UploadPhotoDto } from './dto/upload-photo.dto';
 
 @Controller('user')
@@ -63,22 +66,21 @@ export class UserController {
   }
 
   @ApiOperation({ summary: 'Загрузка фото' })
-  @Put('upload_photo')
-  @Step(2)
+  @Post('upload_photo')
   @UseGuards(JwtAuthGuard, StepGuard, SmsGuard)
   @UseInterceptors(
-    FilesInterceptor('photos', 1, {
+    FileFieldsInterceptor([{ name: 'photos', maxCount: 1 }], {
       limits: { fileSize: 10 * 1024 * 1024 },
     }),
   )
   uploadPhoto(
     @Body() uploadPhotoDto: UploadPhotoDto,
-    @UploadedFiles() photos: [Express.Multer.File],
+    @UploadedFiles() files: { photos?: [Express.Multer.File] },
     @Req() req,
   ) {
     return this.userService.updatePhotosRequest(
       req.user,
-      photos,
+      files?.photos,
       uploadPhotoDto,
     );
   }

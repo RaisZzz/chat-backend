@@ -61,6 +61,10 @@ export class UpdateUserDto {
   @IsOptional()
   readonly hasChildrenId: number;
 
+  @IsInt()
+  @IsOptional()
+  readonly educationId: number;
+
   @IsBoolean()
   @IsOptional()
   readonly readNamaz: boolean;
@@ -84,7 +88,7 @@ export class UpdateUserDto {
 
   @IsInt({ each: true })
   @IsOptional()
-  readonly educationsIds: number[];
+  readonly placeWishesIds: number[];
 
   @IsInt({ each: true })
   @IsOptional()
