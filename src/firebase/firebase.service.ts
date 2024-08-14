@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { messaging } from 'firebase-admin';
-import { App } from 'firebase-admin/app';
 import { NotificationType } from '../notifications/notification-type.enum';
 import { Chat } from '../chat/chat.model';
 import { RedisService } from 'src/redis/redis.service';
@@ -105,11 +103,7 @@ export class FirebaseService {
 
   private async generateToken(): Promise<string> {
     const auth = new GoogleAuth({
-      keyFile: join(
-        __dirname,
-        '../..',
-        'nikohlink-test-firebase-adminsdk-ezdha-9fc0a1b804.json',
-      ),
+      keyFile: join(__dirname, '../..', 'firebase-adminsdk-credentials.json'),
       scopes: ['https://www.googleapis.com/auth/firebase.messaging'],
     });
     await auth.getClient();

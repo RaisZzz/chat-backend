@@ -38,7 +38,7 @@ lerna-debug.log*
 .development.env
 .production.env
 
-firebase-credentials.json
+firebase-adminsdk-credentials.json
 
 /uploads
 /voices
