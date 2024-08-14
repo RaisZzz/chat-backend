@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { pgSetTypeParsers } from 'pg-safe-numbers';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import process from 'process';
+import * as process from 'process';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { HttpsOptions } from '@nestjs/common/interfaces/external/https-options.interface';
