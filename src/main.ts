@@ -3,11 +3,26 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { pgSetTypeParsers } from 'pg-safe-numbers';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import process from 'process';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import { HttpsOptions } from '@nestjs/common/interfaces/external/https-options.interface';
 
 async function bootstrap() {
   pgSetTypeParsers();
+  let httpsOptions: HttpsOptions;
 
-  const app = await NestFactory.create(AppModule);
+  if (process.env.NODE_ENV === 'production') {
+    const keyFile = readFileSync(join(__dirname, '/../ssl/private.key'));
+    const certFile = readFileSync(join(__dirname, '/../ssl/private.crt'));
+
+    httpsOptions = {
+      key: keyFile,
+      cert: certFile,
+    };
+  }
+
+  const app = await NestFactory.create(AppModule, { httpsOptions });
 
   app.useGlobalPipes(new ValidationPipe());
   app.setGlobalPrefix('api_v2');
