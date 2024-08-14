@@ -15,7 +15,6 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { RedisService } from '../redis/redis.service';
 import { Report } from '../report/report.model';
 import { Notification } from '../notifications/notifications.model';
-import { Chat } from '../chat/chat.model';
 import { Sequelize } from 'sequelize-typescript';
 
 @WebSocketGateway({

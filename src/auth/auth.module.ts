@@ -4,7 +4,7 @@ import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { User } from 'src/user/user.model';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { UserRefresh } from 'src/user/user-refresh.model';
+import { UserDevice } from 'src/user/user-device.model';
 import { UserModule } from 'src/user/user.module';
 import { SmsModule } from '../sms/sms.module';
 import { City } from '../city/city.model';
@@ -37,7 +37,7 @@ import { WebsocketsModule } from '../websockets/websockets.module';
     ]),
     SequelizeModule.forFeature([
       User,
-      UserRefresh,
+      UserDevice,
       City,
       Education,
       Speciality,

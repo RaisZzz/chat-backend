@@ -1,31 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import * as admin from 'firebase-admin';
+import { messaging } from 'firebase-admin';
+import { App } from 'firebase-admin/app';
 import { NotificationType } from '../notifications/notification-type.enum';
 import { Chat } from '../chat/chat.model';
 import { RedisService } from 'src/redis/redis.service';
 import { User } from 'src/user/user.model';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const serviceAccount = require('../../firebase-credentials.json');
+import { InjectModel } from '@nestjs/sequelize';
+import { UserDevice } from '../user/user-device.model';
+import { Op } from 'sequelize';
+import { join } from 'path';
+import { GoogleAuth } from 'google-auth-library';
 
 @Injectable()
 export class FirebaseService {
-  private admin;
-
-  constructor(private redisService: RedisService) {
-    this.init().then(() => console.log('FIREBASE APP INITIALIZED'));
-  }
-
-  async init() {
-    try {
-      this.admin = admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        projectId: 'nikohlink-test',
-      });
-    } catch (e) {
-      console.log(`FIREBASE CONNECT ERROR ` + e);
-      this.admin = admin;
-    }
-  }
+  constructor(
+    @InjectModel(UserDevice) private userDeviceRepository: typeof UserDevice,
+    private redisService: RedisService,
+  ) {}
 
   async sendNotification(
     userId: number,
@@ -35,70 +26,93 @@ export class FirebaseService {
     dataChat?: Chat,
     dataUser?: User,
   ) {
-    const token = await this.redisService.get(`firebase_user_${userId}`);
-    if (token && token.length) {
-      try {
-        let disabled;
+    const userDevices: UserDevice[] = await this.userDeviceRepository.findAll({
+      attributes: ['fcmToken'],
+      where: { userId, fcmToken: { [Op.ne]: null } },
+    });
+    const userTokens: string[] = userDevices.map((d) => d.fcmToken);
 
-        if (
-          type === NotificationType.message ||
-          type === NotificationType.support
-        ) {
-          disabled = await this.redisService.get(
-            `user_msg_notifications_${userId}`,
-          );
-        } else if (type === NotificationType.reaction) {
-          disabled = await this.redisService.get(
-            `user_reaction_notifications_${userId}`,
-          );
-        } else if (
-          [NotificationType.like, NotificationType.dislike].includes(type)
-        ) {
-          disabled = await this.redisService.get(
-            `user_candidates_notifications_${userId}`,
-          );
-        }
+    if (!userTokens.length) return;
 
-        if (disabled === 'false') {
-          return;
-        }
+    try {
+      let disabled;
 
-        const dataType = NotificationType[type];
-
-        const data = {};
-        if (type) {
-          data['type'] = dataType.toString();
-        }
-        if (dataUser) {
-          data['userId'] = dataUser.id.toString();
-        }
-        if (dataChat) {
-          data['chat'] = JSON.stringify({
-            id: dataChat.id,
-            firstName: dataChat.dataValues['firstName'],
-            lastName: dataChat.dataValues['lastName'],
-            ownerId: dataChat.dataValues['users'],
-            unread: dataChat.dataValues['unread'],
-            type: dataChat.type,
-            image: dataChat.dataValues['image'],
-            canWrite: dataChat.dataValues['canWrite'],
-            hasSuperLike: dataChat.dataValues['hasSuperLike'],
-          });
-        }
-
-        console.log('SENDING FIREBASE with TOKEN: ' + token);
-        const firebaseData = {
-          notification: {
-            title: title ?? '',
-            body: body ?? '',
-            sound: 'default',
-          },
-          data,
-        };
-        await this.admin.messaging().sendToDevice(token, firebaseData);
-      } catch (e) {
-        console.log('FIREBASE SEND NOTIFICATION ERROR ' + e);
+      if (
+        type === NotificationType.message ||
+        type === NotificationType.support
+      ) {
+        disabled = await this.redisService.get(
+          `user_msg_notifications_${userId}`,
+        );
+      } else if (type === NotificationType.reaction) {
+        disabled = await this.redisService.get(
+          `user_reaction_notifications_${userId}`,
+        );
+      } else if (
+        [NotificationType.like, NotificationType.dislike].includes(type)
+      ) {
+        disabled = await this.redisService.get(
+          `user_candidates_notifications_${userId}`,
+        );
       }
+
+      if (disabled === 'false') {
+        return;
+      }
+
+      const dataType = NotificationType[type];
+
+      const data = {};
+      if (type) {
+        data['type'] = dataType.toString();
+      }
+      if (dataUser) {
+        data['userId'] = dataUser.id.toString();
+      }
+      if (dataChat) {
+        data['chat'] = JSON.stringify(dataChat);
+      }
+
+      console.log('SENDING FIREBASE with TOKENS: ' + userTokens);
+      const message = {
+        token: userTokens[0],
+        notification: {
+          title: title ?? '',
+          body: body ?? '',
+        },
+        data,
+      };
+
+      const response = await fetch(
+        'https://fcm.googleapis.com/v1/projects/nikohlink-test/messages:send',
+        {
+          headers: {
+            Authorization: `Bearer ${await this.generateToken()}`,
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+          body: JSON.stringify({ message }),
+        },
+      );
+      const json = await response.json();
+
+      console.log(json);
+      console.log(json?.error?.details);
+    } catch (e) {
+      console.log('FIREBASE SEND NOTIFICATION ERROR ' + e);
     }
+  }
+
+  private async generateToken(): Promise<string> {
+    const auth = new GoogleAuth({
+      keyFile: join(
+        __dirname,
+        '../..',
+        'nikohlink-test-firebase-adminsdk-ezdha-9fc0a1b804.json',
+      ),
+      scopes: ['https://www.googleapis.com/auth/firebase.messaging'],
+    });
+    await auth.getClient();
+    return await auth.getAccessToken();
   }
 }

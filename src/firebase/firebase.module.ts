@@ -6,11 +6,12 @@ import { User } from 'src/user/user.model';
 import { Image } from 'src/image/image.model';
 import { RedisModule } from '../redis/redis.module';
 import { UserReaction } from '../user-reaction/user-reaction.model';
+import { UserDevice } from '../user/user-device.model';
 
 @Module({
   providers: [FirebaseService],
   imports: [
-    SequelizeModule.forFeature([Chat, User, UserReaction, Image]),
+    SequelizeModule.forFeature([Chat, User, UserReaction, Image, UserDevice]),
     RedisModule,
   ],
   exports: [FirebaseService],

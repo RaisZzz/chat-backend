@@ -3,7 +3,6 @@ import {
   Controller,
   Get,
   Post,
-  Put,
   Query,
   Req,
   UploadedFiles,
@@ -21,13 +20,10 @@ import { SmsDto } from './dto/sms.dto';
 import { SuccessInterface } from '../base/success.interface';
 import { GetUserByPhoneDto } from './dto/get-user-by-phone.dto';
 import { ApiOperation } from '@nestjs/swagger';
-import { Step } from './step.decorator';
-import { StepGuard } from './step.guard';
-import {
-  FileFieldsInterceptor,
-  FilesInterceptor,
-} from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { UploadPhotoDto } from './dto/upload-photo.dto';
+import { SetFCMTokenDto } from './dto/set-fcm-token.dto';
+import { RealIP } from 'nestjs-real-ip';
 
 @Controller('user')
 export class UserController {
@@ -56,6 +52,16 @@ export class UserController {
     return this.userService.updateUserInfo(req.user, updateUserDto);
   }
 
+  @Post('set-fcm-token')
+  @UseGuards(JwtAuthGuard)
+  setFCMToken(
+    @RealIP() ip: string,
+    @Req() req,
+    @Body() setFCMTokenDto: SetFCMTokenDto,
+  ): Promise<SuccessInterface> {
+    return this.userService.setFCMToken(ip, req.user, setFCMTokenDto);
+  }
+
   @Post('check_sms_code')
   @UseGuards(JwtAuthGuard, NoSmsGuard)
   checkSmsCode(
@@ -67,7 +73,7 @@ export class UserController {
 
   @ApiOperation({ summary: 'Загрузка фото' })
   @Post('upload_photo')
-  @UseGuards(JwtAuthGuard, StepGuard, SmsGuard)
+  @UseGuards(JwtAuthGuard, SmsGuard)
   @UseInterceptors(
     FileFieldsInterceptor([{ name: 'photos', maxCount: 1 }], {
       limits: { fileSize: 10 * 1024 * 1024 },

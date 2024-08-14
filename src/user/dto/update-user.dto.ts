@@ -1,6 +1,5 @@
 import {
   IsBoolean,
-  IsIn,
   IsInt,
   IsISO8601,
   IsLatitude,

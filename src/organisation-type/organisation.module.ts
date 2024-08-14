@@ -4,7 +4,6 @@ import { OrganisationService } from './organisation.service';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { User } from '../user/user.model';
 import { OrganisationType } from './organisation.model';
-import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({

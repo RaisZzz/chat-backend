@@ -1,5 +1,3 @@
-import { IsDecimal, IsInt, IsNotEmpty, IsString } from 'class-validator';
-
 export class ClickPrepareDto {
   click_trans_id: number;
   service_id: number;

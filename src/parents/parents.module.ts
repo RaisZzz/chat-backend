@@ -4,7 +4,6 @@ import { ParentsService } from './parents.service';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { User } from '../user/user.model';
 import { Parents } from './parents.model';
-import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({

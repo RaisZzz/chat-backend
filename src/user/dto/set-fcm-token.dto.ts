@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class GetUserByPhoneDto {
+export class SetFCMTokenDto {
   @IsString()
   @IsNotEmpty()
-  readonly phone: string;
+  readonly fcmToken: string;
 }

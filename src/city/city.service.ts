@@ -7,6 +7,6 @@ export class CityService {
   constructor(@InjectModel(City) private cityRepository: typeof City) {}
 
   async getAll(): Promise<City[]> {
-    return await this.cityRepository.findAll({order: [['id', 'ASC']]});
+    return await this.cityRepository.findAll({ order: [['id', 'ASC']] });
   }
 }

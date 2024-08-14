@@ -9,10 +9,10 @@ import {
 import { User } from './user.model';
 
 @Table({
-  tableName: 'user_refresh',
+  tableName: 'user_device',
   underscored: true,
 })
-export class UserRefresh extends Model<UserRefresh> {
+export class UserDevice extends Model<UserDevice> {
   @Column({
     type: DataType.INTEGER,
     unique: true,
@@ -39,6 +39,9 @@ export class UserRefresh extends Model<UserRefresh> {
 
   @ForeignKey(() => User)
   userId: number;
+
+  @Column({ type: DataType.TEXT })
+  fcmToken: string | null;
 
   @Column({
     type: DataType.BIGINT,

@@ -90,24 +90,24 @@ export class Purchase extends Model<Purchase, CreatePurchaseDto> {
     example: 5,
     description: 'Если подписка, то на сколько дней дается',
   })
-  @Column({ type: DataType.INTEGER, defaultValue: 0, allowNull: false, })
+  @Column({ type: DataType.INTEGER, defaultValue: 0, allowNull: false })
   expireDays: number;
 
   @ApiProperty({ example: true, description: 'Активна или нет' })
-  @Column({ type: DataType.BOOLEAN, defaultValue: true, allowNull: false, })
+  @Column({ type: DataType.BOOLEAN, defaultValue: true, allowNull: false })
   active: boolean;
 
   @ApiProperty({
     example: 10,
     description: 'Сколько начислится суперлайков',
   })
-  @Column({ type: DataType.INTEGER, defaultValue: 0, allowNull: false, })
+  @Column({ type: DataType.INTEGER, defaultValue: 0, allowNull: false })
   superLikes: number;
 
   @ApiProperty({
     example: 10,
     description: 'Сколько начислится возвратов',
   })
-  @Column({ type: DataType.INTEGER, defaultValue: 0, allowNull: false, })
+  @Column({ type: DataType.INTEGER, defaultValue: 0, allowNull: false })
   returns: number;
 }

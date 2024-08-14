@@ -30,8 +30,6 @@ import {
   ClickPrepareResponse,
 } from './dto/click-endpoint.dto';
 import { RefundTransactionDto } from './dto/refund-transaction.dto';
-import { Step } from '../user/step.decorator';
-import { StepGuard } from '../user/step.guard';
 import { SmsGuard } from '../user/sms.guard';
 import { RolesGuard } from '../role/roles.guard';
 import { Roles } from '../role/roles-auth.decorator';
@@ -46,8 +44,7 @@ export class PurchaseController {
   @ApiOperation({ summary: 'Получение всех товаров' })
   @ApiResponse({ status: 200, type: [Purchase] })
   @Get('/get_all')
-  @Step(5)
-  @UseGuards(JwtAuthGuard, UserBlockGuard, StepGuard, SmsGuard)
+  @UseGuards(JwtAuthGuard, UserBlockGuard, SmsGuard)
   getAll() {
     return this.purchaseService.getAll();
   }
@@ -91,8 +88,7 @@ export class PurchaseController {
   @ApiOperation({ summary: 'Создать транзакцию' })
   @ApiResponse({ status: 200, type: UserPurchase })
   @Get('/get_order_id')
-  @Step(5)
-  @UseGuards(JwtAuthGuard, UserBlockGuard, StepGuard, SmsGuard)
+  @UseGuards(JwtAuthGuard, UserBlockGuard, SmsGuard)
   getOrderId(
     @Req() req,
     @Query() getDto: GetPurchaseIdDto,
@@ -155,8 +151,7 @@ export class PurchaseController {
   @ApiOperation({ summary: 'Получение всех транзакций пользователя' })
   @ApiResponse({ status: 200, type: [UserPurchase] })
   @Get('/get_transactions')
-  @Step(5)
-  @UseGuards(JwtAuthGuard, UserBlockGuard, StepGuard, SmsGuard)
+  @UseGuards(JwtAuthGuard, UserBlockGuard, SmsGuard)
   getTransactions(@Req() req, @Query() offsetDto: OffsetDto) {
     return this.purchaseService.getTransactions(req.user, offsetDto);
   }

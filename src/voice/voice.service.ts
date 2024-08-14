@@ -1,14 +1,8 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  StreamableFile,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Voice } from './voice.model';
 import { readFileSync, unlinkSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { Duplex } from 'stream';
 import { GetVoiceDto } from './dto/get-voice.dto';
 import getAudioDurationInSeconds from 'get-audio-duration';
 import { Error, ErrorType } from '../error.class';

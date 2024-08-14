@@ -17,8 +17,6 @@ import { StatisticFilterDto } from '../statistic/dto/statistic-filter.dto';
 import { SetResolvedDto } from './dto/set-resolved.dto';
 import { GetReportsDto } from './dto/get.dto';
 import { UserBlockGuard } from '../user/user-block.guard';
-import { StepGuard } from '../user/step.guard';
-import { Step } from '../user/step.decorator';
 import { Roles } from '../role/roles-auth.decorator';
 import { RolesGuard } from '../role/roles.guard';
 import { SmsGuard } from '../user/sms.guard';
@@ -30,8 +28,7 @@ export class ReportController {
 
   @ApiOperation({ summary: 'Отправить жалобу' })
   @ApiResponse({ status: 200, type: Report })
-  @Step(5)
-  @UseGuards(JwtAuthGuard, UserBlockGuard, StepGuard, SmsGuard)
+  @UseGuards(JwtAuthGuard, UserBlockGuard, SmsGuard)
   @Post('/send')
   send(@Req() req, @Body() reportDto: SendReportDto): Promise<Report> {
     return this.reportService.send(req.user, reportDto);

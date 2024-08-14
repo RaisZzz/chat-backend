@@ -3,7 +3,7 @@ import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcryptjs';
 import { InjectModel } from '@nestjs/sequelize';
 import { excludedUserAttributes, User } from 'src/user/user.model';
-import { UserRefresh } from 'src/user/user-refresh.model';
+import { UserDevice } from 'src/user/user-device.model';
 import { RegisterDto } from './dto/register.dto';
 import { JwtService } from '@nestjs/jwt';
 import { Error, ErrorType } from 'src/error.class';
@@ -72,7 +72,7 @@ export class AuthService {
   constructor(
     @InjectModel(User) private userRepository: typeof User,
     @InjectMongooseModel(Message.name) private messageModel: Model<Message>,
-    @InjectModel(UserRefresh) private userRefreshRepository: typeof UserRefresh,
+    @InjectModel(UserDevice) private userDeviceRepository: typeof UserDevice,
     private jwtService: JwtService,
     private smsService: SmsService,
     private sequelize: Sequelize,
@@ -232,7 +232,7 @@ export class AuthService {
         .split('refreshToken=')[1]
         .split(';')[0];
 
-      const tokenExist: UserRefresh = await this.userRefreshRepository.findOne({
+      const tokenExist: UserDevice = await this.userDeviceRepository.findOne({
         where: { ip, refreshToken },
         include: [User],
       });
@@ -327,12 +327,13 @@ export class AuthService {
     ip: string,
     refreshToken?: string,
   ): Promise<Tokens> {
-    const refreshTokens: UserRefresh[] =
-      await this.userRefreshRepository.findAll({
+    const refreshTokens: UserDevice[] = await this.userDeviceRepository.findAll(
+      {
         where: {
           userId: user.id,
         },
-      });
+      },
+    );
 
     const accessOptions = {
       expiresIn: process.env.JWT_ACCESS_EXPIRE,
@@ -356,8 +357,8 @@ export class AuthService {
 
     // If refreshToken exist - requested by user
     if (refreshToken) {
-      const token: UserRefresh = refreshTokens.find(
-        (r: UserRefresh) => r.refreshToken === refreshToken && r.ip === ip,
+      const token: UserDevice = refreshTokens.find(
+        (r: UserDevice) => r.refreshToken === refreshToken && r.ip === ip,
       );
       if (token) {
         try {
@@ -379,15 +380,15 @@ export class AuthService {
         );
       }
     } else {
-      const token: UserRefresh = refreshTokens.find(
-        (r: UserRefresh) => r.ip === ip,
+      const token: UserDevice = refreshTokens.find(
+        (r: UserDevice) => r.ip === ip,
       );
       if (token) {
         await token.update({
           refreshToken: newRefreshToken,
         });
       } else {
-        await this.userRefreshRepository.create({
+        await this.userDeviceRepository.create({
           userId: user.id,
           refreshToken: newRefreshToken,
           ip,

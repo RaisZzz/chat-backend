@@ -3,7 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { MessageModule } from './message/message.module';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { User } from './user/user.model';
-import { UserRefresh } from './user/user-refresh.model';
+import { UserDevice } from './user/user-device.model';
 import { ConfigModule } from '@nestjs/config';
 import { Chat } from './chat/chat.model';
 import { ChatUser } from './chat/chat-user.model';
@@ -60,7 +60,7 @@ import { VoiceModule } from './voice/voice.module';
       database: String(process.env.POSTGRES_DB),
       models: [
         User,
-        UserRefresh,
+        UserDevice,
         Chat,
         ChatUser,
         Role,

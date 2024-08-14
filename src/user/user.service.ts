@@ -28,6 +28,8 @@ import { UploadPhotoDto } from './dto/upload-photo.dto';
 import { Error, ErrorType } from '../error.class';
 import { Image } from '../image/image.model';
 import { ImageService } from '../image/image.service';
+import { SetFCMTokenDto } from './dto/set-fcm-token.dto';
+import { UserDevice } from './user-device.model';
 
 export class CheckUserExistResponse {
   readonly userRegistered: boolean;
@@ -37,6 +39,7 @@ export class CheckUserExistResponse {
 export class UserService {
   constructor(
     @InjectModel(User) private userRepository: typeof User,
+    @InjectModel(UserDevice) private userDeviceRepository: typeof UserDevice,
     @InjectModel(Image) private imageRepository: typeof Image,
     @InjectModel(Report) private reportRepository: typeof Report,
     @InjectModel(UserReaction)
@@ -125,7 +128,7 @@ export class UserService {
       id: userIdCondition,
       [Op.and]: [],
       sex: sexCondition,
-      step: 5,
+      code_confirmed: true,
     };
 
     // Filter
@@ -346,6 +349,21 @@ export class UserService {
     }
 
     return users;
+  }
+
+  async setFCMToken(
+    ip: string,
+    user: User,
+    setFCMTokenDto: SetFCMTokenDto,
+  ): Promise<SuccessInterface> {
+    const userDevice: UserDevice = await this.userDeviceRepository.findOne({
+      where: { userId: user.id, ip },
+    });
+    if (!userDevice) return { success: false };
+
+    await userDevice.update({ fcmToken: setFCMTokenDto.fcmToken });
+
+    return { success: true };
   }
 
   async updateUserInfo(

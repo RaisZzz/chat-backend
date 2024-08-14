@@ -4,7 +4,6 @@ import { FamilyPositionService } from './family-position.service';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { User } from '../user/user.model';
 import { FamilyPosition } from './family-position.model';
-import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({

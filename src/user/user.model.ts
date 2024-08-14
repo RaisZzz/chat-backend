@@ -78,10 +78,6 @@ export class User extends Model<User, CreateUserDto> {
   @Column({ type: DataType.SMALLINT, allowNull: false })
   sex: number;
 
-  @ApiProperty({ example: 2, description: 'Этап регистрации' })
-  @Column({ type: DataType.SMALLINT, defaultValue: 2 })
-  step: number;
-
   @Column({ type: DataType.STRING })
   code: string;
 

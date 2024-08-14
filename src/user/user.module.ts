@@ -10,10 +10,11 @@ import { UserReaction } from '../user-reaction/user-reaction.model';
 import { Report } from '../report/report.model';
 import { ImageModule } from '../image/image.module';
 import { Image } from '../image/image.model';
+import { UserDevice } from './user-device.model';
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([User, UserReaction, Report, Image]),
+    SequelizeModule.forFeature([User, UserReaction, Report, Image, UserDevice]),
     forwardRef(() => AuthModule),
     WebsocketsModule,
     RedisModule,

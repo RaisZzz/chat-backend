@@ -3,7 +3,6 @@ import { LanguageController } from './language.controller';
 import { LanguageService } from './language.service';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { Language } from './language.model';
-import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
