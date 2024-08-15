@@ -48,9 +48,7 @@ export class NotificationsService {
       this.logger.error('SEND FIREBASE NOTIFICATION ERROR ' + e);
     }
 
-    if (withoutSave) {
-      return;
-    }
+    if (withoutSave) return;
 
     const notification: Notification =
       await this.notificationRepository.create(sendDto);

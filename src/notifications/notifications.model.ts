@@ -1,6 +1,7 @@
 import { CreateNotificationDto } from './dto/send-notification.dto';
 import { Column, DataType, Model, Table } from 'sequelize-typescript';
 import { ApiProperty } from '@nestjs/swagger';
+import { NotificationType } from './notification-type.enum';
 
 @Table({
   tableName: 'notification',
@@ -23,7 +24,7 @@ export class Notification extends Model<Notification, CreateNotificationDto> {
   to: number;
 
   @Column({ type: DataType.SMALLINT, allowNull: false })
-  type: number;
+  type: NotificationType;
 
   @Column({ type: DataType.TEXT, allowNull: false })
   title: string;

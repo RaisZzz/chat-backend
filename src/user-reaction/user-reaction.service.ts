@@ -15,6 +15,8 @@ import { SetUserReactionReceivedDto } from './dto/set-received.dto';
 import { SocketGateway } from '../websockets/socket.gateway';
 import { Op } from 'sequelize';
 import { OffsetDto } from '../base/offset.dto';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../notifications/notification-type.enum';
 
 @Injectable()
 export class UserReactionService {
@@ -26,6 +28,7 @@ export class UserReactionService {
     private userReactionRepository: typeof UserReaction,
     private chatService: ChatService,
     private socketGateway: SocketGateway,
+    private notificationsService: NotificationsService,
   ) {}
 
   async getAllUserReactions(
@@ -152,15 +155,29 @@ export class UserReactionService {
         );
       }
     } else {
-      // Remove 1 super like from user balance
-      await user.update({ superLikes: user.superLikes - 1 });
-
       if (recipientReaction && recipientReaction.isLiked) {
         // Create chat if above users likes
         await this.chatService.createChatWithTwoUsers(
           user.id,
           sendDto.toUserId,
         );
+        this.notificationsService.sendNotification({
+          from: user.id,
+          to: sendDto.toUserId,
+          type: NotificationType.mutual,
+          title: `${user.firstName} ${user.lastName}`,
+          body: `Образовал${user.sex === 0 ? 'а' : ''} с вами пару`,
+        });
+      } else {
+        // Remove 1 super like from user balance
+        await user.update({ superLikes: user.superLikes - 1 });
+        this.notificationsService.sendNotification({
+          from: user.id,
+          to: sendDto.toUserId,
+          type: NotificationType.superlike,
+          title: `${user.firstName} ${user.lastName}`,
+          body: `Отправил${user.sex === 0 ? 'а' : ''} вам симпатию`,
+        });
       }
     }
 
