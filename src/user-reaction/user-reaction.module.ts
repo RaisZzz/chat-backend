@@ -7,12 +7,14 @@ import { UserReaction } from './user-reaction.model';
 import { ChatModule } from '../chat/chat.module';
 import { UserReactionReceived } from './user-reaction-received.model';
 import { WebsocketsModule } from '../websockets/websockets.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
     SequelizeModule.forFeature([User, UserReaction, UserReactionReceived]),
     ChatModule,
     WebsocketsModule,
+    NotificationsModule,
   ],
   controllers: [UserReactionController],
   providers: [UserReactionService],
