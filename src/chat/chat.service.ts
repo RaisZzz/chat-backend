@@ -142,13 +142,17 @@ export class ChatService {
         null,
         { sort: { createdAt: -1 } },
       );
-      if (message && message.voiceId) {
+      if (message) {
         const messageJson = { ...message }['_doc'];
-        messageJson['voice'] = (
-          await this.voiceRepository.findOne({
-            where: { id: messageJson.voiceId },
-          })
-        ).toJSON();
+
+        if (message.voiceId) {
+          messageJson['voice'] = (
+            await this.voiceRepository.findOne({
+              where: { id: messageJson.voiceId },
+            })
+          ).toJSON();
+        }
+
         chat['lastMessage'] = messageJson;
       }
     }
