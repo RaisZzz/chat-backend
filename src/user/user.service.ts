@@ -129,7 +129,7 @@ export class UserService {
       id: userIdCondition,
       [Op.and]: [
         literal(
-          `(SELECT COUNT(*) FROM jsonb_object_keys("user"."photos")) >= 2`,
+          `(SELECT COUNT(*) FROM jsonb_object_keys("User"."photos")) >= 2`,
         ),
       ],
       sex: sexCondition,
