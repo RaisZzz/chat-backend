@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { excludedUserAttributes, User } from './user.model';
 import { InjectModel } from '@nestjs/sequelize';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Op } from 'sequelize';
+import { Op, literal } from 'sequelize';
 import { GetUsersDto } from './dto/get-users.dto';
 import { Sequelize } from 'sequelize-typescript';
 import { Role } from '../role/role.model';
@@ -127,9 +127,14 @@ export class UserService {
     const userIdCondition = { [Op.not]: userIds };
     const whereQuery = {
       id: userIdCondition,
-      [Op.and]: [],
+      [Op.and]: [
+        literal(
+          `(SELECT COUNT(*) FROM jsonb_object_keys("user"."photos")) >= 2`,
+        ),
+      ],
       sex: sexCondition,
       code_confirmed: true,
+      photos: {},
     };
 
     // Filter
