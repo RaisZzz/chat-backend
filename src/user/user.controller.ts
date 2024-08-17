@@ -24,12 +24,13 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { UploadPhotoDto } from './dto/upload-photo.dto';
 import { SetFCMTokenDto } from './dto/set-fcm-token.dto';
 import { RealIP } from 'nestjs-real-ip';
+import { GetUserById } from './dto/get-user-by-id.dto';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Get('/check')
+  @Get('check')
   check(@Query() checkDto: GetUserByPhoneDto) {
     return this.userService.checkUserExist(checkDto);
   }
@@ -50,6 +51,12 @@ export class UserController {
   @UseGuards(JwtAuthGuard, SmsGuard)
   updateInfo(@Req() req, @Body() updateUserDto: UpdateUserDto): Promise<User> {
     return this.userService.updateUserInfo(req.user, updateUserDto);
+  }
+
+  @Get('get-by-id')
+  @UseGuards(JwtAuthGuard, SmsGuard)
+  getUserById(@Req() req, @Query() getUserByIdDto: GetUserById): Promise<User> {
+    return this.userService.getUserById(req.user, getUserByIdDto);
   }
 
   @Post('set-fcm-token')

@@ -30,6 +30,7 @@ import { Image } from '../image/image.model';
 import { ImageService } from '../image/image.service';
 import { SetFCMTokenDto } from './dto/set-fcm-token.dto';
 import { UserDevice } from './user-device.model';
+import { GetUserById } from './dto/get-user-by-id.dto';
 
 export class CheckUserExistResponse {
   readonly userRegistered: boolean;
@@ -519,6 +520,13 @@ export class UserService {
     }
 
     return usersOnline;
+  }
+
+  async getUserById(user: User, getDto: GetUserById): Promise<User> {
+    return await this.userRepository.findOne({
+      attributes: { exclude: excludedUserAttributes },
+      where: { id: getDto.userId, sex: user.sex == 0 ? 1 : 0 },
+    });
   }
 
   private async getUserOnline(userId: number): Promise<boolean | number> {
