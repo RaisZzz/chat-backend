@@ -82,7 +82,7 @@ export class FirebaseService {
       };
 
       const response = await fetch(
-        'https://fcm.googleapis.com/v1/projects/nikohlink-test/messages:send',
+        'https://fcm.googleapis.com/v1/projects/tidy-federation-375304/messages:send',
         {
           headers: {
             Authorization: `Bearer ${await this.generateToken()}`,
