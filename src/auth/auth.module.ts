@@ -50,7 +50,6 @@ import { WebsocketsModule } from '../websockets/websockets.module';
       Language,
       Children,
     ]),
-    forwardRef(() => UserModule),
     SmsModule,
     WebsocketsModule,
   ],

@@ -3,7 +3,6 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { ChatUser } from './chat-user.model';
 import { ChatService } from './chat.service';
 import { Chat } from './chat.model';
-import { UserModule } from '../user/user.module';
 import { ChatController } from './chat.controller';
 import { AuthModule } from '../auth/auth.module';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -31,7 +30,6 @@ import { Voice } from '../voice/voice.model';
       },
     ]),
     SequelizeModule.forFeature([User, Chat, ChatUser, ChatReceived, Voice]),
-    UserModule,
     AuthModule,
     WebsocketsModule,
     MessageModule,

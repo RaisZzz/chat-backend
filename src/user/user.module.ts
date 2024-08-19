@@ -1,4 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { SequelizeModule } from '@nestjs/sequelize';
@@ -11,14 +11,16 @@ import { Report } from '../report/report.model';
 import { ImageModule } from '../image/image.module';
 import { Image } from '../image/image.model';
 import { UserDevice } from './user-device.model';
+import { ChatModule } from '../chat/chat.module';
 
 @Module({
   imports: [
     SequelizeModule.forFeature([User, UserReaction, Report, Image, UserDevice]),
-    forwardRef(() => AuthModule),
+    AuthModule,
     WebsocketsModule,
     RedisModule,
     ImageModule,
+    ChatModule,
   ],
   controllers: [UserController],
   providers: [UserService],

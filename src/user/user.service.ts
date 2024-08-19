@@ -31,6 +31,9 @@ import { ImageService } from '../image/image.service';
 import { SetFCMTokenDto } from './dto/set-fcm-token.dto';
 import { UserDevice } from './user-device.model';
 import { GetUserById } from './dto/get-user-by-id.dto';
+import { ReturnUserDto } from './dto/return-user.dto';
+import { Chat } from '../chat/chat.model';
+import { ChatService } from '../chat/chat.service';
 
 export class CheckUserExistResponse {
   readonly userRegistered: boolean;
@@ -49,6 +52,7 @@ export class UserService {
     private redisService: RedisService,
     private imageService: ImageService,
     private socketGateway: SocketGateway,
+    private chatService: ChatService,
   ) {}
 
   async checkUserExist(
@@ -355,6 +359,55 @@ export class UserService {
     }
 
     return users;
+  }
+
+  async returnUser(
+    user: User,
+    returnUserDto: ReturnUserDto,
+    withoutTimeout = false,
+  ): Promise<User> {
+    if (user.id === returnUserDto.userId) {
+      throw new HttpException(
+        new Error(ErrorType.BadFields),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (user.returns <= 0) {
+      throw new HttpException(
+        new Error(ErrorType.ReturnsCount),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    const lastDislike: UserReaction = await this.userReactionRepository.findOne(
+      {
+        attributes: ['id', 'recipientId', 'isLiked'],
+        where: {
+          senderId: user.id,
+          recipientId: returnUserDto.userId,
+        },
+        order: [['updatedAt', 'DESC']],
+      },
+    );
+    if (!lastDislike && !withoutTimeout) {
+      setTimeout(async () => {
+        this.returnUser(user, returnUserDto, true);
+      }, 5000);
+    } else {
+      if (lastDislike) {
+        await lastDislike.destroy();
+      }
+      await user.update({ returns: user.returns - 1 });
+
+      const chat: Chat = await this.chatService.getChatWithTwoUsers(
+        returnUserDto.userId,
+        user.id,
+      );
+      if (chat) await this.chatService.deleteChat(chat.id);
+    }
+
+    return await this.getUserById(user, { userId: lastDislike.recipientId });
   }
 
   async setFCMToken(

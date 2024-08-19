@@ -25,6 +25,7 @@ import { UploadPhotoDto } from './dto/upload-photo.dto';
 import { SetFCMTokenDto } from './dto/set-fcm-token.dto';
 import { RealIP } from 'nestjs-real-ip';
 import { GetUserById } from './dto/get-user-by-id.dto';
+import { ReturnUserDto } from './dto/return-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -39,6 +40,12 @@ export class UserController {
   @UseGuards(JwtAuthGuard, SmsGuard)
   getAllUsers(@Req() req, @Query() getUsersDto: GetUsersDto): Promise<User[]> {
     return this.userService.getUsers(req.user, getUsersDto);
+  }
+
+  @Post('/return_last')
+  @UseGuards(JwtAuthGuard, SmsGuard)
+  returnLast(@Req() req, @Body() returnUserDto: ReturnUserDto): Promise<User> {
+    return this.userService.returnUser(req.user, returnUserDto);
   }
 
   @Get('get_users_online')

@@ -35,7 +35,6 @@ import { Voice } from '../voice/voice.model';
         schema: messageReceivedModel,
       },
     ]),
-    UserModule,
     AuthModule,
     WebsocketsModule,
     ImageModule,
