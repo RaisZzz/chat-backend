@@ -147,6 +147,11 @@ export class MessageSendService {
       `);
       const chat: Chat = chatInfoRes[0] as Chat;
       message['chat'] = chat;
+      message['chat']['unread'] = await this.messageModel.countDocuments({
+        chatId: message['chat']['id'],
+        ownerId: { $ne: userId },
+        isRead: false,
+      });
       if (message.voiceId) {
         message['voice'] = (
           await this.voiceRepository.findOne({

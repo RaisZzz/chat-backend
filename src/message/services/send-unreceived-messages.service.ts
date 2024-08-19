@@ -52,6 +52,11 @@ export class SendUnreceivedMessagesService {
 
     for (const m of messagesWithChat) {
       m['chat'] = chats.find((c) => c.id === m.chatId);
+      m['chat']['unread'] = await this.messageModel.countDocuments({
+        chatId: m['chat']['id'],
+        ownerId: { $ne: userId },
+        isRead: false,
+      });
       if (m.voiceId) {
         m['voice'] = await this.voiceRepository.findOne({
           where: { id: m.voiceId },
