@@ -35,6 +35,7 @@ import { Report } from './report/report.model';
 import { ReportModule } from './report/report.module';
 import { UserReactionReceived } from './user-reaction/user-reaction-received.model';
 import { VoiceModule } from './voice/voice.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -102,6 +103,7 @@ import { VoiceModule } from './voice/voice.module';
     UserReactionModule,
     ReportModule,
     VoiceModule,
+    UserModule,
   ],
 })
 export class AppModule {}
