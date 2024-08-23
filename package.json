@@ -46,6 +46,7 @@
     "get-audio-duration": "^4.0.1",
     "google-auth-library": "^9.13.0",
     "image-size": "^1.1.1",
+    "md5": "^2.3.0",
     "mongoose": "^8.4.4",
     "nestjs-real-ip": "^3.0.1",
     "node-wav": "^0.0.2",
