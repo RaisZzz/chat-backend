@@ -20,16 +20,24 @@ export const chatInfoPsqlQuery = (userId: number) => {
     END
   )) as "imageId",
   (
-    select row_to_json(user_reaction)
-    from user_reaction
-    where sender_id = users[1] and recipient_id = users[2]
-    and super_like_msg IS NOT NULL
+    CASE 
+      WHEN "type" = ${ChatType.user} THEN (
+        select row_to_json(user_reaction)
+        from user_reaction
+        where sender_id = users[1] and recipient_id = users[2]
+        and super_like_msg IS NOT NULL
+      )
+    END
   ) as "firstUserLike",
   (
-    select row_to_json(user_reaction)
-    from user_reaction
-    where sender_id = users[2] and recipient_id = users[1]
-    and super_like_msg IS NOT NULL
+    CASE 
+      WHEN "type" = ${ChatType.user} THEN (
+        select row_to_json(user_reaction)
+        from user_reaction
+        where sender_id = users[2] and recipient_id = users[1]
+        and super_like_msg IS NOT NULL
+      )
+    END
   ) as "secondUserLike"
 `;
 };
