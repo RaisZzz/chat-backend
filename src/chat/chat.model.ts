@@ -2,6 +2,7 @@ import { Column, DataType, Model, Table } from 'sequelize-typescript';
 
 export enum ChatType {
   user,
+  support,
 }
 
 export const chatInfoPsqlQuery = (userId: number) => {

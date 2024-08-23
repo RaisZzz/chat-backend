@@ -177,15 +177,9 @@ export class UserService {
 
     // Add filters
     const includeQuery = [
-      Role,
-      {
-        model: City,
-        as: 'birthPlace',
-      },
-      {
-        model: City,
-        as: 'livePlace',
-      },
+      { model: Role, where: { value: 'user' } },
+      { model: City, as: 'birthPlace' },
+      { model: City, as: 'livePlace' },
       {
         model: Interest,
         where: getUsersDto.interests?.length

@@ -5,7 +5,7 @@ import { ChatUser } from './chat-user.model';
 import { User } from '../user/user.model';
 import { Chat, chatInfoPsqlQuery, ChatType } from './chat.model';
 import { Sequelize } from 'sequelize-typescript';
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { OffsetDto } from '../base/offset.dto';
 import { Message, SystemMessageType } from '../message/message.model';
 import { Model } from 'mongoose';
@@ -17,6 +17,9 @@ import { MessageReceived } from '../message/message-received.model';
 import { MessageService } from '../message/message.service';
 import { v4 as uuidv4 } from 'uuid';
 import { Voice } from '../voice/voice.model';
+import { UserRoles } from '../role/user-role.model';
+import { Error, ErrorType } from '../error.class';
+import { Role } from '../role/role.model';
 
 @Injectable()
 export class ChatService {
@@ -25,6 +28,7 @@ export class ChatService {
     @InjectMongooseModel(Message.name) private messageModel: Model<Message>,
     @InjectMongooseModel(MessageReceived.name)
     private messageReceivedModel: Model<MessageReceived>,
+    @InjectModel(User) private userRepository: typeof User,
     @InjectModel(Chat) private chatRepository: typeof Chat,
     @InjectModel(Voice) private voiceRepository: typeof Voice,
     @InjectModel(ChatUser) private chatUserRepository: typeof ChatUser,
@@ -54,13 +58,14 @@ export class ChatService {
   }
 
   async createChatWithTwoUsers(
+    type: ChatType,
     firstUserId: number,
     secondUserId: number,
   ): Promise<Chat> {
     // Check user has chat with another user
     const [chatResponse] = await this.sequelize.query(`
       SELECT * FROM "chat"
-      WHERE type = ${ChatType.user}
+      WHERE type = ${type}
       AND EXISTS (
         SELECT id FROM "chat_user"   
         WHERE user_id = ${firstUserId}
@@ -81,9 +86,7 @@ export class ChatService {
       chat = chats[0];
     } else {
       // Create new chat with user
-      chat = await this.chatRepository.create({
-        type: ChatType.user,
-      });
+      chat = await this.chatRepository.create({ type });
       await this.chatUserRepository.create({
         userId: firstUserId,
         chatId: chat.id,
@@ -97,15 +100,17 @@ export class ChatService {
       fakeUser.id = firstUserId;
       fakeUser.dataValues.id = firstUserId;
 
-      await this.messageService.sendMessage(
-        fakeUser,
-        {
-          uuid: uuidv4(),
-          text: '',
-          toChatId: chat.id,
-        },
-        SystemMessageType.ChatCreated,
-      );
+      if (type === ChatType.user) {
+        await this.messageService.sendMessage(
+          fakeUser,
+          {
+            uuid: uuidv4(),
+            text: '',
+            toChatId: chat.id,
+          },
+          SystemMessageType.ChatCreated,
+        );
+      }
     }
 
     return chat;
@@ -268,6 +273,49 @@ export class ChatService {
       },
     );
     return { success: true };
+  }
+
+  async getUserSupportChat(user: User): Promise<Chat> {
+    // Check user has support chat
+    const [chatResponse] = await this.sequelize.query(`
+      SELECT * FROM "chat"
+      WHERE type = ${ChatType.support}
+      AND EXISTS (
+        SELECT id FROM "chat_user"   
+        WHERE user_id = ${user.id}
+        AND chat_id = "chat".id
+      )
+      LIMIT 1
+    `);
+    const chats: Chat[] = chatResponse as Chat[];
+
+    let chat: Chat;
+    if (chats.length) {
+      chat = chats[0];
+    } else {
+      const availableAdminUser: User = await this.userRepository.findOne({
+        attributes: ['id'],
+        include: [
+          {
+            model: Role,
+            where: { value: 'admin' },
+          },
+        ],
+      });
+      if (!availableAdminUser) {
+        throw new HttpException(
+          new Error(ErrorType.AdminNotAvailable),
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      chat = await this.createChatWithTwoUsers(
+        ChatType.support,
+        user.id,
+        availableAdminUser.id,
+      );
+    }
+
+    return chat;
   }
 
   private async setChatUnreceived(

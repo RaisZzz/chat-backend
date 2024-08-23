@@ -24,6 +24,9 @@ import { Sequelize } from 'sequelize-typescript';
 import { InjectModel as InjectMongooseModel } from '@nestjs/mongoose';
 import { Message } from '../message/message.model';
 import { Model } from 'mongoose';
+import { Role } from '../role/role.model';
+import { UserRoles } from '../role/user-role.model';
+import { ChatUser } from '../chat/chat-user.model';
 
 abstract class AuthData {
   readonly cities: City[];
@@ -71,6 +74,9 @@ export class AuthService {
 
   constructor(
     @InjectModel(User) private userRepository: typeof User,
+    @InjectModel(UserRoles) private userRolesRepository: typeof UserRoles,
+    @InjectModel(ChatUser) private chatUserRepository: typeof ChatUser,
+    @InjectModel(Role) private roleRepository: typeof Role,
     @InjectMongooseModel(Message.name) private messageModel: Model<Message>,
     @InjectModel(UserDevice) private userDeviceRepository: typeof UserDevice,
     private jwtService: JwtService,
@@ -183,6 +189,11 @@ export class AuthService {
       });
       this.setUserDeleteTimeout(newUser, userRegisterSmsTime);
 
+      const userRole: Role = await this.roleRepository.findOne({
+        where: { value: 'user' },
+      });
+      await newUser.$set('roles', [userRole]);
+
       const smsCode: string = this.generateSmsCode();
       await newUser.update({ code: smsCode });
       this.smsService.sendSmsCode(newUser.phone, SmsType.auth, smsCode, 'ru');
@@ -275,6 +286,12 @@ export class AuthService {
 
       if (!userCheck || !userCheck.code_confirmed) {
         try {
+          await this.userRolesRepository.destroy({
+            where: { userId: userCheck.id },
+          });
+          await this.chatUserRepository.destroy({
+            where: { userId: userCheck.id },
+          });
           await userCheck.destroy();
         } catch (e) {
           console.log(e);

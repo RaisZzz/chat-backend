@@ -5,7 +5,7 @@ import { excludedUserAttributes, User } from '../user/user.model';
 import { SendUserReactionDto } from './dto/send-user-reaction.dto';
 import { Error, ErrorType } from '../error.class';
 import { ChatService } from '../chat/chat.service';
-import { Chat } from '../chat/chat.model';
+import { Chat, ChatType } from '../chat/chat.model';
 import {
   UserReactionReceived,
   UserReactionReceivedType,
@@ -158,6 +158,7 @@ export class UserReactionService {
       if (recipientReaction && recipientReaction.isLiked) {
         // Create chat if above users likes
         await this.chatService.createChatWithTwoUsers(
+          ChatType.user,
           user.id,
           sendDto.toUserId,
         );

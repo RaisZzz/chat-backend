@@ -27,6 +27,7 @@ export enum ErrorType {
   TokenInvalid,
   TokenExpired,
   TokenNotFound,
+  AdminNotAvailable,
 }
 
 export class Error {

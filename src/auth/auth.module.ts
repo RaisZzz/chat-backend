@@ -21,6 +21,9 @@ import { Children } from '../children/children.model';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Message, messageModel } from '../message/message.model';
 import { WebsocketsModule } from '../websockets/websockets.module';
+import { Role } from '../role/role.model';
+import { UserRoles } from '../role/user-role.model';
+import { ChatUser } from '../chat/chat-user.model';
 
 @Module({
   imports: [
@@ -49,6 +52,9 @@ import { WebsocketsModule } from '../websockets/websockets.module';
       Interest,
       Language,
       Children,
+      Role,
+      UserRoles,
+      ChatUser,
     ]),
     SmsModule,
     WebsocketsModule,
