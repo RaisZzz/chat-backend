@@ -5,7 +5,6 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { Purchase } from './purchase.model';
 import { UserPurchase } from './user-purchase.model';
 import { User } from 'src/user/user.model';
-import { Message } from 'src/message/message.model';
 import { Chat } from 'src/chat/chat.model';
 import { WebsocketsModule } from '../websockets/websockets.module';
 import { AuthModule } from '../auth/auth.module';
@@ -15,7 +14,7 @@ import { HttpModule } from '@nestjs/axios';
   providers: [PurchaseService],
   controllers: [PurchaseController],
   imports: [
-    SequelizeModule.forFeature([Purchase, UserPurchase, User, Message, Chat]),
+    SequelizeModule.forFeature([Purchase, UserPurchase, User, Chat]),
     WebsocketsModule,
     forwardRef(() => AuthModule),
     HttpModule,
