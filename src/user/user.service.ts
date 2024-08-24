@@ -57,6 +57,14 @@ export class UserService {
     private chatService: ChatService,
   ) {}
 
+  async getUserInfo(user: User): Promise<User> {
+    return await this.userRepository.findOne({
+      attributes: { exclude: excludedUserAttributes },
+      include: { all: true },
+      where: { id: user.id },
+    });
+  }
+
   async checkUserExist(
     checkDto: GetUserByPhoneDto,
   ): Promise<CheckUserExistResponse> {

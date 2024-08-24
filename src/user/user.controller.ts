@@ -68,6 +68,12 @@ export class UserController {
     return this.userService.getUserById(req.user, getUserByIdDto);
   }
 
+  @Get('get-user-info')
+  @UseGuards(JwtAuthGuard, SmsGuard)
+  getUserInfo(@Req() req): Promise<User> {
+    return this.userService.getUserInfo(req.user);
+  }
+
   @Post('set-fcm-token')
   @UseGuards(JwtAuthGuard)
   setFCMToken(
