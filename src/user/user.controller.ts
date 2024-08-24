@@ -80,7 +80,10 @@ export class UserController {
 
   @Get('get-user-info')
   @UseGuards(JwtAuthGuard, SmsGuard)
-  getUserInfo(@Req() req, @Body() baseDto: BaseDto): Promise<UserInfoResponse> {
+  getUserInfo(
+    @Req() req,
+    @Query() baseDto: BaseDto,
+  ): Promise<UserInfoResponse> {
     return this.userService.getUserInfo(req.user, baseDto);
   }
 

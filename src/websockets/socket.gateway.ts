@@ -31,9 +31,7 @@ export class SocketGateway
     private redisService: RedisService,
     @InjectModel(User) private userRepository: typeof User,
     private sequelize: Sequelize,
-  ) {
-    setInterval(() => console.log(this.connectedUsers), 5000);
-  }
+  ) {}
 
   @WebSocketServer()
   server: Server;
