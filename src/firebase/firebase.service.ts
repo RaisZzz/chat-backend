@@ -72,30 +72,29 @@ export class FirebaseService {
       }
 
       console.log('SENDING FIREBASE with TOKENS: ' + userTokens);
-      const message = {
-        token: userTokens[0],
-        notification: {
-          title: title ?? '',
-          body: body ?? '',
-        },
-        data,
-      };
+      for (const token of userTokens) {
+        const message = {
+          token,
+          notification: { title: title ?? '', body: body ?? '' },
+          data,
+        };
 
-      const response = await fetch(
-        'https://fcm.googleapis.com/v1/projects/tidy-federation-375304/messages:send',
-        {
-          headers: {
-            Authorization: `Bearer ${await this.generateToken()}`,
-            'Content-Type': 'application/json',
+        const response = await fetch(
+          'https://fcm.googleapis.com/v1/projects/tidy-federation-375304/messages:send',
+          {
+            headers: {
+              Authorization: `Bearer ${await this.generateToken()}`,
+              'Content-Type': 'application/json',
+            },
+            method: 'POST',
+            body: JSON.stringify({ message }),
           },
-          method: 'POST',
-          body: JSON.stringify({ message }),
-        },
-      );
-      const json = await response.json();
+        );
+        const json = await response.json();
 
-      console.log(json);
-      console.log(json?.error?.details);
+        console.log(json);
+        console.log(json?.error?.details);
+      }
     } catch (e) {
       console.log('FIREBASE SEND NOTIFICATION ERROR ' + e);
     }
