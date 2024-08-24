@@ -41,7 +41,7 @@ export class SocketGateway
   private connectedUsers: Record<string, string[]> = {};
 
   getUserConnected = (userId: number): boolean =>
-    !!this.connectedUsers[userId].length;
+    !!this.connectedUsers[userId]?.length;
 
   private getUserIdBySocket(client: Socket): string {
     const userConnectedIndex: number = Object.values(
@@ -57,15 +57,15 @@ export class SocketGateway
     console.log(`Client disconnected: ${client.id}`);
     try {
       const userId: string = this.getUserIdBySocket(client);
-      const socketExistIndex = this.connectedUsers[userId].findIndex(
-        (s) => s === client.id,
-      );
-      if (socketExistIndex) {
+      const socketExistIndex = !this.connectedUsers[userId]
+        ? -1
+        : this.connectedUsers[userId].findIndex((s) => s === client.id);
+      if (socketExistIndex >= 0) {
         this.connectedUsers[userId].splice(socketExistIndex, 1);
       }
       this.redisService.hSet(String(userId), 'online', String(Date.now()));
 
-      if (!this.connectedUsers[userId].length) {
+      if (!this.connectedUsers[userId] || !this.connectedUsers[userId].length) {
         this.sendUserOnline(parseInt(userId), Date.now());
       }
     } catch (e) {}
@@ -96,8 +96,10 @@ export class SocketGateway
       });
 
       if (userExist) {
-        const userSockets: string[] = this.connectedUsers[String(jwtUser.id)];
-        if (!userSockets.includes(client.id)) {
+        if (!this.connectedUsers[String(jwtUser.id)]) {
+          this.connectedUsers[String(jwtUser.id)] = [];
+        }
+        if (!this.connectedUsers[String(jwtUser.id)].includes(client.id)) {
           this.connectedUsers[String(jwtUser.id)].push(client.id);
         }
 
@@ -123,8 +125,8 @@ export class SocketGateway
     this.log(
       `TRY SEND SOCKET '${eventName}' ${userId} ${JSON.stringify(this.connectedUsers)}`,
     );
-    const sockets: string[] = this.connectedUsers[String(userId)];
-    if (!sockets.length) return;
+    const sockets = this.connectedUsers[String(userId)];
+    if (!sockets || !sockets.length) return;
 
     for (const socket of sockets) {
       this.log(`SEND '${eventName}' TO USER #${userId} (socket: ${socket})`);
