@@ -34,11 +34,23 @@ import { GetUserById } from './dto/get-user-by-id.dto';
 import { ReturnUserDto } from './dto/return-user.dto';
 import { Chat } from '../chat/chat.model';
 import { ChatService } from '../chat/chat.service';
-import { BaseDto } from '../base/base.dto';
 import { DeleteDeviceSessionDto } from './dto/delete-device-session.dto';
+import { BaseDto } from '../base/base.dto';
+import { SetUserSettingsDto } from './dto/set-user-settings.dto';
 
 export class CheckUserExistResponse {
   readonly userRegistered: boolean;
+}
+
+export class UserSettings {
+  readonly reactionsNotificationsEnabled: boolean;
+  readonly messagesNotificationsEnabled: boolean;
+  readonly messagesReactionsNotificationsEnabled: boolean;
+}
+
+export class UserInfoResponse {
+  readonly user: User;
+  readonly userSettings: UserSettings;
 }
 
 @Injectable()
@@ -57,12 +69,52 @@ export class UserService {
     private chatService: ChatService,
   ) {}
 
-  async getUserInfo(user: User): Promise<User> {
-    return await this.userRepository.findOne({
+  async getUserInfo(user: User, baseDto: BaseDto): Promise<UserInfoResponse> {
+    const newUser: User = await this.userRepository.findOne({
       attributes: { exclude: excludedUserAttributes },
       include: { all: true },
       where: { id: user.id },
     });
+    const userDevice: UserDevice = await this.userDeviceRepository.findOne({
+      where: { userId: user.id, deviceId: baseDto.deviceId },
+    });
+
+    return {
+      user: newUser,
+      userSettings: {
+        reactionsNotificationsEnabled:
+          !!userDevice?.reactionsNotificationsEnabled,
+        messagesNotificationsEnabled:
+          !!userDevice?.messagesNotificationsEnabled,
+        messagesReactionsNotificationsEnabled:
+          !!userDevice?.messagesReactionsNotificationsEnabled,
+      },
+    };
+  }
+
+  async setUserSettings(
+    user: User,
+    setDto: SetUserSettingsDto,
+  ): Promise<SuccessInterface> {
+    const userDevice: UserDevice = await this.userDeviceRepository.findOne({
+      where: { userId: user.id, deviceId: setDto.deviceId },
+    });
+    if (!userDevice) return { success: false };
+
+    await userDevice.update({
+      reactionsNotificationsEnabled:
+        setDto.reactionsNotificationsEnabled ??
+        userDevice.reactionsNotificationsEnabled,
+      messagesNotificationsEnabled:
+        setDto.messagesNotificationsEnabled ??
+        userDevice.messagesNotificationsEnabled,
+      messagesReactionsNotificationsEnabled:
+        setDto.messagesReactionsNotificationsEnabled ??
+        userDevice.messagesReactionsNotificationsEnabled,
+    });
+
+    this.socketGateway.sendUpdateData(user.id);
+    return { success: true };
   }
 
   async checkUserExist(

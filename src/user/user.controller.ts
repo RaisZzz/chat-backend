@@ -10,7 +10,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { UserService } from './user.service';
+import { UserInfoResponse, UserService } from './user.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { User } from './user.model';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -28,6 +28,7 @@ import { GetUserById } from './dto/get-user-by-id.dto';
 import { ReturnUserDto } from './dto/return-user.dto';
 import { BaseDto } from '../base/base.dto';
 import { DeleteDeviceSessionDto } from './dto/delete-device-session.dto';
+import { SetUserSettingsDto } from './dto/set-user-settings.dto';
 
 @Controller('user')
 export class UserController {
@@ -62,6 +63,15 @@ export class UserController {
     return this.userService.updateUserInfo(req.user, updateUserDto);
   }
 
+  @Post('set-settings')
+  @UseGuards(JwtAuthGuard, SmsGuard)
+  setSettings(
+    @Req() req,
+    @Body() setUserSettingsDto: SetUserSettingsDto,
+  ): Promise<SuccessInterface> {
+    return this.userService.setUserSettings(req.user, setUserSettingsDto);
+  }
+
   @Get('get-by-id')
   @UseGuards(JwtAuthGuard, SmsGuard)
   getUserById(@Req() req, @Query() getUserByIdDto: GetUserById): Promise<User> {
@@ -70,8 +80,8 @@ export class UserController {
 
   @Get('get-user-info')
   @UseGuards(JwtAuthGuard, SmsGuard)
-  getUserInfo(@Req() req): Promise<User> {
-    return this.userService.getUserInfo(req.user);
+  getUserInfo(@Req() req, @Body() baseDto: BaseDto): Promise<UserInfoResponse> {
+    return this.userService.getUserInfo(req.user, baseDto);
   }
 
   @Post('set-fcm-token')

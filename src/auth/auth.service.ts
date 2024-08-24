@@ -27,6 +27,7 @@ import { Model } from 'mongoose';
 import { Role } from '../role/role.model';
 import { UserRoles } from '../role/user-role.model';
 import { ChatUser } from '../chat/chat-user.model';
+import { UserSettings } from '../user/user.service';
 
 abstract class AuthData {
   readonly cities: City[];
@@ -53,6 +54,7 @@ export abstract class AuthResponse {
   readonly user: User;
   readonly data: AuthData;
   readonly chatsUnread: Record<string, number>;
+  readonly userSettings: UserSettings;
 }
 
 const userRegisterSmsTime = 600;
@@ -329,12 +331,24 @@ export class AuthService {
       });
     }
 
+    const userDevice: UserDevice = await this.userDeviceRepository.findOne({
+      where: { userId: user.id, deviceId },
+    });
+
     return {
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       user,
       data: await this.getDataItems(),
       chatsUnread,
+      userSettings: {
+        reactionsNotificationsEnabled:
+          !!userDevice?.reactionsNotificationsEnabled,
+        messagesNotificationsEnabled:
+          !!userDevice?.messagesNotificationsEnabled,
+        messagesReactionsNotificationsEnabled:
+          !!userDevice?.messagesReactionsNotificationsEnabled,
+      },
     };
   }
 
