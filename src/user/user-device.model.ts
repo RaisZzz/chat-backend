@@ -43,6 +43,15 @@ export class UserDevice extends Model<UserDevice> {
   @Column({ type: DataType.TEXT })
   fcmToken: string | null;
 
+  @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: true })
+  reactionsNotificationsEnabled: boolean;
+
+  @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: true })
+  messagesNotificationsEnabled: boolean;
+
+  @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: true })
+  messagesReactionsNotificationsEnabled: boolean;
+
   @Column({
     type: DataType.BIGINT,
     allowNull: false,

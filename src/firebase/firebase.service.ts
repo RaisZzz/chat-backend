@@ -25,12 +25,16 @@ export class FirebaseService {
     dataUser?: User,
   ) {
     const userDevices: UserDevice[] = await this.userDeviceRepository.findAll({
-      attributes: ['fcmToken'],
+      attributes: [
+        'fcmToken',
+        'reactionsNotificationsEnabled',
+        'messagesNotificationsEnabled',
+        'messagesReactionsNotificationsEnabled',
+      ],
       where: { userId, fcmToken: { [Op.ne]: null } },
     });
-    const userTokens: string[] = userDevices.map((d) => d.fcmToken);
 
-    if (!userTokens.length) return;
+    if (!userDevices.length) return;
 
     try {
       let disabled;
@@ -71,33 +75,68 @@ export class FirebaseService {
         data['chat'] = JSON.stringify(dataChat);
       }
 
-      console.log('SENDING FIREBASE with TOKENS: ' + userTokens);
-      for (const token of userTokens) {
-        const message = {
-          token,
-          notification: { title: title ?? '', body: body ?? '' },
-          data,
-        };
-
-        const response = await fetch(
-          'https://fcm.googleapis.com/v1/projects/tidy-federation-375304/messages:send',
-          {
-            headers: {
-              Authorization: `Bearer ${await this.generateToken()}`,
-              'Content-Type': 'application/json',
-            },
-            method: 'POST',
-            body: JSON.stringify({ message }),
-          },
-        );
-        const json = await response.json();
-
-        console.log(json);
-        console.log(json?.error?.details);
+      for (const token of userDevices) {
+        await this.sendFirebaseNotification(token, type, title, body, data);
       }
     } catch (e) {
       console.log('FIREBASE SEND NOTIFICATION ERROR ' + e);
     }
+  }
+
+  private async sendFirebaseNotification(
+    userDevice: UserDevice,
+    type: NotificationType,
+    title: string,
+    body: string,
+    data: Record<string, any>,
+  ) {
+    // Check if user reactions notifications disabled
+    if (
+      [
+        NotificationType.superlike,
+        NotificationType.like,
+        NotificationType.dislike,
+        NotificationType.mutual,
+      ].includes(type) &&
+      !userDevice.reactionsNotificationsEnabled
+    ) {
+      return;
+    }
+
+    // Check if user messages notifications disabled
+    if (
+      [NotificationType.message, NotificationType.support].includes(type) &&
+      !userDevice.messagesNotificationsEnabled
+    ) {
+      return;
+    }
+
+    // Check if user messages reactions notifications disabled
+    if (
+      type === NotificationType.reaction &&
+      !userDevice.messagesReactionsNotificationsEnabled
+    ) {
+      return;
+    }
+
+    // Send request to FCM
+    const message = {
+      token: userDevice.fcmToken,
+      notification: { title: title ?? '', body: body ?? '' },
+      data,
+    };
+
+    await fetch(
+      'https://fcm.googleapis.com/v1/projects/tidy-federation-375304/messages:send',
+      {
+        headers: {
+          Authorization: `Bearer ${await this.generateToken()}`,
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+        body: JSON.stringify({ message }),
+      },
+    );
   }
 
   private async generateToken(): Promise<string> {
