@@ -395,6 +395,7 @@ export class UserService {
         await lastDislike.destroy();
       }
       await user.update({ returns: user.returns - 1 });
+      this.socketGateway.sendUpdateData(user.id);
 
       const chat: Chat = await this.chatService.getChatWithTwoUsers(
         returnUserDto.userId,
@@ -487,6 +488,7 @@ export class UserService {
     }
 
     delete user.dataValues.password;
+    this.socketGateway.sendUpdateData(user.id);
 
     return user;
   }
@@ -565,6 +567,7 @@ export class UserService {
       tryVerifiedAt: null,
       verifyAnsweredAt: null,
     });
+    this.socketGateway.sendUpdateData(user.id);
 
     return file;
   }
