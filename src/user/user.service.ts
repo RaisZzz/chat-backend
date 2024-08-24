@@ -34,6 +34,7 @@ import { GetUserById } from './dto/get-user-by-id.dto';
 import { ReturnUserDto } from './dto/return-user.dto';
 import { Chat } from '../chat/chat.model';
 import { ChatService } from '../chat/chat.service';
+import { BaseDto } from '../base/base.dto';
 
 export class CheckUserExistResponse {
   readonly userRegistered: boolean;
@@ -414,6 +415,20 @@ export class UserService {
     if (!userDevice) return { success: false };
 
     await userDevice.update({ fcmToken: setFCMTokenDto.fcmToken });
+
+    return { success: true };
+  }
+
+  async disableFcmToken(
+    user: User,
+    baseDto: BaseDto,
+  ): Promise<SuccessInterface> {
+    const userDevice: UserDevice = await this.userDeviceRepository.findOne({
+      where: { userId: user.id, deviceId: baseDto.deviceId },
+    });
+    if (!userDevice) return { success: false };
+
+    await userDevice.destroy();
 
     return { success: true };
   }

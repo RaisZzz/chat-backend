@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Post,
   Query,
@@ -25,6 +26,7 @@ import { UploadPhotoDto } from './dto/upload-photo.dto';
 import { SetFCMTokenDto } from './dto/set-fcm-token.dto';
 import { GetUserById } from './dto/get-user-by-id.dto';
 import { ReturnUserDto } from './dto/return-user.dto';
+import { BaseDto } from '../base/base.dto';
 
 @Controller('user')
 export class UserController {
@@ -41,7 +43,7 @@ export class UserController {
     return this.userService.getUsers(req.user, getUsersDto);
   }
 
-  @Post('/return_last')
+  @Post('return_last')
   @UseGuards(JwtAuthGuard, SmsGuard)
   returnLast(@Req() req, @Body() returnUserDto: ReturnUserDto): Promise<User> {
     return this.userService.returnUser(req.user, returnUserDto);
@@ -72,6 +74,15 @@ export class UserController {
     @Body() setFCMTokenDto: SetFCMTokenDto,
   ): Promise<SuccessInterface> {
     return this.userService.setFCMToken(req.user, setFCMTokenDto);
+  }
+
+  @Delete('disable-fcm-token')
+  @UseGuards(JwtAuthGuard)
+  disableFCMToken(
+    @Req() req,
+    @Body() baseDto: BaseDto,
+  ): Promise<SuccessInterface> {
+    return this.userService.disableFcmToken(req.user, baseDto);
   }
 
   @Post('check_sms_code')
