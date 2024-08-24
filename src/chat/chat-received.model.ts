@@ -9,6 +9,9 @@ export class ChatReceived extends Model<ChatReceived> {
   @Column({ type: DataType.INTEGER, allowNull: false })
   chatId: number;
 
+  @Column({ type: DataType.TEXT, allowNull: false })
+  deviceId: string;
+
   @Column({ type: DataType.INTEGER, allowNull: false })
   userId: number;
 

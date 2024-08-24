@@ -17,9 +17,10 @@ import { MessageReceived } from '../message/message-received.model';
 import { MessageService } from '../message/message.service';
 import { v4 as uuidv4 } from 'uuid';
 import { Voice } from '../voice/voice.model';
-import { UserRoles } from '../role/user-role.model';
 import { Error, ErrorType } from '../error.class';
 import { Role } from '../role/role.model';
+import { UserDevice } from '../user/user-device.model';
+import { BaseDto } from '../base/base.dto';
 
 @Injectable()
 export class ChatService {
@@ -29,6 +30,7 @@ export class ChatService {
     @InjectMongooseModel(MessageReceived.name)
     private messageReceivedModel: Model<MessageReceived>,
     @InjectModel(User) private userRepository: typeof User,
+    @InjectModel(UserDevice) private userDeviceRepository: typeof UserDevice,
     @InjectModel(Chat) private chatRepository: typeof Chat,
     @InjectModel(Voice) private voiceRepository: typeof Voice,
     @InjectModel(ChatUser) private chatUserRepository: typeof ChatUser,
@@ -195,12 +197,12 @@ export class ChatService {
     );
     const chatReceives: ChatReceived[] = [];
     for (let i = 0; i < chatUsers.length; i++) {
-      const chatReceived: ChatReceived = await this.setChatUnreceived(
+      const chatReceived: ChatReceived[] = await this.setChatUnreceived(
         chatUsers[i].chatId,
         chatUsers[i].userId,
         ChatReceivedType.deleted,
       );
-      chatReceives.push(chatReceived);
+      chatReceives.push(...chatReceived);
     }
 
     chatReceives.forEach((c: ChatReceived) => {
@@ -231,10 +233,14 @@ export class ChatService {
     }
   }
 
-  async sendAllUnreceivedChats(user: User): Promise<SuccessInterface> {
+  async sendAllUnreceivedChats(
+    user: User,
+    baseDto: BaseDto,
+  ): Promise<SuccessInterface> {
     const chatReceived: ChatReceived[] =
       await this.chatReceivedRepository.findAll({
         where: {
+          deviceId: baseDto.deviceId,
           userId: user.id,
           received: false,
         },
@@ -267,6 +273,7 @@ export class ChatService {
       { received: true },
       {
         where: {
+          deviceId: setDto.deviceId,
           userId: user.id,
           chatId: setDto.chatId,
         },
@@ -322,21 +329,53 @@ export class ChatService {
     chatId: number,
     userId: number,
     type: ChatReceivedType,
-  ): Promise<ChatReceived> {
-    let chatReceived: ChatReceived = await this.chatReceivedRepository.findOne({
-      where: { chatId, userId },
+  ): Promise<ChatReceived[]> {
+    const userDevices: UserDevice[] = await this.userDeviceRepository.findAll({
+      attributes: ['deviceId'],
+      where: { userId },
     });
-    if (chatReceived) {
-      await chatReceived.update({ type, received: false });
-    } else {
-      chatReceived = await this.chatReceivedRepository.create({
-        userId,
-        chatId,
+
+    const chatReceived: ChatReceived[] =
+      await this.chatReceivedRepository.findAll({
+        where: {
+          chatId,
+          userId,
+          deviceId: { [Op.in]: userDevices.map((u) => u.deviceId) },
+        },
+      });
+
+    await this.chatReceivedRepository.update(
+      {
         type,
         received: false,
-      });
-    }
+      },
+      {
+        where: {
+          chatId,
+          userId,
+          deviceId: { [Op.in]: userDevices.map((u) => u.deviceId) },
+        },
+      },
+    );
 
-    return chatReceived;
+    const uncreatedChatReceivedUserDevice: UserDevice[] = [
+      ...userDevices,
+    ].filter((u) => !chatReceived.map((c) => c.deviceId).includes(u.deviceId));
+    if (!uncreatedChatReceivedUserDevice.length) return chatReceived;
+
+    const newChatReceived: ChatReceived[] =
+      await this.chatReceivedRepository.bulkCreate(
+        uncreatedChatReceivedUserDevice.map((u: UserDevice) => {
+          return {
+            userId,
+            deviceId: u.deviceId,
+            chatId,
+            type,
+            received: false,
+          };
+        }),
+      );
+
+    return [...chatReceived, ...newChatReceived];
   }
 }

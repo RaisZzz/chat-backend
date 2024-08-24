@@ -16,6 +16,7 @@ import {
 import { User } from '../user/user.model';
 import { MessageModule } from '../message/message.module';
 import { Voice } from '../voice/voice.model';
+import { UserDevice } from '../user/user-device.model';
 
 @Module({
   imports: [
@@ -29,7 +30,14 @@ import { Voice } from '../voice/voice.model';
         schema: messageReceivedModel,
       },
     ]),
-    SequelizeModule.forFeature([User, Chat, ChatUser, ChatReceived, Voice]),
+    SequelizeModule.forFeature([
+      User,
+      Chat,
+      ChatUser,
+      ChatReceived,
+      Voice,
+      UserDevice,
+    ]),
     AuthModule,
     WebsocketsModule,
     MessageModule,

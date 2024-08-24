@@ -14,6 +14,7 @@ import { OffsetDto } from '../base/offset.dto';
 import { GetChatDto } from './dto/get-chat.dto';
 import { SuccessInterface } from '../base/success.interface';
 import { SmsGuard } from '../user/sms.guard';
+import { BaseDto } from '../base/base.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -42,7 +43,10 @@ export class ChatController {
 
   @Post('send-unreceived')
   @UseGuards(JwtAuthGuard, SmsGuard)
-  sendUnreceived(@Req() req): Promise<SuccessInterface> {
-    return this.chatService.sendAllUnreceivedChats(req.user);
+  sendUnreceived(
+    @Req() req,
+    @Body() baseDto: BaseDto,
+  ): Promise<SuccessInterface> {
+    return this.chatService.sendAllUnreceivedChats(req.user, baseDto);
   }
 }
