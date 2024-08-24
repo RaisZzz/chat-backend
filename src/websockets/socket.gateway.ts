@@ -31,20 +31,22 @@ export class SocketGateway
     private redisService: RedisService,
     @InjectModel(User) private userRepository: typeof User,
     private sequelize: Sequelize,
-  ) {}
+  ) {
+    setInterval(() => console.log(this.connectedUsers), 5000);
+  }
 
   @WebSocketServer()
   server: Server;
 
-  private connectedUsers: Record<string, string> = {};
+  private connectedUsers: Record<string, string[]> = {};
 
-  getUserConnected = (userId: number): string | undefined =>
-    this.connectedUsers[userId];
+  getUserConnected = (userId: number): boolean =>
+    !!this.connectedUsers[userId].length;
 
   private getUserIdBySocket(client: Socket): string {
     const userConnectedIndex: number = Object.values(
       this.connectedUsers,
-    ).findIndex((s) => s === client.id);
+    ).findIndex((s) => s.includes(client.id));
     if (userConnectedIndex < 0)
       throw new HttpException('user not found', HttpStatus.NOT_FOUND);
 
@@ -55,9 +57,17 @@ export class SocketGateway
     console.log(`Client disconnected: ${client.id}`);
     try {
       const userId: string = this.getUserIdBySocket(client);
-      delete this.connectedUsers[userId];
+      const socketExistIndex = this.connectedUsers[userId].findIndex(
+        (s) => s === client.id,
+      );
+      if (socketExistIndex) {
+        this.connectedUsers[userId].splice(socketExistIndex, 1);
+      }
       this.redisService.hSet(String(userId), 'online', String(Date.now()));
-      this.sendUserOnline(parseInt(userId), Date.now());
+
+      if (!this.connectedUsers[userId].length) {
+        this.sendUserOnline(parseInt(userId), Date.now());
+      }
     } catch (e) {}
   }
 
@@ -86,7 +96,11 @@ export class SocketGateway
       });
 
       if (userExist) {
-        this.connectedUsers[String(jwtUser.id)] = client.id;
+        const userSockets: string[] = this.connectedUsers[String(jwtUser.id)];
+        if (!userSockets.includes(client.id)) {
+          this.connectedUsers[String(jwtUser.id)].push(client.id);
+        }
+
         const newOnline = String(Date.now());
         this.redisService.hSet(String(jwtUser.id), 'online', newOnline);
         this.sendUserOnline(jwtUser.id, true);
@@ -109,11 +123,13 @@ export class SocketGateway
     this.log(
       `TRY SEND SOCKET '${eventName}' ${userId} ${JSON.stringify(this.connectedUsers)}`,
     );
-    const socket = this.connectedUsers[String(userId)];
-    if (!socket) return;
+    const sockets: string[] = this.connectedUsers[String(userId)];
+    if (!sockets.length) return;
 
-    this.log(`SEND '${eventName}' TO USER #${userId}`);
-    this.server.to(socket).emit(eventName, data);
+    for (const socket of sockets) {
+      this.log(`SEND '${eventName}' TO USER #${userId} (socket: ${socket})`);
+      this.server.to(socket).emit(eventName, data);
+    }
   }
 
   sendMessage = (userId: number, messages: Message[]): void =>
@@ -148,7 +164,7 @@ export class SocketGateway
 
     const connectedUserIndex: number = Object.values(
       this.connectedUsers,
-    ).findIndex((s) => s == client.id);
+    ).findIndex((s) => s.includes(client.id));
 
     if (connectedUserIndex < 0) return;
 
@@ -164,7 +180,7 @@ export class SocketGateway
     }
   }
 
-  async sendUserOnline(userId: number, online: any) {
+  private async sendUserOnline(userId: number, online: any) {
     const [userIds] = await this.sequelize.query(`
       SELECT user_id FROM "chat_user"
       WHERE chat_id IN (
