@@ -10,7 +10,6 @@ import {
 import { AuthResponse, AuthService, Tokens } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { RealIP } from 'nestjs-real-ip';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { Response } from 'express';
 import { OptionalJwtAuthGuard } from './optional-jwt.guard';
@@ -28,31 +27,29 @@ export class AuthController {
   @Post('/')
   @UseGuards(JwtAuthGuard)
   auth(
-    @RealIP() ip: string,
     @Req() req,
     @Res({ passthrough: true }) response: Response,
+    @Body() baseDto: BaseDto,
   ): Promise<AuthResponse> {
-    return this.authService.auth(req.user, ip, response);
+    return this.authService.auth(req.user, baseDto.deviceId, response);
   }
 
   @Post('login')
   login(
-    @RealIP() ip: string,
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<AuthResponse> {
-    return this.authService.login(loginDto, ip, response);
+    return this.authService.login(loginDto, response);
   }
 
   @Post('register')
   @UseGuards(OptionalJwtAuthGuard)
   register(
     @Req() req,
-    @RealIP() ip: string,
     @Body() registerDto: RegisterDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<AuthResponse> {
-    return this.authService.register(registerDto, ip, response, req.user);
+    return this.authService.register(registerDto, response, req.user);
   }
 
   @Post('updateToken')

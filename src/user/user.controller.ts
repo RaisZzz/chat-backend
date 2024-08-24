@@ -23,7 +23,6 @@ import { ApiOperation } from '@nestjs/swagger';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { UploadPhotoDto } from './dto/upload-photo.dto';
 import { SetFCMTokenDto } from './dto/set-fcm-token.dto';
-import { RealIP } from 'nestjs-real-ip';
 import { GetUserById } from './dto/get-user-by-id.dto';
 import { ReturnUserDto } from './dto/return-user.dto';
 

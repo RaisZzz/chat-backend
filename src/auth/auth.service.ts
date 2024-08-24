@@ -131,13 +131,16 @@ export class AuthService {
     };
   }
 
-  async auth(user: User, ip: string, res: Response): Promise<AuthResponse> {
-    return await this.authData(user, ip, res);
+  async auth(
+    user: User,
+    deviceId: string,
+    res: Response,
+  ): Promise<AuthResponse> {
+    return await this.authData(user, deviceId, res);
   }
 
   async register(
     registerDto: RegisterDto,
-    ip: string,
     res: Response,
     user: User | null,
   ): Promise<AuthResponse> {
@@ -199,14 +202,10 @@ export class AuthService {
       this.smsService.sendSmsCode(newUser.phone, SmsType.auth, smsCode, 'ru');
     }
 
-    return await this.authData(newUser, ip, res);
+    return await this.authData(newUser, registerDto.deviceId, res);
   }
 
-  async login(
-    loginDto: LoginDto,
-    ip: string,
-    res: Response,
-  ): Promise<AuthResponse> {
+  async login(loginDto: LoginDto, res: Response): Promise<AuthResponse> {
     // Check that user exist
     const user: User = await this.userRepository.findOne({
       include: { all: true },
@@ -233,7 +232,7 @@ export class AuthService {
       );
     }
 
-    return await this.authData(user, ip, res);
+    return await this.authData(user, loginDto.deviceId, res);
   }
 
   async userUpdateToken(request, deviceId: string): Promise<Tokens> {
@@ -302,10 +301,10 @@ export class AuthService {
 
   private async authData(
     user: User,
-    ip: string,
+    deviceId: string,
     res: Response,
   ): Promise<AuthResponse> {
-    const tokens: Tokens = await this.updateToken(user, ip);
+    const tokens: Tokens = await this.updateToken(user, deviceId);
 
     res.cookie('refreshToken', tokens.refreshToken, {
       path: '/auth',
