@@ -35,6 +35,7 @@ import { ReturnUserDto } from './dto/return-user.dto';
 import { Chat } from '../chat/chat.model';
 import { ChatService } from '../chat/chat.service';
 import { BaseDto } from '../base/base.dto';
+import { DeleteDeviceSessionDto } from './dto/delete-device-session.dto';
 
 export class CheckUserExistResponse {
   readonly userRegistered: boolean;
@@ -419,12 +420,12 @@ export class UserService {
     return { success: true };
   }
 
-  async disableFcmToken(
+  async deleteUserDeviceSession(
     user: User,
-    baseDto: BaseDto,
+    deleteDeviceSessionDto: DeleteDeviceSessionDto,
   ): Promise<SuccessInterface> {
     const userDevice: UserDevice = await this.userDeviceRepository.findOne({
-      where: { userId: user.id, deviceId: baseDto.deviceId },
+      where: { userId: user.id, deviceId: deleteDeviceSessionDto.deviceId },
     });
     if (!userDevice) return { success: false };
 

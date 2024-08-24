@@ -27,6 +27,7 @@ import { SetFCMTokenDto } from './dto/set-fcm-token.dto';
 import { GetUserById } from './dto/get-user-by-id.dto';
 import { ReturnUserDto } from './dto/return-user.dto';
 import { BaseDto } from '../base/base.dto';
+import { DeleteDeviceSessionDto } from './dto/delete-device-session.dto';
 
 @Controller('user')
 export class UserController {
@@ -76,13 +77,16 @@ export class UserController {
     return this.userService.setFCMToken(req.user, setFCMTokenDto);
   }
 
-  @Delete('disable-fcm-token')
+  @Delete('delete-device-session')
   @UseGuards(JwtAuthGuard)
   disableFCMToken(
     @Req() req,
-    @Body() baseDto: BaseDto,
+    @Body() deleteDeviceSessionDto: DeleteDeviceSessionDto,
   ): Promise<SuccessInterface> {
-    return this.userService.disableFcmToken(req.user, baseDto);
+    return this.userService.deleteUserDeviceSession(
+      req.user,
+      deleteDeviceSessionDto,
+    );
   }
 
   @Post('check_sms_code')
