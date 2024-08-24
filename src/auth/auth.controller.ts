@@ -14,6 +14,7 @@ import { RealIP } from 'nestjs-real-ip';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { Response } from 'express';
 import { OptionalJwtAuthGuard } from './optional-jwt.guard';
+import { BaseDto } from '../base/base.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -55,7 +56,7 @@ export class AuthController {
   }
 
   @Post('updateToken')
-  updateToken(@Req() req, @RealIP() ip: string): Promise<Tokens> {
-    return this.authService.userUpdateToken(req, ip);
+  updateToken(@Req() req, @Body() baseDto: BaseDto): Promise<Tokens> {
+    return this.authService.userUpdateToken(req, baseDto.deviceId);
   }
 }

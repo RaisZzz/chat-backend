@@ -32,7 +32,7 @@ export class UserDevice extends Model<UserDevice> {
     type: DataType.TEXT,
     allowNull: false,
   })
-  ip: string;
+  deviceId: string;
 
   @BelongsTo(() => User)
   user: User;

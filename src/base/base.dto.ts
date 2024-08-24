@@ -17,8 +17,15 @@ export class BaseDto {
   @IsNotEmpty()
   @Trim()
   readonly device: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Trim()
+  readonly deviceId: string;
 }
 
-export function Trim(transformOptions?: TransformOptions): (target: any, key: string) => void {
+export function Trim(
+  transformOptions?: TransformOptions,
+): (target: any, key: string) => void {
   return Transform(({ value }: any) => value.trim(), transformOptions);
 }

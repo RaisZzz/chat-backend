@@ -405,12 +405,11 @@ export class UserService {
   }
 
   async setFCMToken(
-    ip: string,
     user: User,
     setFCMTokenDto: SetFCMTokenDto,
   ): Promise<SuccessInterface> {
     const userDevice: UserDevice = await this.userDeviceRepository.findOne({
-      where: { userId: user.id, ip },
+      where: { userId: user.id, deviceId: setFCMTokenDto.deviceId },
     });
     if (!userDevice) return { success: false };
 

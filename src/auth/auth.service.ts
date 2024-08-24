@@ -236,7 +236,7 @@ export class AuthService {
     return await this.authData(user, ip, res);
   }
 
-  async userUpdateToken(request, ip: string): Promise<Tokens> {
+  async userUpdateToken(request, deviceId: string): Promise<Tokens> {
     try {
       const refreshToken = request.headers?.cookie
         ?.toString()
@@ -244,7 +244,7 @@ export class AuthService {
         .split(';')[0];
 
       const tokenExist: UserDevice = await this.userDeviceRepository.findOne({
-        where: { ip, refreshToken },
+        where: { deviceId, refreshToken },
         include: [User],
       });
 
@@ -255,7 +255,7 @@ export class AuthService {
         );
       }
 
-      return await this.updateToken(tokenExist.user, ip, refreshToken);
+      return await this.updateToken(tokenExist.user, deviceId, refreshToken);
     } catch (e) {
       throw new HttpException(
         new Error(ErrorType.TokenInvalid),
@@ -341,7 +341,7 @@ export class AuthService {
 
   private async updateToken(
     user: User,
-    ip: string,
+    deviceId: string,
     refreshToken?: string,
   ): Promise<Tokens> {
     const refreshTokens: UserDevice[] = await this.userDeviceRepository.findAll(
@@ -357,7 +357,7 @@ export class AuthService {
       secret: process.env.JWT_ACCESS_SECRET,
     };
 
-    const payload = { id: user.id };
+    const payload = { id: user.id, deviceId };
     const refreshOptions = {
       expiresIn: process.env.JWT_REFRESH_EXPIRE,
       secret: process.env.JWT_REFRESH_SECRET,
@@ -375,7 +375,8 @@ export class AuthService {
     // If refreshToken exist - requested by user
     if (refreshToken) {
       const token: UserDevice = refreshTokens.find(
-        (r: UserDevice) => r.refreshToken === refreshToken && r.ip === ip,
+        (r: UserDevice) =>
+          r.refreshToken === refreshToken && r.deviceId === deviceId,
       );
       if (token) {
         try {
@@ -398,7 +399,7 @@ export class AuthService {
       }
     } else {
       const token: UserDevice = refreshTokens.find(
-        (r: UserDevice) => r.ip === ip,
+        (r: UserDevice) => r.deviceId === deviceId,
       );
       if (token) {
         await token.update({
@@ -408,7 +409,7 @@ export class AuthService {
         await this.userDeviceRepository.create({
           userId: user.id,
           refreshToken: newRefreshToken,
-          ip,
+          deviceId,
         });
       }
     }

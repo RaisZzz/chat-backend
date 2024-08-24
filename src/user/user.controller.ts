@@ -69,11 +69,10 @@ export class UserController {
   @Post('set-fcm-token')
   @UseGuards(JwtAuthGuard)
   setFCMToken(
-    @RealIP() ip: string,
     @Req() req,
     @Body() setFCMTokenDto: SetFCMTokenDto,
   ): Promise<SuccessInterface> {
-    return this.userService.setFCMToken(ip, req.user, setFCMTokenDto);
+    return this.userService.setFCMToken(req.user, setFCMTokenDto);
   }
 
   @Post('check_sms_code')
