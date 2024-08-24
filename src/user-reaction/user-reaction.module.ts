@@ -8,10 +8,16 @@ import { ChatModule } from '../chat/chat.module';
 import { UserReactionReceived } from './user-reaction-received.model';
 import { WebsocketsModule } from '../websockets/websockets.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { UserDevice } from '../user/user-device.model';
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([User, UserReaction, UserReactionReceived]),
+    SequelizeModule.forFeature([
+      User,
+      UserReaction,
+      UserReactionReceived,
+      UserDevice,
+    ]),
     ChatModule,
     WebsocketsModule,
     NotificationsModule,

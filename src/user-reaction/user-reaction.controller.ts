@@ -15,6 +15,7 @@ import { SmsGuard } from '../user/sms.guard';
 import { SuccessInterface } from '../base/success.interface';
 import { SetUserReactionReceivedDto } from './dto/set-received.dto';
 import { OffsetDto } from '../base/offset.dto';
+import { BaseDto } from '../base/base.dto';
 
 @Controller('user-reaction')
 export class UserReactionController {
@@ -49,7 +50,13 @@ export class UserReactionController {
 
   @Post('send-unreceived')
   @UseGuards(JwtAuthGuard)
-  sendUnreceived(@Req() req): Promise<SuccessInterface> {
-    return this.userReactionService.sendAllUnreceivedReactions(req.user);
+  sendUnreceived(
+    @Req() req,
+    @Body() baseDto: BaseDto,
+  ): Promise<SuccessInterface> {
+    return this.userReactionService.sendAllUnreceivedReactions(
+      req.user,
+      baseDto,
+    );
   }
 }

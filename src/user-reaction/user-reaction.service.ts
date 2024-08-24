@@ -17,11 +17,14 @@ import { Op } from 'sequelize';
 import { OffsetDto } from '../base/offset.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification-type.enum';
+import { UserDevice } from '../user/user-device.model';
+import { BaseDto } from '../base/base.dto';
 
 @Injectable()
 export class UserReactionService {
   constructor(
     @InjectModel(User) private userRepository: typeof User,
+    @InjectModel(UserDevice) private userDeviceRepository: typeof UserDevice,
     @InjectModel(UserReactionReceived)
     private userReactionReceivedRepository: typeof UserReactionReceived,
     @InjectModel(UserReaction)
@@ -208,11 +211,15 @@ export class UserReactionService {
     return reaction;
   }
 
-  async sendAllUnreceivedReactions(user: User): Promise<SuccessInterface> {
+  async sendAllUnreceivedReactions(
+    user: User,
+    baseDto: BaseDto,
+  ): Promise<SuccessInterface> {
     const userReactionReceived: UserReactionReceived[] =
       await this.userReactionReceivedRepository.findAll({
         where: {
           userId: user.id,
+          deviceId: baseDto.deviceId,
           received: false,
         },
       });
@@ -288,6 +295,7 @@ export class UserReactionService {
       {
         where: {
           userId: user.id,
+          deviceId: setDto.deviceId,
           userReactionId: setDto.reactionId,
         },
       },
@@ -299,23 +307,56 @@ export class UserReactionService {
     userId: number,
     userReactionId: number,
     type: UserReactionReceivedType,
-  ): Promise<UserReactionReceived> {
-    let userReactionReceived: UserReactionReceived =
-      await this.userReactionReceivedRepository.findOne({
-        where: { userReactionId, userId },
+  ): Promise<UserReactionReceived[]> {
+    const userDevices: UserDevice[] = await this.userDeviceRepository.findAll({
+      attributes: ['deviceId'],
+      where: { userId },
+    });
+
+    const userReactionReceived: UserReactionReceived[] =
+      await this.userReactionReceivedRepository.findAll({
+        where: {
+          userReactionId,
+          userId,
+          deviceId: { [Op.in]: userDevices.map((u) => u.deviceId) },
+        },
       });
 
-    if (userReactionReceived) {
-      await userReactionReceived.update({ type, received: false });
-    } else {
-      userReactionReceived = await this.userReactionReceivedRepository.create({
-        userId,
-        userReactionId,
+    await this.userReactionReceivedRepository.update(
+      {
         type,
         received: false,
-      });
-    }
+      },
+      {
+        where: {
+          userReactionId,
+          userId,
+          deviceId: { [Op.in]: userDevices.map((u) => u.deviceId) },
+        },
+      },
+    );
 
-    return userReactionReceived;
+    const uncreatedReactionReceivedUserDevice: UserDevice[] = [
+      ...userDevices,
+    ].filter(
+      (u) => !userReactionReceived.map((r) => r.deviceId).includes(u.deviceId),
+    );
+    if (!uncreatedReactionReceivedUserDevice.length)
+      return userReactionReceived;
+
+    const newReactionReceived: UserReactionReceived[] =
+      await this.userReactionReceivedRepository.bulkCreate(
+        uncreatedReactionReceivedUserDevice.map((u: UserDevice) => {
+          return {
+            userId,
+            deviceId: u.deviceId,
+            userReactionId,
+            type,
+            received: false,
+          };
+        }),
+      );
+
+    return [...userReactionReceived, ...newReactionReceived];
   }
 }

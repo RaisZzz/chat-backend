@@ -17,6 +17,9 @@ export class UserReactionReceived extends Model<UserReactionReceived> {
   @Column({ type: DataType.INTEGER, allowNull: false })
   userId: number;
 
+  @Column({ type: DataType.TEXT, allowNull: false })
+  deviceId: string;
+
   @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: false })
   received: boolean;
 
