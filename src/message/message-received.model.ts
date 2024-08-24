@@ -8,6 +8,9 @@ export class MessageReceived {
   @Prop({ required: true, type: Number })
   userId: number;
 
+  @Prop({ required: true, type: String })
+  deviceId: string;
+
   @Prop({ required: true, type: Number })
   chatId: number;
 

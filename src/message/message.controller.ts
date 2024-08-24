@@ -20,6 +20,7 @@ import { SetMessageLikeDto } from './dto/set-like.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { SmsGuard } from '../user/sms.guard';
 import { ReadMessagesDto } from './dto/read-messages.dto';
+import { BaseDto } from '../base/base.dto';
 
 @Controller('message')
 export class MessageController {
@@ -92,7 +93,13 @@ export class MessageController {
 
   @Post('send-unreceived')
   @UseGuards(JwtAuthGuard)
-  sendUnreceivedMessages(@Req() req): Promise<SuccessInterface> {
-    return this.messageService.sendUnreceivedMessages(req.user.id);
+  sendUnreceivedMessages(
+    @Req() req,
+    @Body() baseDto: BaseDto,
+  ): Promise<SuccessInterface> {
+    return this.messageService.sendUnreceivedMessages(
+      req.user.id,
+      baseDto.deviceId,
+    );
   }
 }

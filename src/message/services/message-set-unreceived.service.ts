@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectModel as InjectMongooseModule } from '@nestjs/mongoose';
+import { InjectModel } from '@nestjs/sequelize';
 import { Model } from 'mongoose';
 import { MessageReceived } from '../message-received.model';
+import { UserDevice } from '../../user/user-device.model';
 
 @Injectable()
 export class MessageSetUnreceivedService {
   constructor(
-    @InjectModel(MessageReceived.name)
+    @InjectModel(UserDevice) private userDeviceRepository: typeof UserDevice,
+    @InjectMongooseModule(MessageReceived.name)
     private messageReceivedModel: Model<MessageReceived>,
   ) {}
 
@@ -15,31 +18,44 @@ export class MessageSetUnreceivedService {
     messageUuid: string,
     userId: number,
   ): Promise<void> {
-    const messageReceivedExist: MessageReceived =
-      await this.messageReceivedModel.findOne({
+    const userDevices: UserDevice[] = await this.userDeviceRepository.findAll({
+      attributes: ['deviceId'],
+      where: { userId },
+    });
+
+    const messageReceivedExist: MessageReceived[] =
+      await this.messageReceivedModel.find({
         messageUuid,
+        deviceId: { $in: userDevices.map((u) => u.deviceId) },
         userId,
       });
-    if (messageReceivedExist) {
-      if (messageReceivedExist.received) {
-        await this.messageReceivedModel.updateOne(
-          {
-            messageUuid,
-            userId,
-          },
-          { received: false },
-        );
-        return;
-      }
-      return;
-    }
 
-    const messageReceived = new this.messageReceivedModel({
-      chatId,
-      messageUuid,
-      userId,
-      received: false,
-    });
-    await messageReceived.save();
+    await this.messageReceivedModel.updateMany(
+      {
+        messageUuid,
+        deviceId: { $in: userDevices.map((u) => u.deviceId) },
+        userId,
+      },
+      { received: false },
+    );
+
+    const uncreatedMessageReceivedUserDevice: UserDevice[] = [
+      ...userDevices,
+    ].filter(
+      (u) => !messageReceivedExist.map((m) => m.deviceId).includes(u.deviceId),
+    );
+    if (!uncreatedMessageReceivedUserDevice.length) return;
+
+    await this.messageReceivedModel.insertMany(
+      uncreatedMessageReceivedUserDevice.map((u: UserDevice) => {
+        return {
+          chatId,
+          messageUuid,
+          userId,
+          deviceId: u.deviceId,
+          received: false,
+        };
+      }),
+    );
   }
 }

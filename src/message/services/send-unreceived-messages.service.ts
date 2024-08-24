@@ -21,10 +21,11 @@ export class SendUnreceivedMessagesService {
     private sequelize: Sequelize,
   ) {}
 
-  async sendAll(userId: number): Promise<SuccessInterface> {
+  async sendAll(userId: number, deviceId: string): Promise<SuccessInterface> {
     const unreceivedMessages: MessageReceived[] =
       await this.messageReceivedModel.find({
         userId: userId,
+        deviceId,
         received: false,
       });
     if (!unreceivedMessages.length) return;

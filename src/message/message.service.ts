@@ -52,8 +52,11 @@ export class MessageService {
       voice,
     );
 
-  sendUnreceivedMessages = async (userId: number): Promise<SuccessInterface> =>
-    this.sendUnreceivedMessagesService.sendAll(userId);
+  sendUnreceivedMessages = async (
+    userId: number,
+    deviceId: string,
+  ): Promise<SuccessInterface> =>
+    this.sendUnreceivedMessagesService.sendAll(userId, deviceId);
 
   async getAll(user: User, getDto: GetMessagesDto): Promise<Message[]> {
     const userExistInChat: ChatUser = await this.chatUserRepository.findOne({
@@ -133,6 +136,7 @@ export class MessageService {
     const messagesReceivedExist: MessageReceived[] =
       await this.messageReceivedModel.find({
         messageUuid: { $in: setMessageReceivedDto.messagesUuid },
+        deviceId: setMessageReceivedDto.deviceId,
         userId: user.id,
       });
 
@@ -147,6 +151,7 @@ export class MessageService {
     await this.messageReceivedModel.updateMany(
       {
         messageUuid: { $in: messageReceivedExistUuids },
+        deviceId: setMessageReceivedDto.deviceId,
         userId: user.id,
       },
       { received: true },
