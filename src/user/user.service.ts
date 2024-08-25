@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { excludedUserAttributes, User } from './user.model';
 import { InjectModel } from '@nestjs/sequelize';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Op, literal } from 'sequelize';
+import { literal, Op } from 'sequelize';
 import { GetUsersDto } from './dto/get-users.dto';
 import { Sequelize } from 'sequelize-typescript';
 import { Role } from '../role/role.model';
@@ -37,6 +37,10 @@ import { ChatService } from '../chat/chat.service';
 import { DeleteDeviceSessionDto } from './dto/delete-device-session.dto';
 import { BaseDto } from '../base/base.dto';
 import { SetUserSettingsDto } from './dto/set-user-settings.dto';
+import process from 'process';
+import { ChangeGeoDto } from './dto/change-geo.dto';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const md5 = require('md5');
 
 export class CheckUserExistResponse {
   readonly userRegistered: boolean;
@@ -90,6 +94,24 @@ export class UserService {
           !!userDevice?.messagesReactionsNotificationsEnabled,
       },
     };
+  }
+
+  async changeGeo(token: string, user: User, changeDto: ChangeGeoDto) {
+    const secretCheck: boolean =
+      md5(process.env.APP_SECRET_KEY + token) === changeDto.secret;
+    if (!secretCheck) {
+      throw new HttpException(
+        new Error(ErrorType.BadFields),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    await user.update({
+      geo_lat: changeDto.latitude,
+      geo_lon: changeDto.longitude,
+    });
+
+    return { success: true };
   }
 
   async setUserSettings(

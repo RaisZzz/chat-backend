@@ -29,6 +29,7 @@ import { ReturnUserDto } from './dto/return-user.dto';
 import { BaseDto } from '../base/base.dto';
 import { DeleteDeviceSessionDto } from './dto/delete-device-session.dto';
 import { SetUserSettingsDto } from './dto/set-user-settings.dto';
+import { ChangeGeoDto } from './dto/change-geo.dto';
 
 @Controller('user')
 export class UserController {
@@ -70,6 +71,12 @@ export class UserController {
     @Body() setUserSettingsDto: SetUserSettingsDto,
   ): Promise<SuccessInterface> {
     return this.userService.setUserSettings(req.user, setUserSettingsDto);
+  }
+
+  @Post('geo')
+  @UseGuards(JwtAuthGuard, SmsGuard)
+  changeGeo(@Req() req, @Body() changeDto: ChangeGeoDto) {
+    return this.userService.changeGeo(req.token, req.user, changeDto);
   }
 
   @Get('get-by-id')
