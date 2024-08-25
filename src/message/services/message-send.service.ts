@@ -120,7 +120,6 @@ export class MessageSendService {
   }
 
   async sendMessageToAllUsersInChat(message: Message): Promise<void> {
-    console.log('SEND MESSAGE TO ALL', message);
     const user: User = await this.userRepository.findOne({
       attributes: ['firstName', 'lastName', 'sex'],
       where: { id: message.ownerId },
@@ -163,21 +162,13 @@ export class MessageSendService {
           })
         ).toJSON();
       }
-      message['firstTest'] = '123';
       if (message.linkId) {
         message['link'] = (
           await this.chatLinkRepository.findOne({
             where: { id: message.linkId },
           })
         ).toJSON();
-        message['linkTest'] = (
-          await this.chatLinkRepository.findOne({
-            where: { id: message.linkId },
-          })
-        ).toJSON();
-        message['secondTest'] = '321';
       }
-      console.log('GET MESSAGE LINK BY ID', message.linkId, message['link']);
 
       this.socketGateway.sendMessage(userId, [message]);
 
