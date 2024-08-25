@@ -56,6 +56,9 @@ export class MessageService {
       linkId,
     );
 
+  sendMessageToAllUsersInChat = async (message: Message): Promise<void> =>
+    this.messageSendService.sendMessageToAllUsersInChat(message);
+
   sendUnreceivedMessages = async (
     userId: number,
     deviceId: string,

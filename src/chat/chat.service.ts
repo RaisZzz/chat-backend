@@ -25,6 +25,7 @@ import { ShareChatDto } from './dto/share-chat.dto';
 import { ChatLink } from './chat-link.model';
 import { CreateChatLinkDto } from './dto/create-chat-link.dto';
 import { SendMessageDto } from '../message/dto/send-message.dto';
+import { ConfirmShareChatDto } from './dto/confirm-share-chat.dto';
 
 @Injectable()
 export class ChatService {
@@ -400,6 +401,59 @@ export class ChatService {
       null,
       link.id,
     );
+
+    return { success: true };
+  }
+
+  async confirmShareChat(
+    user: User,
+    confirmDto: ConfirmShareChatDto,
+  ): Promise<SuccessInterface> {
+    const link: ChatLink = await this.chatLinkRepository.findOne({
+      where: { id: confirmDto.linkId, confirmed: false, canceled: false },
+    });
+    if (!link) {
+      throw new HttpException(
+        new Error(ErrorType.Forbidden),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    const chat: Chat = await this.chatRepository.findOne({
+      where: { id: link.chatId },
+    });
+    if (!chat) {
+      throw new HttpException(
+        new Error(ErrorType.Forbidden),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    const chatUsers: ChatUser[] = await this.getAllChatUsers(chat.id);
+
+    const anotherUserId: number =
+      chatUsers[0].userId === link.userId
+        ? chatUsers[1].userId
+        : chatUsers[0].userId;
+
+    if (anotherUserId !== user.id) {
+      throw new HttpException(
+        new Error(ErrorType.Forbidden),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    if (confirmDto.confirmed) {
+      await link.update({ confirmed: true });
+    } else {
+      await link.update({ canceled: true });
+    }
+
+    const message: Message = await this.messageModel.findOne({
+      linkId: link.id,
+    });
+
+    if (message) this.messageService.sendMessageToAllUsersInChat(message);
 
     return { success: true };
   }
