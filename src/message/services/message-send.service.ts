@@ -170,6 +170,7 @@ export class MessageSendService {
           })
         ).toJSON();
       }
+      console.log('GET MESSAGE LINK BY ID', message.linkId, message['link']);
 
       this.socketGateway.sendMessage(userId, [message]);
 
