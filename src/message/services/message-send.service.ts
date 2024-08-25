@@ -163,12 +163,19 @@ export class MessageSendService {
           })
         ).toJSON();
       }
+      message['firstTest'] = '123';
       if (message.linkId) {
         message['link'] = (
           await this.chatLinkRepository.findOne({
             where: { id: message.linkId },
           })
         ).toJSON();
+        message['linkTest'] = (
+          await this.chatLinkRepository.findOne({
+            where: { id: message.linkId },
+          })
+        ).toJSON();
+        message['secondTest'] = '321';
       }
       console.log('GET MESSAGE LINK BY ID', message.linkId, message['link']);
 
