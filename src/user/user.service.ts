@@ -37,7 +37,6 @@ import { ChatService } from '../chat/chat.service';
 import { DeleteDeviceSessionDto } from './dto/delete-device-session.dto';
 import { BaseDto } from '../base/base.dto';
 import { SetUserSettingsDto } from './dto/set-user-settings.dto';
-import process from 'process';
 import { ChangeGeoDto } from './dto/change-geo.dto';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const md5 = require('md5');
