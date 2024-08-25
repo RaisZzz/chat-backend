@@ -17,6 +17,7 @@ import { User } from '../user/user.model';
 import { MessageModule } from '../message/message.module';
 import { Voice } from '../voice/voice.model';
 import { UserDevice } from '../user/user-device.model';
+import { ChatLink } from './chat-link.model';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { UserDevice } from '../user/user-device.model';
       ChatReceived,
       Voice,
       UserDevice,
+      ChatLink,
     ]),
     AuthModule,
     WebsocketsModule,

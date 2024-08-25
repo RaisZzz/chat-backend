@@ -9,11 +9,13 @@ import { Chat, chatInfoPsqlQuery } from '../../chat/chat.model';
 import { Sequelize } from 'sequelize-typescript';
 import { InjectModel } from '@nestjs/sequelize';
 import { Voice } from '../../voice/voice.model';
+import { ChatLink } from '../../chat/chat-link.model';
 
 @Injectable()
 export class SendUnreceivedMessagesService {
   constructor(
     @InjectModel(Voice) private voiceRepository: typeof Voice,
+    @InjectModel(ChatLink) private chatLinkRepository: typeof ChatLink,
     @InjectMongooseModel(Message.name) private messageModel: Model<Message>,
     @InjectMongooseModel(MessageReceived.name)
     private messageReceivedModel: Model<MessageReceived>,
@@ -62,6 +64,11 @@ export class SendUnreceivedMessagesService {
       if (m.voiceId) {
         m['voice'] = await this.voiceRepository.findOne({
           where: { id: m.voiceId },
+        });
+      }
+      if (m.linkId) {
+        m['link'] = await this.chatLinkRepository.findOne({
+          where: { id: m.linkId },
         });
       }
     }

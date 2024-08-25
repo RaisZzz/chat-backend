@@ -17,12 +17,14 @@ import { VoiceService } from '../../voice/voice.service';
 import { InjectModel } from '@nestjs/sequelize';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { NotificationType } from '../../notifications/notification-type.enum';
+import { ChatLink } from '../../chat/chat-link.model';
 
 @Injectable()
 export class MessageSendService {
   constructor(
     @InjectModel(User) private userRepository: typeof User,
     @InjectModel(Chat) private chatRepository: typeof Chat,
+    @InjectModel(ChatLink) private chatLinkRepository: typeof ChatLink,
     @InjectModel(Voice) private voiceRepository: typeof Voice,
     @InjectModel(ChatUser) private chatUserRepository: typeof ChatUser,
     @InjectMongooseModel(Message.name) private messageModel: Model<Message>,
@@ -41,6 +43,7 @@ export class MessageSendService {
     reportId: number | null = null,
     photos: [Express.Multer.File] | null = null,
     voice: [Express.Multer.File] | null = null,
+    linkId: number | null = null,
   ): Promise<Message> {
     if (sendMessageDto.text) {
       sendMessageDto.text = sendMessageDto.text
@@ -106,6 +109,7 @@ export class MessageSendService {
       imagesIds,
       voiceId,
       createdAt: Date.now(),
+      linkId,
     };
 
     const message = new this.messageModel(messageDto);
@@ -156,6 +160,13 @@ export class MessageSendService {
         message['voice'] = (
           await this.voiceRepository.findOne({
             where: { id: message.voiceId },
+          })
+        ).toJSON();
+      }
+      if (message.linkId) {
+        message['link'] = (
+          await this.chatLinkRepository.findOne({
+            where: { id: message.linkId },
           })
         ).toJSON();
       }

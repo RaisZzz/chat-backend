@@ -21,6 +21,10 @@ import { Error, ErrorType } from '../error.class';
 import { Role } from '../role/role.model';
 import { UserDevice } from '../user/user-device.model';
 import { BaseDto } from '../base/base.dto';
+import { ShareChatDto } from './dto/share-chat.dto';
+import { ChatLink } from './chat-link.model';
+import { CreateChatLinkDto } from './dto/create-chat-link.dto';
+import { SendMessageDto } from '../message/dto/send-message.dto';
 
 @Injectable()
 export class ChatService {
@@ -32,6 +36,7 @@ export class ChatService {
     @InjectModel(User) private userRepository: typeof User,
     @InjectModel(UserDevice) private userDeviceRepository: typeof UserDevice,
     @InjectModel(Chat) private chatRepository: typeof Chat,
+    @InjectModel(ChatLink) private chatLinkRepository: typeof ChatLink,
     @InjectModel(Voice) private voiceRepository: typeof Voice,
     @InjectModel(ChatUser) private chatUserRepository: typeof ChatUser,
     @InjectModel(ChatReceived)
@@ -156,6 +161,13 @@ export class ChatService {
           messageJson['voice'] = (
             await this.voiceRepository.findOne({
               where: { id: messageJson.voiceId },
+            })
+          ).toJSON();
+        }
+        if (message.linkId) {
+          messageJson['link'] = (
+            await this.chatLinkRepository.findOne({
+              where: { id: messageJson.linkId },
             })
           ).toJSON();
         }
@@ -323,6 +335,73 @@ export class ChatService {
     }
 
     return chat;
+  }
+
+  async shareChat(
+    user: User,
+    shareChatDto: ShareChatDto,
+  ): Promise<SuccessInterface> {
+    // Check if user has access to chat
+    const chat: Chat = await this.checkUserExistInChat(user, {
+      chatId: shareChatDto.chatId,
+      ...shareChatDto,
+    });
+
+    if (!chat) {
+      throw new HttpException(
+        new Error(ErrorType.Forbidden),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    const lastChatLink: ChatLink = await this.chatLinkRepository.findOne({
+      where: { chatId: chat.id, userId: user.id },
+      order: [['createdAt', 'DESC']],
+    });
+    if (lastChatLink) {
+      const today: Date = new Date();
+      const lastLinkCreatedAt: Date = new Date(lastChatLink.createdAt);
+      const hourInSeconds = 3600;
+      const seconds: number =
+        (today.getTime() - lastLinkCreatedAt.getTime()) / 1000;
+      if (seconds < hourInSeconds) {
+        throw new HttpException(
+          new Error(ErrorType.Forbidden, {
+            timeLeft: Math.ceil(hourInSeconds - seconds),
+          }),
+          HttpStatus.FORBIDDEN,
+        );
+      }
+    }
+
+    const uuid: string = uuidv4();
+
+    const createLinkDto: CreateChatLinkDto = {
+      uuid,
+      chatId: chat.id,
+      expireTime: shareChatDto.expireTime,
+      userId: user.id,
+    };
+
+    const link: ChatLink = await this.chatLinkRepository.create(createLinkDto);
+
+    const dto: SendMessageDto = {
+      toChatId: chat.id,
+      text: '',
+      uuid: uuidv4(),
+    };
+
+    await this.messageService.sendMessage(
+      user,
+      dto,
+      SystemMessageType.ShareConfirm,
+      null,
+      null,
+      null,
+      link.id,
+    );
+
+    return { success: true };
   }
 
   private async setChatUnreceived(

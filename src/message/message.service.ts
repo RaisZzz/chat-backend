@@ -19,11 +19,13 @@ import { ChatUser } from '../chat/chat-user.model';
 import { Voice } from '../voice/voice.model';
 import { ReadMessagesDto } from './dto/read-messages.dto';
 import { SocketGateway } from '../websockets/socket.gateway';
+import { ChatLink } from '../chat/chat-link.model';
 
 @Injectable()
 export class MessageService {
   constructor(
     @InjectModel(Chat) private chatRepository: typeof Chat,
+    @InjectModel(ChatLink) private chatLinkRepository: typeof ChatLink,
     @InjectModel(Voice) private voiceRepository: typeof Voice,
     @InjectModel(ChatUser) private chatUserRepository: typeof ChatUser,
     @InjectMongooseModel(Message.name) private messageModel: Model<Message>,
@@ -42,6 +44,7 @@ export class MessageService {
     reportId: number | null = null,
     photos: [Express.Multer.File] | null = null,
     voice: [Express.Multer.File] | null = null,
+    linkId: number | null = null,
   ): Promise<Message> =>
     this.messageSendService.sendMessage(
       user,
@@ -50,6 +53,7 @@ export class MessageService {
       reportId,
       photos,
       voice,
+      linkId,
     );
 
   sendUnreceivedMessages = async (
@@ -84,6 +88,11 @@ export class MessageService {
             where: { id: m.voiceId },
           })
         ).toJSON();
+      }
+      if (m.linkId) {
+        m['link'] = await this.chatLinkRepository.findOne({
+          where: { id: m.linkId },
+        });
       }
     }
 

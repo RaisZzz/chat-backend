@@ -37,6 +37,7 @@ import { UserReactionReceived } from './user-reaction/user-reaction-received.mod
 import { VoiceModule } from './voice/voice.module';
 import { UserModule } from './user/user.module';
 import { PurchaseModule } from './purchase/purchase.module';
+import { ChatLink } from './chat/chat-link.model';
 
 @Module({
   imports: [
@@ -90,6 +91,7 @@ import { PurchaseModule } from './purchase/purchase.module';
         UserReaction,
         Report,
         UserReactionReceived,
+        ChatLink,
       ],
       autoLoadModels: true,
     }),

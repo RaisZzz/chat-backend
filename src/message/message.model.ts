@@ -22,7 +22,7 @@ export class Message {
   chatId: number;
 
   @Prop({ type: SchemaTypes.Number })
-  voiceId: number;
+  voiceId: number | null;
 
   @Prop({
     required: true,
@@ -32,7 +32,7 @@ export class Message {
   systemId: SystemMessageType;
 
   @Prop({ type: SchemaTypes.Number })
-  reportId: number;
+  reportId: number | null;
 
   @Prop({ type: [SchemaTypes.Number] })
   imagesIds: number[];
@@ -45,6 +45,9 @@ export class Message {
 
   @Prop({ required: true, type: SchemaTypes.Number })
   createdAt: number;
+
+  @Prop({ type: SchemaTypes.Number })
+  linkId: number | null;
 }
 
 export const messageModel = SchemaFactory.createForClass(Message);

@@ -15,6 +15,7 @@ import { GetChatDto } from './dto/get-chat.dto';
 import { SuccessInterface } from '../base/success.interface';
 import { SmsGuard } from '../user/sms.guard';
 import { BaseDto } from '../base/base.dto';
+import { ShareChatDto } from './dto/share-chat.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -30,6 +31,15 @@ export class ChatController {
   @UseGuards(JwtAuthGuard, SmsGuard)
   getUserSupportChat(@Req() req): Promise<Chat> {
     return this.chatService.getUserSupportChat(req.user);
+  }
+
+  @Post('share')
+  @UseGuards(JwtAuthGuard, SmsGuard)
+  shareChat(
+    @Req() req,
+    @Body() shareChatDto: ShareChatDto,
+  ): Promise<SuccessInterface> {
+    return this.chatService.shareChat(req.user, shareChatDto);
   }
 
   @Post('set-received')
