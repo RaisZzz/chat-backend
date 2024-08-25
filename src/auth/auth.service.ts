@@ -314,9 +314,9 @@ export class AuthService {
       httpOnly: true,
     });
 
-    excludedUserAttributes.forEach(
-      (attribute) => delete user.dataValues[attribute],
-    );
+    excludedUserAttributes.forEach((attribute) => {
+      if (attribute !== 'phone') delete user.dataValues[attribute];
+    });
 
     const chatsUnread: Record<string, number> = {};
     const [userChats] = await this.sequelize.query(`
