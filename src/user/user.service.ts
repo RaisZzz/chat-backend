@@ -442,7 +442,7 @@ export class UserService {
     user: User,
     returnUserDto: ReturnUserDto,
     withoutTimeout = false,
-  ): Promise<User> {
+  ): Promise<SuccessInterface> {
     if (user.id === returnUserDto.userId) {
       throw new HttpException(
         new Error(ErrorType.BadFields),
@@ -472,20 +472,12 @@ export class UserService {
         this.returnUser(user, returnUserDto, true);
       }, 5000);
     } else {
-      if (lastDislike) {
-        await lastDislike.destroy();
-      }
+      if (lastDislike) await lastDislike.destroy();
       await user.update({ returns: user.returns - 1 });
       this.socketGateway.sendUpdateData(user.id);
-
-      const chat: Chat = await this.chatService.getChatWithTwoUsers(
-        returnUserDto.userId,
-        user.id,
-      );
-      if (chat) await this.chatService.deleteChat(chat.id);
     }
 
-    return await this.getUserById(user, { userId: lastDislike.recipientId });
+    return { success: true };
   }
 
   async setFCMToken(
