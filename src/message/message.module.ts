@@ -22,10 +22,18 @@ import { ChatUser } from '../chat/chat-user.model';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { Voice } from '../voice/voice.model';
 import { UserDevice } from '../user/user-device.model';
+import { ChatLink } from '../chat/chat-link.model';
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([User, Chat, ChatUser, Voice, UserDevice]),
+    SequelizeModule.forFeature([
+      User,
+      Chat,
+      ChatUser,
+      Voice,
+      UserDevice,
+      ChatLink,
+    ]),
     MongooseModule.forFeature([
       {
         name: Message.name,
