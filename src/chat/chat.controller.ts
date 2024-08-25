@@ -16,6 +16,7 @@ import { SuccessInterface } from '../base/success.interface';
 import { SmsGuard } from '../user/sms.guard';
 import { BaseDto } from '../base/base.dto';
 import { ShareChatDto } from './dto/share-chat.dto';
+import { ConfirmShareChatDto } from './dto/confirm-share-chat.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -40,6 +41,15 @@ export class ChatController {
     @Body() shareChatDto: ShareChatDto,
   ): Promise<SuccessInterface> {
     return this.chatService.shareChat(req.user, shareChatDto);
+  }
+
+  @Post('share_confirm')
+  @UseGuards(JwtAuthGuard, SmsGuard)
+  shareChatConfirm(
+    @Req() req,
+    @Body() shareConfirmDto: ConfirmShareChatDto,
+  ): Promise<SuccessInterface> {
+    return this.chatService.confirmShareChat(req.user, shareConfirmDto);
   }
 
   @Post('set-received')
