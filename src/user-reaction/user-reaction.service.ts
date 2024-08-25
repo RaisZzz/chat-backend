@@ -224,6 +224,11 @@ export class UserReactionService {
         },
       });
 
+    for (const userReaction of userReactionReceived) {
+      userReaction['unreceived'] = true;
+      userReaction.dataValues['unreceived'] = true;
+    }
+
     const userReactionReceivedDeleted: UserReactionReceived[] = [
       ...userReactionReceived,
     ].filter((c) => c.type === UserReactionReceivedType.deleted);
