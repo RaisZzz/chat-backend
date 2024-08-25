@@ -45,4 +45,18 @@ export class ChatLink extends Model<ChatLink, CreateChatLinkDto> {
   })
   @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: false })
   canceled: boolean;
+
+  @Column({
+    type: DataType.BIGINT,
+    allowNull: false,
+    defaultValue: Math.floor(Date.now() / 1000),
+  })
+  declare createdAt: number;
+
+  @Column({
+    type: DataType.BIGINT,
+    allowNull: false,
+    defaultValue: Math.floor(Date.now() / 1000),
+  })
+  declare updatedAt: number;
 }
