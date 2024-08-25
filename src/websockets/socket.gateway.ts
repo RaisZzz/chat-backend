@@ -158,6 +158,9 @@ export class SocketGateway
   sendUserReadChat = (userId: number, readedUserId: number, chatId: number) =>
     this.sendSocket('userReadChat', userId, { chatId, readedUserId });
 
+  sendVerificationUserRequest = (userId: number, user: User) =>
+    this.sendSocket('verificationUserRequest', userId, user.toJSON());
+
   @SubscribeMessage('writing')
   async onWriting(client: Socket, data) {
     if (!data || !data.chatId) return;

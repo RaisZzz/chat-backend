@@ -30,6 +30,7 @@ import { BaseDto } from '../base/base.dto';
 import { DeleteDeviceSessionDto } from './dto/delete-device-session.dto';
 import { SetUserSettingsDto } from './dto/set-user-settings.dto';
 import { ChangeGeoDto } from './dto/change-geo.dto';
+import { Image } from '../image/image.model';
 
 @Controller('user')
 export class UserController {
@@ -142,5 +143,20 @@ export class UserController {
       files?.photos,
       uploadPhotoDto,
     );
+  }
+
+  @ApiOperation({ summary: 'Отправка фото для верификации' })
+  @Post('send_verification_photo')
+  @UseGuards(JwtAuthGuard, SmsGuard)
+  @UseInterceptors(
+    FileFieldsInterceptor([{ name: 'photos', maxCount: 1 }], {
+      limits: { fileSize: 10 * 1024 * 1024 },
+    }),
+  )
+  sendVerificationPhoto(
+    @Req() req,
+    @UploadedFiles() files: { photos?: [Express.Multer.File] },
+  ): Promise<Image> {
+    return this.userService.sendVerificationPhotos(req.user, files.photos[0]);
   }
 }

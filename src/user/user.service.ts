@@ -605,6 +605,23 @@ export class UserService {
     return await this.updatePhoto(user, photo, uploadPhotoDto);
   }
 
+  async sendVerificationPhotos(user: User, photo: Express.Multer.File) {
+    if (user.verified) {
+      throw new HttpException(
+        new Error(ErrorType.AlreadyVerified),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    const file: Image = await this.imageService.saveFile(photo, user.id);
+    await user.$set('verificationImages', [file]);
+    await user.update({ tryVerifiedAt: new Date(), verifyAnsweredAt: null });
+    const admin: User = await this.userRepository.findOne({
+      include: [{ model: Role, where: { value: 'admin' } }],
+    });
+    this.socketGateway.sendVerificationUserRequest(admin.id, user);
+    return file;
+  }
+
   private async updatePhoto(
     user: User,
     photo: Express.Multer.File,
