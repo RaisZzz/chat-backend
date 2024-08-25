@@ -538,6 +538,7 @@ export class UserService {
       hasParents: updateUserDto.hasParents ?? user.hasParents,
       requirements: updateUserDto.requirements ?? user.requirements,
       educationId: updateUserDto.educationId ?? user.educationId,
+      tutorialDone: updateUserDto.tutorialDone ?? user.tutorialDone,
     });
 
     if (

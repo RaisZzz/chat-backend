@@ -96,4 +96,8 @@ export class UpdateUserDto {
   @IsInt({ each: true })
   @IsOptional()
   readonly interestsIds: number[];
+
+  @IsBoolean()
+  @IsOptional()
+  readonly tutorialDone: boolean;
 }
