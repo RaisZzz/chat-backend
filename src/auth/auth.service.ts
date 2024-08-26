@@ -213,6 +213,14 @@ export class AuthService {
     return await this.authData(newUser, registerDto.deviceId, res);
   }
 
+  async resentSmsCode(user: User): Promise<SuccessInterface> {
+    // TODO: LIMIT SMS SENTS
+    const smsCode: string = this.generateSmsCode();
+    await user.update({ code: smsCode });
+    this.smsService.sendSmsCode(user.phone, SmsType.auth, smsCode, 'ru');
+    return {success: true };
+  }
+
   async login(loginDto: LoginDto, res: Response): Promise<AuthResponse> {
     // Check that user exist
     const user: User = await this.userRepository.findOne({

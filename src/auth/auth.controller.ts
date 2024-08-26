@@ -56,6 +56,12 @@ export class AuthController {
     return this.authService.register(registerDto, response, req.user);
   }
 
+  @Post('resent-sms-code')
+  @UseGuards(JwtAuthGuard)
+  resentSmsCode(@Req() req): Promise<SuccessInterface> {
+    return this.authService.resentSmsCode(req.user);
+  }
+
   @Post('/recovery')
   recovery(@Body() recoveryDto: RecoveryDto) {
     return this.authService.recovery(recoveryDto);
