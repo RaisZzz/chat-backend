@@ -28,9 +28,9 @@ export class SmsService {
     type: SmsType,
     code: string,
     lang: string,
-  ): Promise<any> {
+  ): Promise<boolean> {
     // TODO: REMOVE TEST
-    return 'Request is received';
+    return 'Request is received' === 'Request is received';
 
     const labels: Record<string, string> = smsLabel[type];
     const langLabel: string = labels[lang] ? labels[lang] : labels['en'];

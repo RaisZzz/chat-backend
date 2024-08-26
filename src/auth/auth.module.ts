@@ -1,11 +1,10 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { User } from 'src/user/user.model';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { UserDevice } from 'src/user/user-device.model';
-import { UserModule } from 'src/user/user.module';
 import { SmsModule } from '../sms/sms.module';
 import { City } from '../city/city.model';
 import { Education } from '../education/education.model';

@@ -28,6 +28,10 @@ import { Role } from '../role/role.model';
 import { UserRoles } from '../role/user-role.model';
 import { ChatUser } from '../chat/chat-user.model';
 import { UserSettings } from '../user/user.service';
+import { RecoveryDto } from './dto/recovery.dto';
+import { CheckRecoveryDto } from './dto/check-recovery.dto';
+import { RecoveryPasswordDto } from './dto/recovery-password.dto';
+import { BaseDto } from '../base/base.dto';
 
 abstract class AuthData {
   readonly cities: City[];
@@ -199,6 +203,7 @@ export class AuthService {
       });
       await newUser.$set('roles', [userRole]);
 
+      // TODO: LIMIT SMS SENTS
       const smsCode: string = this.generateSmsCode();
       await newUser.update({ code: smsCode });
       this.smsService.sendSmsCode(newUser.phone, SmsType.auth, smsCode, 'ru');
@@ -263,6 +268,67 @@ export class AuthService {
         HttpStatus.FORBIDDEN,
       );
     }
+  }
+
+  async recovery(recoveryDto: RecoveryDto) {
+    const user: User = await this.userRepository.findOne({
+      where: { phone: recoveryDto.phone },
+    });
+    if (!user) {
+      throw new HttpException(
+        new Error(ErrorType.PhoneInvalid),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    // TODO: LIMIT SMS SENTS
+    const smsCode: string = this.generateSmsCode();
+    await user.update({ code: smsCode });
+    this.smsService.sendSmsCode(user.phone, SmsType.auth, smsCode, 'ru');
+
+    return { time: 60 };
+  }
+
+  async checkRecoveryCode(checkDto: CheckRecoveryDto) {
+    const user: User = await this.userRepository.findOne({
+      where: { phone: checkDto.phone },
+    });
+    if (!user) {
+      throw new HttpException(
+        new Error(ErrorType.PhoneInvalid),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (user.code !== checkDto.code) {
+      throw new HttpException(
+        new Error(ErrorType.SmsCodeInvalid),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    return { success: true };
+  }
+
+  async changeRecoveryPassword(
+    passwordDto: RecoveryPasswordDto,
+    res: Response,
+  ): Promise<AuthResponse> {
+    const user: User = await this.userRepository.findOne({
+      where: { phone: passwordDto.phone },
+    });
+
+    if (user.code !== passwordDto.code) {
+      throw new HttpException(
+        new Error(ErrorType.SmsCodeInvalid),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    const hashPassword = await bcrypt.hash(passwordDto.password, 5);
+
+    await user.update({ password: hashPassword, code: null });
+    return await this.authData(user, passwordDto.deviceId, res);
   }
 
   private generateSmsCode(): string {

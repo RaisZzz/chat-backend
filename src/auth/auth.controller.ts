@@ -14,6 +14,9 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 import { Response } from 'express';
 import { OptionalJwtAuthGuard } from './optional-jwt.guard';
 import { BaseDto } from '../base/base.dto';
+import { RecoveryDto } from './dto/recovery.dto';
+import { CheckRecoveryDto } from './dto/check-recovery.dto';
+import { RecoveryPasswordDto } from './dto/recovery-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -50,6 +53,24 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<AuthResponse> {
     return this.authService.register(registerDto, response, req.user);
+  }
+
+  @Post('/recovery')
+  recovery(@Body() recoveryDto: RecoveryDto) {
+    return this.authService.recovery(recoveryDto);
+  }
+
+  @Post('/check_recovery_code')
+  checkRecoveryCode(@Body() checkDto: CheckRecoveryDto) {
+    return this.authService.checkRecoveryCode(checkDto);
+  }
+
+  @Post('/change_recovery_password')
+  changeRecoveryPassword(
+    @Body() passwordDto: RecoveryPasswordDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    return this.authService.changeRecoveryPassword(passwordDto, response);
   }
 
   @Post('updateToken')

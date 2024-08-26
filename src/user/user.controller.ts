@@ -49,7 +49,10 @@ export class UserController {
 
   @Post('return_last')
   @UseGuards(JwtAuthGuard, SmsGuard)
-  returnLast(@Req() req, @Body() returnUserDto: ReturnUserDto): Promise<User> {
+  returnLast(
+    @Req() req,
+    @Body() returnUserDto: ReturnUserDto,
+  ): Promise<SuccessInterface> {
     return this.userService.returnUser(req.user, returnUserDto);
   }
 
