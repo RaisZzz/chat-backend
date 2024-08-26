@@ -17,6 +17,7 @@ import { BaseDto } from '../base/base.dto';
 import { RecoveryDto } from './dto/recovery.dto';
 import { CheckRecoveryDto } from './dto/check-recovery.dto';
 import { RecoveryPasswordDto } from './dto/recovery-password.dto';
+import { SuccessInterface } from '../base/success.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -61,7 +62,9 @@ export class AuthController {
   }
 
   @Post('/check_recovery_code')
-  checkRecoveryCode(@Body() checkDto: CheckRecoveryDto) {
+  checkRecoveryCode(
+    @Body() checkDto: CheckRecoveryDto,
+  ): Promise<SuccessInterface> {
     return this.authService.checkRecoveryCode(checkDto);
   }
 
@@ -69,7 +72,7 @@ export class AuthController {
   changeRecoveryPassword(
     @Body() passwordDto: RecoveryPasswordDto,
     @Res({ passthrough: true }) response: Response,
-  ) {
+  ): Promise<AuthResponse> {
     return this.authService.changeRecoveryPassword(passwordDto, response);
   }
 

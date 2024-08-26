@@ -32,6 +32,7 @@ import { RecoveryDto } from './dto/recovery.dto';
 import { CheckRecoveryDto } from './dto/check-recovery.dto';
 import { RecoveryPasswordDto } from './dto/recovery-password.dto';
 import { BaseDto } from '../base/base.dto';
+import { SuccessInterface } from '../base/success.interface';
 
 abstract class AuthData {
   readonly cities: City[];
@@ -289,7 +290,9 @@ export class AuthService {
     return { time: 60 };
   }
 
-  async checkRecoveryCode(checkDto: CheckRecoveryDto) {
+  async checkRecoveryCode(
+    checkDto: CheckRecoveryDto,
+  ): Promise<SuccessInterface> {
     const user: User = await this.userRepository.findOne({
       where: { phone: checkDto.phone },
     });
@@ -328,7 +331,14 @@ export class AuthService {
     const hashPassword = await bcrypt.hash(passwordDto.password, 5);
 
     await user.update({ password: hashPassword, code: null });
-    return await this.authData(user, passwordDto.deviceId, res);
+
+    const newUser: User = await this.userRepository.findOne({
+      attributes: { exclude: excludedUserAttributes },
+      include: { all: true },
+      where: { id: user.id },
+    });
+
+    return await this.authData(newUser, passwordDto.deviceId, res);
   }
 
   private generateSmsCode(): string {
