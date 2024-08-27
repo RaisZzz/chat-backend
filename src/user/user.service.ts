@@ -602,7 +602,7 @@ export class UserService {
   async setMainPhoto(
     user: User,
     setMainPhotoDto: SetMainPhotoDto,
-  ): Promise<User> {
+  ): Promise<Record<any, any>> {
     const photos = { ...user.photos };
     if (
       Object.values(photos).length < 2 ||
@@ -620,10 +620,13 @@ export class UserService {
 
     await user.update({ photos });
 
-    return user;
+    return photos;
   }
 
-  async deletePhoto(user: User, deletePhotoDto: DeletePhotoDto): Promise<any> {
+  async deletePhoto(
+    user: User,
+    deletePhotoDto: DeletePhotoDto,
+  ): Promise<Record<any, any>> {
     const photos = { ...user.photos };
     if (!Object.values(photos).includes(deletePhotoDto.imageId)) {
       throw new HttpException(

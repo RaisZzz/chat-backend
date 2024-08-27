@@ -155,13 +155,16 @@ export class UserController {
   setMainPhoto(
     @Req() req,
     @Body() setMainPhotoDto: SetMainPhotoDto,
-  ): Promise<User> {
+  ): Promise<Record<any, any>> {
     return this.userService.setMainPhoto(req.user, setMainPhotoDto);
   }
 
   @Delete('delete_photo')
   @UseGuards(JwtAuthGuard, SmsGuard)
-  deletePhoto(@Body() deletePhotoDto: DeletePhotoDto, @Req() req) {
+  deletePhoto(
+    @Body() deletePhotoDto: DeletePhotoDto,
+    @Req() req,
+  ): Promise<Record<any, any>> {
     return this.userService.deletePhoto(req.user, deletePhotoDto);
   }
 
