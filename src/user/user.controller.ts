@@ -32,6 +32,7 @@ import { SetUserSettingsDto } from './dto/set-user-settings.dto';
 import { ChangeGeoDto } from './dto/change-geo.dto';
 import { Image } from '../image/image.model';
 import { DeletePhotoDto } from './dto/delete-photo.dto';
+import { SetMainPhotoDto } from './dto/set-main-photo.dto';
 
 @Controller('user')
 export class UserController {
@@ -147,6 +148,15 @@ export class UserController {
       files?.photos,
       uploadPhotoDto,
     );
+  }
+
+  @UseGuards(JwtAuthGuard, SmsGuard)
+  @Post('set_main_photo')
+  setMainPhoto(
+    @Req() req,
+    @Body() setMainPhotoDto: SetMainPhotoDto,
+  ): Promise<User> {
+    return this.userService.setMainPhoto(req.user, setMainPhotoDto);
   }
 
   @Delete('delete_photo')

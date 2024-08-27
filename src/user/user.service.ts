@@ -38,6 +38,7 @@ import { BaseDto } from '../base/base.dto';
 import { SetUserSettingsDto } from './dto/set-user-settings.dto';
 import { ChangeGeoDto } from './dto/change-geo.dto';
 import { DeletePhotoDto } from './dto/delete-photo.dto';
+import { SetMainPhotoDto } from './dto/set-main-photo.dto';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const md5 = require('md5');
 
@@ -598,6 +599,30 @@ export class UserService {
     return await this.updatePhoto(user, photo, uploadPhotoDto);
   }
 
+  async setMainPhoto(
+    user: User,
+    setMainPhotoDto: SetMainPhotoDto,
+  ): Promise<User> {
+    const photos = { ...user.photos };
+    if (
+      Object.values(photos).length < 2 ||
+      !photos[setMainPhotoDto.index.toString()]
+    ) {
+      throw new HttpException(
+        new Error(ErrorType.Forbidden),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    const mainImageId = photos[0];
+    photos['0'] = photos[setMainPhotoDto.index.toString()];
+    photos[setMainPhotoDto.index.toString()] = mainImageId;
+
+    await user.update({ photos });
+
+    return user;
+  }
+
   async deletePhoto(user: User, deletePhotoDto: DeletePhotoDto): Promise<any> {
     const photos = { ...user.photos };
     if (!Object.values(photos).includes(deletePhotoDto.imageId)) {
@@ -613,7 +638,7 @@ export class UserService {
     await this.imageService.deleteFile(deletedImage);
 
     const newPhotos = {};
-    for (const [key, value] of Object.entries(photos)) {
+    for (const value of Object.values(photos)) {
       if (value !== deletePhotoDto.imageId) {
         newPhotos[Object.values(newPhotos).length] = value;
       }
