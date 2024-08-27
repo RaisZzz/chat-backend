@@ -32,12 +32,12 @@ import { SetFCMTokenDto } from './dto/set-fcm-token.dto';
 import { UserDevice } from './user-device.model';
 import { GetUserById } from './dto/get-user-by-id.dto';
 import { ReturnUserDto } from './dto/return-user.dto';
-import { Chat } from '../chat/chat.model';
 import { ChatService } from '../chat/chat.service';
 import { DeleteDeviceSessionDto } from './dto/delete-device-session.dto';
 import { BaseDto } from '../base/base.dto';
 import { SetUserSettingsDto } from './dto/set-user-settings.dto';
 import { ChangeGeoDto } from './dto/change-geo.dto';
+import { DeletePhotoDto } from './dto/delete-photo.dto';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const md5 = require('md5');
 
@@ -596,6 +596,31 @@ export class UserService {
     }
 
     return await this.updatePhoto(user, photo, uploadPhotoDto);
+  }
+
+  async deletePhoto(user: User, deletePhotoDto: DeletePhotoDto): Promise<any> {
+    const photos = { ...user.photos };
+    if (!Object.values(photos).includes(deletePhotoDto.imageId)) {
+      throw new HttpException(
+        new Error(ErrorType.Forbidden),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    const deletedImage: Image = await this.imageRepository.findOne({
+      where: { id: deletePhotoDto.imageId },
+    });
+    await this.imageService.deleteFile(deletedImage);
+
+    const newPhotos = {};
+    for (const [key, value] of Object.entries(photos)) {
+      if (value !== deletePhotoDto.imageId) {
+        newPhotos[Object.values(newPhotos).length] = value;
+      }
+    }
+    await user.update({ photos: newPhotos });
+
+    return newPhotos;
   }
 
   async sendVerificationPhotos(user: User, photo: Express.Multer.File) {

@@ -31,6 +31,7 @@ import { DeleteDeviceSessionDto } from './dto/delete-device-session.dto';
 import { SetUserSettingsDto } from './dto/set-user-settings.dto';
 import { ChangeGeoDto } from './dto/change-geo.dto';
 import { Image } from '../image/image.model';
+import { DeletePhotoDto } from './dto/delete-photo.dto';
 
 @Controller('user')
 export class UserController {
@@ -146,6 +147,12 @@ export class UserController {
       files?.photos,
       uploadPhotoDto,
     );
+  }
+
+  @Delete('delete_photo')
+  @UseGuards(JwtAuthGuard, SmsGuard)
+  deletePhoto(@Body() deletePhotoDto: DeletePhotoDto, @Req() req) {
+    return this.userService.deletePhoto(req.user, deletePhotoDto);
   }
 
   @ApiOperation({ summary: 'Отправка фото для верификации' })
