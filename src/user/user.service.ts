@@ -1,5 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { excludedUserAttributes, User } from './user.model';
+import {
+  excludedMainUserAttributes,
+  excludedUserAttributes,
+  User,
+} from './user.model';
 import { InjectModel } from '@nestjs/sequelize';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { literal, Op } from 'sequelize';
@@ -75,7 +79,7 @@ export class UserService {
 
   async getUserInfo(user: User, baseDto: BaseDto): Promise<UserInfoResponse> {
     const newUser: User = await this.userRepository.findOne({
-      attributes: { exclude: excludedUserAttributes },
+      attributes: { exclude: excludedMainUserAttributes },
       include: { all: true },
       where: { id: user.id },
     });

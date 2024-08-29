@@ -29,12 +29,16 @@ import { Children } from '../children/children.model';
 import { Image } from '../image/image.model';
 import { UserVerificationImages } from '../image/user-verification-image.model';
 
-export const excludedUserAttributes: string[] = [
-  'phone',
+export const excludedMainUserAttributes: string[] = [
   'password',
   'code',
   'device',
   'v',
+];
+
+export const excludedUserAttributes: string[] = [
+  ...excludedMainUserAttributes,
+  'phone',
 ];
 
 @Table({ tableName: 'user', underscored: true })
