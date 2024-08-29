@@ -582,7 +582,7 @@ export class UserService {
     user: User,
     photos: [Express.Multer.File],
     uploadPhotoDto: UploadPhotoDto,
-  ) {
+  ): Promise<Record<any, any>> {
     // Validate photos array
     if (!photos.length) {
       throw new HttpException(
@@ -676,7 +676,7 @@ export class UserService {
     user: User,
     photo: Express.Multer.File,
     uploadPhotoDto: UploadPhotoDto,
-  ): Promise<Image> {
+  ): Promise<Record<any, any>> {
     const photos = { ...user.photos };
     let editPhotoIndex =
       uploadPhotoDto.index >= 0 &&
@@ -717,7 +717,7 @@ export class UserService {
     });
     this.socketGateway.sendUpdateData(user.id);
 
-    return file;
+    return photos;
   }
 
   async getAnotherUsersOnline(user: User): Promise<Record<number, any>> {
