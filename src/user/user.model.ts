@@ -53,6 +53,16 @@ export const excludedUserAttributes: string[] = [
   'platform',
 ];
 
+export const getUserQuery = (id: number): string => `select *,
+      (select array(select interest_id from user_interests where user_id = "user".id)) as "interestsIds",
+      (select array(select language_id from user_language where user_id = "user".id)) as "languagesIds",
+      (select array(select speciality_id from user_specialities where user_id = "user".id)) as "specialitiesIds",
+      (select array(select place_wish_id from user_place_wish where user_id = "user".id)) as "placeWishesIds",
+      (select array(select wedding_wish_id from user_wedding_wish where user_id = "user".id)) as "weddingWishesIds"
+      from "user"
+      where id = ${id}
+      limit 1`;
+
 @Table({ tableName: 'user', underscored: true })
 export class User extends Model<User, CreateUserDto> {
   @ApiProperty({ example: 1, description: 'ID пользователя' })

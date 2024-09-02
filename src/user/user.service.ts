@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import {
   excludedMainUserAttributes,
   excludedUserAttributes,
+  getUserQuery,
   User,
 } from './user.model';
 import { InjectModel } from '@nestjs/sequelize';
@@ -78,11 +79,15 @@ export class UserService {
   ) {}
 
   async getUserInfo(user: User, baseDto: BaseDto): Promise<UserInfoResponse> {
-    const newUser: User = await this.userRepository.findOne({
-      attributes: { exclude: excludedMainUserAttributes },
-      include: { all: true },
-      where: { id: user.id },
+    const [newUser] = await this.sequelize.query(getUserQuery(user.id), {
+      mapToModel: true,
+      model: User,
     });
+
+    excludedMainUserAttributes.forEach(
+      (attribute) => delete newUser.dataValues[attribute],
+    );
+
     const userDevice: UserDevice = await this.userDeviceRepository.findOne({
       where: { userId: user.id, deviceId: baseDto.deviceId },
     });
