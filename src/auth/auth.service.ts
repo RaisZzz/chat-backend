@@ -419,10 +419,27 @@ export class AuthService {
       where: { userId: user.id, deviceId },
     });
 
+    const [newUser] = await this.sequelize.query(
+      `
+      select *,
+      (select array(select interest_id from user_interests where user_id = "user".id)) as "interestsIds",
+      (select array(select language_id from user_language where user_id = "user".id)) as "languagesIds",
+      (select array(select speciality_id from user_specialities where user_id = "user".id)) as "specialitiesIds",
+      (select array(select place_wish_id from user_place_wish where user_id = "user".id)) as "placeWishesIds"
+      from "user"
+      limit 1
+    `,
+      { mapToModel: true, model: User },
+    );
+
+    excludedMainUserAttributes.forEach(
+      (attribute) => delete newUser.dataValues[attribute],
+    );
+
     return {
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
-      user,
+      user: newUser,
       data: await this.getDataItems(),
       chatsUnread,
       userSettings: {
