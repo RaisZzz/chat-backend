@@ -47,6 +47,7 @@ import { ChatLink } from './chat/chat-link.model';
     }),
     SequelizeModule.forRoot({
       dialect: 'postgres',
+      logging: process.env.DB_LOGGING !== 'false',
       hooks: {
         beforeUpdate(instance, options) {
           instance.dataValues.updatedAt = Date.now();
