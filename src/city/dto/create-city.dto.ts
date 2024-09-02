@@ -15,4 +15,10 @@ export class CreateCityDto {
     description: 'Название на Узбекистанском (кирилица)',
   })
   title_uz_cyr: string;
+
+  @ApiProperty({
+    example: 1,
+    description: 'Приоритет в списке',
+  })
+  priority: number;
 }

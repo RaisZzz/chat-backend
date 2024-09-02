@@ -36,4 +36,11 @@ export class City extends Model<City, CreateCityDto> {
   })
   @Column({ type: DataType.STRING, allowNull: false })
   title_uz_cyr: string;
+
+  @ApiProperty({
+    example: 1,
+    description: 'Приоритет в списке',
+  })
+  @Column({ type: DataType.INTEGER, allowNull: false, defaultValue: 0 })
+  priority: number;
 }
