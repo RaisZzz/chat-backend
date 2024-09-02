@@ -87,7 +87,7 @@ export class ImageService {
         height: 1400,
         fit: sharp.fit.inside,
       })
-      .jpeg({ quality: 100, mozjpeg: true })
+      .jpeg({ quality: 90, mozjpeg: true })
       .withMetadata()
       .toFile(path);
 

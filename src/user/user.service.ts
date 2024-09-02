@@ -154,33 +154,13 @@ export class UserService {
   }
 
   async getUsers(user: User, getUsersDto: GetUsersDto): Promise<User[]> {
+    // Get users that should not display
     for (const usersDtoKey in getUsersDto) {
       try {
         getUsersDto[usersDtoKey] = JSON.parse(getUsersDto[usersDtoKey]);
       } catch (e) {}
     }
 
-    // Get distance and age difference
-    const latitude: number = getUsersDto.geoLat || user.geo_lat || 0;
-    const longitude: number = getUsersDto.geoLon || user.geo_lon || 0;
-    const age: number = Math.abs(
-      new Date(
-        Date.now() - new Date(user.birthdate).getTime(),
-      ).getUTCFullYear() - 1970,
-    );
-
-    // Distance in kilometers
-    const x = `111.12 * (${latitude} - geo_lat)`;
-    const y = `111.12 * (${longitude} - geo_lon) * cos(geo_lat / 92.215)`;
-    const distanceQuery = `abs(sqrt(${x} * ${x} + ${y} * ${y}))`;
-
-    const ageQuery = `EXTRACT(year FROM age(current_date, birthdate))`;
-    const ageDiffQuery = `abs(${age} - ${ageQuery})`;
-
-    // Sex is different of user sex
-    const sexCondition = user.sex === 0 ? 1 : 0;
-
-    // Get users that should not display
     const userReactionsLastDate: Date = new Date();
     userReactionsLastDate.setMinutes(userReactionsLastDate.getMinutes() - 5);
     const userReactions: UserReaction[] =
@@ -204,7 +184,7 @@ export class UserService {
       )
     `);
 
-    const userIds: number[] = [
+    const excludingUsersIds: number[] = [
       user.id,
       ...userReactions.map((r) => r.recipientId),
       ...userReports.map((r) => r.reportedId),
@@ -212,231 +192,80 @@ export class UserService {
     ];
     if (Array.isArray(getUsersDto.usersIds)) {
       getUsersDto.usersIds.forEach((id) => {
-        userIds.push(id);
+        excludingUsersIds.push(id);
       });
     }
 
-    const userIdCondition = { [Op.not]: userIds };
-    const whereQuery = {
-      id: userIdCondition,
-      [Op.and]: [
-        literal(
-          `(SELECT COUNT(*) FROM jsonb_object_keys("User"."photos")) >= 2`,
-        ),
-      ],
-      sex: sexCondition,
-      code_confirmed: true,
-      photos: {},
-    };
+    // Get user age
+    const userLatitude: number = getUsersDto.geoLat || user.geo_lat || 0;
+    const userLongitude: number = getUsersDto.geoLon || user.geo_lon || 0;
+    const userAge: number = Math.abs(
+      new Date(
+        Date.now() - new Date(user.birthdate).getTime(),
+      ).getUTCFullYear() - 1970,
+    );
 
-    // Filter
-    let placeWishesWhere;
+    // Sex is different of user sex
+    const anotherUserSex: number = user.sex === 0 ? 1 : 0;
 
-    if (
-      Array.isArray(getUsersDto.placeWishes) &&
-      getUsersDto.placeWishes.length
-    ) {
-      const placeWishes: number[] = [...getUsersDto.placeWishes];
-      let whereId;
-
-      const nullIndex: number = placeWishes.indexOf(null);
-      if (nullIndex > -1) {
-        placeWishes.splice(nullIndex, 1);
-
-        whereId = {
-          [Op.or]: {
-            [Op.eq]: null,
-          },
-        };
-
-        if (placeWishes.length) {
-          whereId[Op.or][Op.in] = placeWishes;
-        }
-      } else if (placeWishes.length) {
-        whereId = placeWishes;
-      }
-
-      if (whereId) {
-        placeWishesWhere = { id: whereId };
-      }
-    }
-
-    whereQuery[Op.and].push(placeWishesWhere);
-
-    // Add filters
-    const includeQuery = [
-      { model: Role, where: { value: 'user' } },
-      { model: City, as: 'birthPlace' },
-      { model: City, as: 'livePlace' },
-      {
-        model: Interest,
-        where: getUsersDto.interests?.length
-          ? {
-              id: { [Op.in]: getUsersDto.interests },
-            }
-          : null,
-      },
-      {
-        model: Speciality,
-        where: getUsersDto.specialities?.length
-          ? {
-              id: { [Op.in]: getUsersDto.specialities },
-            }
-          : null,
-      },
-      Education,
-      OrganisationType,
-      FamilyPosition,
-      {
-        model: Language,
-        where: getUsersDto.languages?.length
-          ? {
-              id: { [Op.in]: getUsersDto.languages },
-            }
-          : null,
-      },
-      Religion,
-      Children,
-      {
-        model: PlaceWish,
-        where: getUsersDto.placeWishes?.length
-          ? {
-              id: { [Op.in]: getUsersDto.placeWishes },
-            }
-          : null,
-      },
-      {
-        model: Parents,
-        where: getUsersDto.parents?.length
-          ? {
-              id: { [Op.in]: getUsersDto.parents },
-            }
-          : null,
-      },
-      Speciality,
-      Interest,
-      PlaceWish,
-    ];
-
+    // Get min and max age
     const ageMin: number = getUsersDto.ageMin >= 18 ? getUsersDto.ageMin : 18;
     const ageMax: number =
       getUsersDto.ageMax <= 100 && getUsersDto.ageMax >= ageMin
         ? getUsersDto.ageMax
         : 100;
 
-    whereQuery[Op.and].push(this.sequelize.literal(`${ageQuery} <= ${ageMax}`));
-
-    whereQuery[Op.and].push(this.sequelize.literal(`${ageQuery} >= ${ageMin}`));
-
-    if (
-      Array.isArray(getUsersDto.educations) &&
-      getUsersDto.educations.length
-    ) {
-      whereQuery['educationId'] = getUsersDto.educations;
-    }
-
-    if (
-      Array.isArray(getUsersDto.livePlaceId) &&
-      getUsersDto.livePlaceId.length
-    ) {
-      const livePlaceId: number[] = [...getUsersDto.livePlaceId];
-
-      const nullIndex: number = livePlaceId.indexOf(null);
-      if (nullIndex > -1) {
-        livePlaceId.splice(nullIndex, 1);
-
-        whereQuery['livePlaceId'] = {
-          [Op.or]: {
-            [Op.is]: null,
-          },
-        };
-
-        if (livePlaceId.length) {
-          whereQuery['livePlaceId'][Op.or][Op.in] = livePlaceId;
-        }
-      } else {
-        whereQuery['livePlaceId'] = livePlaceId.length ? livePlaceId : null;
-      }
-    }
-
-    if (
-      Array.isArray(getUsersDto.birthPlaceId) &&
-      getUsersDto.birthPlaceId.length
-    ) {
-      const birthPlaceId: number[] = [...getUsersDto.birthPlaceId];
-
-      const nullIndex: number = birthPlaceId.indexOf(null);
-      if (nullIndex > -1) {
-        birthPlaceId.splice(nullIndex, 1);
-
-        whereQuery['birthPlaceId'] = {
-          [Op.or]: {
-            [Op.is]: null,
-          },
-        };
-
-        if (birthPlaceId.length) {
-          whereQuery['birthPlaceId'][Op.or][Op.in] = birthPlaceId;
-        }
-      } else {
-        whereQuery['birthPlaceId'] = birthPlaceId.length ? birthPlaceId : null;
-      }
-    }
-
-    if (
-      Array.isArray(getUsersDto.financePositions) &&
-      getUsersDto.financePositions.length
-    ) {
-      whereQuery['financePositionId'] = getUsersDto.financePositions;
-    }
-
-    if (
-      Array.isArray(getUsersDto.organisationTypes) &&
-      getUsersDto.organisationTypes.length
-    ) {
-      whereQuery['organisationId'] = getUsersDto.organisationTypes;
-    }
-
-    if (getUsersDto.readNamaz && getUsersDto.readNamaz.length) {
-      whereQuery['readNamaz'] = getUsersDto.readNamaz;
-    }
-
-    if (getUsersDto.wearsHijab && getUsersDto.wearsHijab.length) {
-      whereQuery['wearsHijab'] = getUsersDto.wearsHijab;
-    }
-
-    if (getUsersDto.familyPositions && getUsersDto.familyPositions.length) {
-      whereQuery['familyPositionId'] = getUsersDto.familyPositions;
-    }
-
-    if (getUsersDto.religions && getUsersDto.religions.length) {
-      whereQuery['religionId'] = getUsersDto.religions;
-    }
-
-    if (getUsersDto.hasChildrens && getUsersDto.hasChildrens.length) {
-      whereQuery['hasChildrenId'] = getUsersDto.hasChildrens;
-    }
-
-    const users = await this.userRepository.findAll({
-      attributes: {
-        include: [
-          [this.sequelize.literal(`${distanceQuery}`), 'distance'],
-          [this.sequelize.literal(ageQuery), 'age'],
-        ],
-        exclude: excludedUserAttributes,
-      },
-      include: includeQuery,
-      where: whereQuery,
-      limit: 20,
-      order: [
-        [
-          this.sequelize.literal(`${ageDiffQuery} + ${distanceQuery} / 10`),
-          'ASC',
-        ],
-      ],
-    });
+    // Get users
+    const users: User[] = await this.sequelize.query(
+      `
+      select * from (
+        select *,
+        (select ROUND(abs(sqrt(x * y + y * y))::numeric, 3)) as "distance" -- distance in kilometers
+        from(
+          select *,
+          (EXTRACT(year FROM age(current_date, birthdate))) as "age",
+          (select 111.12 * (${userLatitude} - geo_lat)) as "x",
+          (select 111.12 * (${userLongitude} - geo_lon) * cos(geo_lat / 92.215)) as "y",
+          (select array(select interest_id from user_interests where user_id = "user".id)) as "interestsIds",
+          (select array(select language_id from user_language where user_id = "user".id)) as "languagesIds",
+          (select array(select speciality_id from user_specialities where user_id = "user".id)) as "specialitiesIds",
+          (select array(select place_wish_id from user_place_wish where user_id = "user".id)) as "placeWishesIds"
+          from "user"
+          where sex = ${anotherUserSex}
+          and (SELECT COUNT(*) FROM jsonb_object_keys(photos)) >= 2
+          and code_confirmed = true
+          ${excludingUsersIds.length ? `and id not in (${excludingUsersIds})` : ''}
+          ${getUsersDto.birthPlaceId?.length ? `and birth_place_id IN (${getUsersDto.birthPlaceId})` : ''}
+          ${getUsersDto.livePlaceId?.length ? `and live_place_id IN (${getUsersDto.livePlaceId})` : ''}
+          ${getUsersDto.educations?.length ? `and education_id IN (${getUsersDto.educations})` : ''}
+          ${getUsersDto.organisationTypes?.length ? `and organisation_id IN (${getUsersDto.organisationTypes})` : ''}
+          ${getUsersDto.readNamaz?.length ? `and read_namaz IN (${getUsersDto.readNamaz})` : ''}
+          ${getUsersDto.wearsHijab?.length ? `and wears_hijab IN (${getUsersDto.wearsHijab})` : ''}
+          ${getUsersDto.familyPositions?.length ? `and family_position_id IN (${getUsersDto.familyPositions})` : ''}
+          ${getUsersDto.religions?.length ? `and religion_id IN (${getUsersDto.religions})` : ''}
+          ${getUsersDto.hasChildrens?.length ? `and has_children_id IN (${getUsersDto.hasChildrens})` : ''}
+          ${getUsersDto.parents?.length ? `and parents_id IN (${getUsersDto.parents})` : ''}
+        ) a
+        where age >= ${ageMin}
+        and age <= ${ageMax}
+        and "interestsIds" @> '{${getUsersDto.interests ?? []}}'
+        and "languagesIds" @> '{${getUsersDto.languages ?? []}}'
+        and "specialitiesIds" @> '{${getUsersDto.specialities ?? []}}'
+        and "placeWishesIds" @> '{${getUsersDto.placeWishes ?? []}}'
+      ) b
+      order by (abs(${userAge} - age) + distance / 10) asc
+      limit 20
+    `,
+      { mapToModel: true, model: User },
+    );
 
     for (const someUser of users) {
+      excludedUserAttributes.forEach(
+        (attribute) => delete someUser.dataValues[attribute],
+      );
+      delete someUser.dataValues['x'];
+      delete someUser.dataValues['y'];
+      delete someUser.dataValues['age'];
       someUser.dataValues['online'] = await this.getUserOnline(someUser.id);
     }
 

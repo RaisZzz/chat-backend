@@ -39,6 +39,16 @@ export const excludedMainUserAttributes: string[] = [
 export const excludedUserAttributes: string[] = [
   ...excludedMainUserAttributes,
   'phone',
+  'geo_lat',
+  'geo_lon',
+  'returns',
+  'superLikes',
+  'blockedAt',
+  'blockReason',
+  'tryVerifiedAt',
+  'verifyAnsweredAt',
+  'code_confirmed',
+  'platform',
 ];
 
 @Table({ tableName: 'user', underscored: true })
