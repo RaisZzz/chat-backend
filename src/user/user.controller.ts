@@ -80,7 +80,7 @@ export class UserController {
   }
 
   @Post('geo')
-  @UseGuards(JwtAuthGuard, SmsGuard)
+  @UseGuards(JwtAuthGuard)
   changeGeo(@Req() req, @Body() changeDto: ChangeGeoDto) {
     return this.userService.changeGeo(req.token, req.user, changeDto);
   }
