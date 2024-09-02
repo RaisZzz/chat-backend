@@ -234,6 +234,15 @@ export class UserService {
           where sex = ${anotherUserSex}
           and (SELECT COUNT(*) FROM jsonb_object_keys(photos)) >= 2
           and code_confirmed = true
+          and birth_place_id IS NOT NULL
+          and live_place_id IS NOT NULL
+          and blocked_at IS NULL
+          and education_id IS NOT NULL
+          and parents_id IS NOT NULL
+          and organisation_id IS NOT NULL
+          and family_position_id IS NOT NULL
+          and religion_id IS NOT NULL
+          and has_children_id IS NOT NULL
           ${excludingUsersIds.length ? `and id not in (${excludingUsersIds})` : ''}
           ${getUsersDto.birthPlaceId?.length ? `and birth_place_id IN (${getUsersDto.birthPlaceId})` : ''}
           ${getUsersDto.livePlaceId?.length ? `and live_place_id IN (${getUsersDto.livePlaceId})` : ''}
@@ -248,6 +257,10 @@ export class UserService {
         ) a
         where age >= ${ageMin}
         and age <= ${ageMax}
+        and array_length("interestsIds", 1) > 0
+        and array_length("languagesIds", 1) > 0
+        and array_length("specialitiesIds", 1) > 0
+        and array_length("placeWishesIds", 1) > 0
         and "interestsIds" @> '{${getUsersDto.interests ?? []}}'
         and "languagesIds" @> '{${getUsersDto.languages ?? []}}'
         and "specialitiesIds" @> '{${getUsersDto.specialities ?? []}}'
