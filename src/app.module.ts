@@ -38,6 +38,8 @@ import { VoiceModule } from './voice/voice.module';
 import { UserModule } from './user/user.module';
 import { PurchaseModule } from './purchase/purchase.module';
 import { ChatLink } from './chat/chat-link.model';
+import { WeddingWish } from './wedding-wish/wedding-wish.model';
+import { UserWeddingWish } from './wedding-wish/user-wedding-wish.model';
 
 @Module({
   imports: [
@@ -93,6 +95,8 @@ import { ChatLink } from './chat/chat-link.model';
         Report,
         UserReactionReceived,
         ChatLink,
+        WeddingWish,
+        UserWeddingWish,
       ],
       autoLoadModels: true,
     }),

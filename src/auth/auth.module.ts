@@ -23,6 +23,7 @@ import { WebsocketsModule } from '../websockets/websockets.module';
 import { Role } from '../role/role.model';
 import { UserRoles } from '../role/user-role.model';
 import { ChatUser } from '../chat/chat-user.model';
+import { WeddingWish } from '../wedding-wish/wedding-wish.model';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { ChatUser } from '../chat/chat-user.model';
       Role,
       UserRoles,
       ChatUser,
+      WeddingWish,
     ]),
     SmsModule,
     WebsocketsModule,

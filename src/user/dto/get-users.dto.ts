@@ -205,6 +205,22 @@ export class GetUsersDto {
 
   @ApiProperty({
     example: [],
+    description: 'Пожелания после свадьбы',
+    required: false,
+  })
+  @IsArray()
+  @IsOptional()
+  @Transform((value) => {
+    if (!Array.isArray(value.value)) {
+      return value.value ? JSON.parse(value.value) || [] : [];
+    } else {
+      return value.value;
+    }
+  })
+  readonly weddingWishes?: Array<number | null>;
+
+  @ApiProperty({
+    example: [],
     description: 'Родители',
     required: false,
   })

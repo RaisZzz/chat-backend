@@ -31,8 +31,8 @@ import { UserSettings } from '../user/user.service';
 import { RecoveryDto } from './dto/recovery.dto';
 import { CheckRecoveryDto } from './dto/check-recovery.dto';
 import { RecoveryPasswordDto } from './dto/recovery-password.dto';
-import { BaseDto } from '../base/base.dto';
 import { SuccessInterface } from '../base/success.interface';
+import { WeddingWish } from '../wedding-wish/wedding-wish.model';
 
 abstract class AuthData {
   readonly cities: City[];
@@ -46,6 +46,7 @@ abstract class AuthData {
   readonly interests: Interest[];
   readonly languages: Language[];
   readonly childrens: Children[];
+  readonly weddingWishes: WeddingWish[];
 }
 
 export abstract class Tokens {
@@ -103,6 +104,7 @@ export class AuthService {
     @InjectModel(Interest) private interestRepository: typeof Interest,
     @InjectModel(Language) private languageRepository: typeof Language,
     @InjectModel(Children) private childrenRepository: typeof Children,
+    @InjectModel(WeddingWish) private weddingWishRepository: typeof WeddingWish,
   ) {
     this.checkUnconfirmedUsers();
   }
@@ -122,6 +124,8 @@ export class AuthService {
     const interests: Interest[] = await this.interestRepository.findAll();
     const languages: Language[] = await this.languageRepository.findAll();
     const childrens: Children[] = await this.childrenRepository.findAll();
+    const weddingWishes: WeddingWish[] =
+      await this.weddingWishRepository.findAll();
 
     return {
       cities,
@@ -135,6 +139,7 @@ export class AuthService {
       interests,
       languages,
       childrens,
+      weddingWishes,
     };
   }
 
@@ -415,7 +420,8 @@ export class AuthService {
       (select array(select interest_id from user_interests where user_id = "user".id)) as "interestsIds",
       (select array(select language_id from user_language where user_id = "user".id)) as "languagesIds",
       (select array(select speciality_id from user_specialities where user_id = "user".id)) as "specialitiesIds",
-      (select array(select place_wish_id from user_place_wish where user_id = "user".id)) as "placeWishesIds"
+      (select array(select place_wish_id from user_place_wish where user_id = "user".id)) as "placeWishesIds",
+      (select array(select wedding_wish_id from user_wedding_wish where user_id = "user".id)) as "weddingWishesIds"
       from "user"
       where id = ${user.id}
       limit 1

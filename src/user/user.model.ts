@@ -28,6 +28,8 @@ import { Religion } from '../religion/religion.model';
 import { Children } from '../children/children.model';
 import { Image } from '../image/image.model';
 import { UserVerificationImages } from '../image/user-verification-image.model';
+import { WeddingWish } from '../wedding-wish/wedding-wish.model';
+import { UserWeddingWish } from '../wedding-wish/user-wedding-wish.model';
 
 export const excludedMainUserAttributes: string[] = [
   'password',
@@ -156,6 +158,10 @@ export class User extends Model<User, CreateUserDto> {
   @ApiProperty({ description: 'Пожелания местожительства' })
   @BelongsToMany(() => PlaceWish, () => UserPlaceWish)
   placeWishes: PlaceWish[];
+
+  @ApiProperty({ description: 'Пожелания после свадьбы' })
+  @BelongsToMany(() => WeddingWish, () => UserWeddingWish)
+  weddingWishes: WeddingWish[];
 
   @BelongsTo(() => OrganisationType)
   organisation: OrganisationType;
