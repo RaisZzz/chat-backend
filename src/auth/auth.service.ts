@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcryptjs';
 import { InjectModel } from '@nestjs/sequelize';
-import { excludedUserAttributes, User } from 'src/user/user.model';
+import { excludedMainUserAttributes, User } from 'src/user/user.model';
 import { UserDevice } from 'src/user/user-device.model';
 import { RegisterDto } from './dto/register.dto';
 import { JwtService } from '@nestjs/jwt';
@@ -218,7 +218,7 @@ export class AuthService {
     const smsCode: string = this.generateSmsCode();
     await user.update({ code: smsCode });
     this.smsService.sendSmsCode(user.phone, SmsType.auth, smsCode, 'ru');
-    return {success: true };
+    return { success: true };
   }
 
   async login(loginDto: LoginDto, res: Response): Promise<AuthResponse> {
@@ -341,7 +341,7 @@ export class AuthService {
     await user.update({ password: hashPassword, code: null });
 
     const newUser: User = await this.userRepository.findOne({
-      attributes: { exclude: excludedUserAttributes },
+      attributes: { exclude: excludedMainUserAttributes },
       include: { all: true },
       where: { id: user.id },
     });
@@ -398,9 +398,9 @@ export class AuthService {
       httpOnly: true,
     });
 
-    excludedUserAttributes.forEach((attribute) => {
-      if (attribute !== 'phone') delete user.dataValues[attribute];
-    });
+    excludedMainUserAttributes.forEach(
+      (attribute) => delete user.dataValues[attribute],
+    );
 
     const chatsUnread: Record<string, number> = {};
     const [userChats] = await this.sequelize.query(`
