@@ -15,13 +15,4 @@ export class CreateCityDto {
     description: 'Название на Узбекистанском (кирилица)',
   })
   title_uz_cyr: string;
-
-  @ApiProperty({ example: 'asdxZXasd', description: 'ID места в Google MAPS' })
-  google_id: string;
-
-  @ApiProperty({ example: 32.20234, description: 'Широта' })
-  latitude: number;
-
-  @ApiProperty({ example: 32.20234, description: 'Долгота' })
-  longitude: number;
 }

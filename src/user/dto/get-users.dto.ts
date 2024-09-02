@@ -89,23 +89,6 @@ export class GetUsersDto {
   })
   readonly specialities?: number[];
 
-  @ApiProperty({
-    example: [],
-    description: 'Финансовое положение',
-    required: false,
-  })
-  @IsInt({ each: true })
-  @IsArray()
-  @IsOptional()
-  @Transform((value) => {
-    if (!Array.isArray(value.value)) {
-      return value.value ? JSON.parse(value.value) || [] : [];
-    } else {
-      return value.value;
-    }
-  })
-  readonly financePositions?: number[];
-
   @ApiProperty({ example: [], description: 'Вид организации', required: false })
   @IsInt({ each: true })
   @IsArray()

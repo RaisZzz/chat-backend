@@ -36,16 +36,4 @@ export class City extends Model<City, CreateCityDto> {
   })
   @Column({ type: DataType.STRING, allowNull: false })
   title_uz_cyr: string;
-
-  @ApiProperty({ example: 'asdxZXasd', description: 'ID места в Google MAPS' })
-  @Column({ type: DataType.STRING, allowNull: false })
-  google_id: string;
-
-  @ApiProperty({ example: 32.20234, description: 'Широта' })
-  @Column({ type: DataType.FLOAT, allowNull: false })
-  latitude: number;
-
-  @ApiProperty({ example: 32.20234, description: 'Долгота' })
-  @Column({ type: DataType.FLOAT, allowNull: false })
-  longitude: number;
 }
