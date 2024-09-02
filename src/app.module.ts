@@ -40,6 +40,8 @@ import { PurchaseModule } from './purchase/purchase.module';
 import { ChatLink } from './chat/chat-link.model';
 import { WeddingWish } from './wedding-wish/wedding-wish.model';
 import { UserWeddingWish } from './wedding-wish/user-wedding-wish.model';
+import { MainQuality } from './main-quality/main-quality.model';
+import { UserMainQuality } from './main-quality/user-main-quality.model';
 
 @Module({
   imports: [
@@ -97,6 +99,8 @@ import { UserWeddingWish } from './wedding-wish/user-wedding-wish.model';
         ChatLink,
         WeddingWish,
         UserWeddingWish,
+        MainQuality,
+        UserMainQuality,
       ],
       autoLoadModels: true,
     }),

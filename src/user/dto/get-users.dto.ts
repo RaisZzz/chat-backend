@@ -221,6 +221,22 @@ export class GetUsersDto {
 
   @ApiProperty({
     example: [],
+    description: 'Главные качества',
+    required: false,
+  })
+  @IsArray()
+  @IsOptional()
+  @Transform((value) => {
+    if (!Array.isArray(value.value)) {
+      return value.value ? JSON.parse(value.value) || [] : [];
+    } else {
+      return value.value;
+    }
+  })
+  readonly mainQualities?: Array<number | null>;
+
+  @ApiProperty({
+    example: [],
     description: 'Родители',
     required: false,
   })

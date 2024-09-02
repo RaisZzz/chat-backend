@@ -7,21 +7,10 @@ import {
 } from './user.model';
 import { InjectModel } from '@nestjs/sequelize';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { literal, Op } from 'sequelize';
+import { Op } from 'sequelize';
 import { GetUsersDto } from './dto/get-users.dto';
 import { Sequelize } from 'sequelize-typescript';
 import { Role } from '../role/role.model';
-import { City } from '../city/city.model';
-import { Interest } from '../interest/interest.model';
-import { Speciality } from '../speciality/speciality.model';
-import { Education } from '../education/education.model';
-import { OrganisationType } from '../organisation-type/organisation.model';
-import { FamilyPosition } from '../family-position/family-position.model';
-import { Language } from '../language/language.model';
-import { Religion } from '../religion/religion.model';
-import { Children } from '../children/children.model';
-import { PlaceWish } from '../place-wish/place-wish.model';
-import { Parents } from '../parents/parents.model';
 import { RedisService } from '../redis/redis.service';
 import { SocketGateway } from '../websockets/socket.gateway';
 import { UserReaction } from '../user-reaction/user-reaction.model';
@@ -37,7 +26,6 @@ import { SetFCMTokenDto } from './dto/set-fcm-token.dto';
 import { UserDevice } from './user-device.model';
 import { GetUserById } from './dto/get-user-by-id.dto';
 import { ReturnUserDto } from './dto/return-user.dto';
-import { ChatService } from '../chat/chat.service';
 import { DeleteDeviceSessionDto } from './dto/delete-device-session.dto';
 import { BaseDto } from '../base/base.dto';
 import { SetUserSettingsDto } from './dto/set-user-settings.dto';
@@ -75,7 +63,6 @@ export class UserService {
     private redisService: RedisService,
     private imageService: ImageService,
     private socketGateway: SocketGateway,
-    private chatService: ChatService,
   ) {}
 
   async getUserInfo(user: User, baseDto: BaseDto): Promise<UserInfoResponse> {
@@ -235,7 +222,8 @@ export class UserService {
           (select array(select language_id from user_language where user_id = "user".id)) as "languagesIds",
           (select array(select speciality_id from user_specialities where user_id = "user".id)) as "specialitiesIds",
           (select array(select place_wish_id from user_place_wish where user_id = "user".id)) as "placeWishesIds",
-          (select array(select wedding_wish_id from user_wedding_wish where user_id = "user".id)) as "weddingWishesIds"
+          (select array(select wedding_wish_id from user_wedding_wish where user_id = "user".id)) as "weddingWishesIds",
+          (select array(select main_quality_id from user_main_quality where user_id = "user".id)) as "mainQualities"
           from "user"
           where sex = ${anotherUserSex}
           and (SELECT COUNT(*) FROM jsonb_object_keys(photos)) >= 2
@@ -268,11 +256,13 @@ export class UserService {
         and array_length("specialitiesIds", 1) > 0
         and array_length("placeWishesIds", 1) > 0
         and array_length("weddingWishesIds", 1) > 0
+        and array_length("mainQualitiesIds", 1) > 0
         and "interestsIds" @> '{${getUsersDto.interests ?? []}}'
         and "languagesIds" @> '{${getUsersDto.languages ?? []}}'
         and "specialitiesIds" @> '{${getUsersDto.specialities ?? []}}'
         and "placeWishesIds" @> '{${getUsersDto.placeWishes ?? []}}'
         and "weddingWishesIds" @> '{${getUsersDto.weddingWishes ?? []}}'
+        and "mainQualitiesIds" @> '{${getUsersDto.mainQualities ?? []}}'
       ) b
       order by (abs(${userAge} - age) + distance / 10) asc
       limit 20
@@ -407,6 +397,13 @@ export class UserService {
       updateUserDto.weddingWishesIds.length
     ) {
       await user.$set('weddingWishes', updateUserDto.weddingWishesIds);
+    }
+
+    if (
+      Array.isArray(updateUserDto.mainQualitiesIds) &&
+      updateUserDto.mainQualitiesIds.length
+    ) {
+      await user.$set('mainQualities', updateUserDto.mainQualitiesIds);
     }
 
     if (

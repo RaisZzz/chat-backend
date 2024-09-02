@@ -37,6 +37,7 @@ import { CheckRecoveryDto } from './dto/check-recovery.dto';
 import { RecoveryPasswordDto } from './dto/recovery-password.dto';
 import { SuccessInterface } from '../base/success.interface';
 import { WeddingWish } from '../wedding-wish/wedding-wish.model';
+import { MainQuality } from '../main-quality/main-quality.model';
 
 abstract class AuthData {
   readonly cities: City[];
@@ -51,6 +52,7 @@ abstract class AuthData {
   readonly languages: Language[];
   readonly childrens: Children[];
   readonly weddingWishes: WeddingWish[];
+  readonly mainQualities: MainQuality[];
 }
 
 export abstract class Tokens {
@@ -109,6 +111,7 @@ export class AuthService {
     @InjectModel(Language) private languageRepository: typeof Language,
     @InjectModel(Children) private childrenRepository: typeof Children,
     @InjectModel(WeddingWish) private weddingWishRepository: typeof WeddingWish,
+    @InjectModel(MainQuality) private mainQualityRepository: typeof MainQuality,
   ) {
     this.checkUnconfirmedUsers();
   }
@@ -130,6 +133,8 @@ export class AuthService {
     const childrens: Children[] = await this.childrenRepository.findAll();
     const weddingWishes: WeddingWish[] =
       await this.weddingWishRepository.findAll();
+    const mainQualities: MainQuality[] =
+      await this.mainQualityRepository.findAll();
 
     return {
       cities,
@@ -144,6 +149,7 @@ export class AuthService {
       languages,
       childrens,
       weddingWishes,
+      mainQualities,
     };
   }
 

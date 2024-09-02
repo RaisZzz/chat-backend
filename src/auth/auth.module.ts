@@ -24,6 +24,7 @@ import { Role } from '../role/role.model';
 import { UserRoles } from '../role/user-role.model';
 import { ChatUser } from '../chat/chat-user.model';
 import { WeddingWish } from '../wedding-wish/wedding-wish.model';
+import { MainQuality } from '../main-quality/main-quality.model';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { WeddingWish } from '../wedding-wish/wedding-wish.model';
       UserRoles,
       ChatUser,
       WeddingWish,
+      MainQuality,
     ]),
     SmsModule,
     WebsocketsModule,

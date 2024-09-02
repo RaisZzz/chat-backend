@@ -30,6 +30,8 @@ import { Image } from '../image/image.model';
 import { UserVerificationImages } from '../image/user-verification-image.model';
 import { WeddingWish } from '../wedding-wish/wedding-wish.model';
 import { UserWeddingWish } from '../wedding-wish/user-wedding-wish.model';
+import { MainQuality } from '../main-quality/main-quality.model';
+import { UserMainQuality } from '../main-quality/user-main-quality.model';
 
 export const excludedMainUserAttributes: string[] = [
   'password',
@@ -58,7 +60,8 @@ export const getUserQuery = (id: number): string => `select *,
       (select array(select language_id from user_language where user_id = "user".id)) as "languagesIds",
       (select array(select speciality_id from user_specialities where user_id = "user".id)) as "specialitiesIds",
       (select array(select place_wish_id from user_place_wish where user_id = "user".id)) as "placeWishesIds",
-      (select array(select wedding_wish_id from user_wedding_wish where user_id = "user".id)) as "weddingWishesIds"
+      (select array(select wedding_wish_id from user_wedding_wish where user_id = "user".id)) as "weddingWishesIds",
+      (select array(select main_quality_id from user_main_quality where user_id = "user".id)) as "mainQualities"
       from "user"
       where id = ${id}
       limit 1`;
@@ -172,6 +175,10 @@ export class User extends Model<User, CreateUserDto> {
   @ApiProperty({ description: 'Пожелания после свадьбы' })
   @BelongsToMany(() => WeddingWish, () => UserWeddingWish)
   weddingWishes: WeddingWish[];
+
+  @ApiProperty({ description: 'Главные качества' })
+  @BelongsToMany(() => MainQuality, () => UserMainQuality)
+  mainQualities: MainQuality[];
 
   @BelongsTo(() => OrganisationType)
   organisation: OrganisationType;

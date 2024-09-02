@@ -95,6 +95,10 @@ export class UpdateUserDto {
 
   @IsInt({ each: true })
   @IsOptional()
+  readonly mainQualitiesIds: number[];
+
+  @IsInt({ each: true })
+  @IsOptional()
   readonly specialitiesIds: number[];
 
   @IsInt({ each: true })
