@@ -340,13 +340,7 @@ export class AuthService {
 
     await user.update({ password: hashPassword, code: null });
 
-    const newUser: User = await this.userRepository.findOne({
-      attributes: { exclude: excludedMainUserAttributes },
-      include: { all: true },
-      where: { id: user.id },
-    });
-
-    return await this.authData(newUser, passwordDto.deviceId, res);
+    return await this.authData(user, passwordDto.deviceId, res);
   }
 
   private generateSmsCode(): string {
@@ -398,10 +392,6 @@ export class AuthService {
       httpOnly: true,
     });
 
-    excludedMainUserAttributes.forEach(
-      (attribute) => delete user.dataValues[attribute],
-    );
-
     const chatsUnread: Record<string, number> = {};
     const [userChats] = await this.sequelize.query(`
       SELECT chat_id FROM "chat_user"
@@ -427,6 +417,7 @@ export class AuthService {
       (select array(select speciality_id from user_specialities where user_id = "user".id)) as "specialitiesIds",
       (select array(select place_wish_id from user_place_wish where user_id = "user".id)) as "placeWishesIds"
       from "user"
+      where id = ${user.id}
       limit 1
     `,
       { mapToModel: true, model: User },
