@@ -257,12 +257,12 @@ export class UserService {
         and array_length("placeWishesIds", 1) > 0
         and array_length("weddingWishesIds", 1) > 0
         and array_length("mainQualitiesIds", 1) > 0
-        and "interestsIds" @> '{${getUsersDto.interests ?? []}}'
-        and "languagesIds" @> '{${getUsersDto.languages ?? []}}'
-        and "specialitiesIds" @> '{${getUsersDto.specialities ?? []}}'
-        and "placeWishesIds" @> '{${getUsersDto.placeWishes ?? []}}'
-        and "weddingWishesIds" @> '{${getUsersDto.weddingWishes ?? []}}'
-        and "mainQualitiesIds" @> '{${getUsersDto.mainQualities ?? []}}'
+        ${getUsersDto.interests?.length ? `and "interestsIds" && '{${getUsersDto.interests}}'` : ''}
+        ${getUsersDto.languages?.length ? `and "languagesIds" && '{${getUsersDto.languages}}'` : ''}
+        ${getUsersDto.specialities?.length ? `and "specialitiesIds" && '{${getUsersDto.specialities}}'` : ''}
+        ${getUsersDto.placeWishes?.length ? `and "placeWishesIds" && '{${getUsersDto.placeWishes}}'` : ''}
+        ${getUsersDto.weddingWishes?.length ? `and "weddingWishesIds" && '{${getUsersDto.weddingWishes}}'` : ''}
+        ${getUsersDto.mainQualities?.length ? `and "mainQualitiesIds" && '{${getUsersDto.mainQualities}}'` : ''}
       ) b
       order by (abs(${userAge} - age) + distance / 10) asc
       limit 20
