@@ -226,8 +226,8 @@ export class UserService {
           (select array(select main_quality_id from user_main_quality where user_id = "user".id)) as "mainQualitiesIds"
           from "user"
           where sex = ${anotherUserSex}
-          and first_name IS NOT NULL
-          and last_name IS NOT NULL
+          and firstname IS NOT NULL
+          and lastname IS NOT NULL
           and birthdate IS NOT NULL
           and (SELECT COUNT(*) FROM jsonb_object_keys(photos)) >= 2
           and code_confirmed = true
