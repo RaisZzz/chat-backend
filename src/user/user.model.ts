@@ -82,32 +82,32 @@ export class User extends Model<User, CreateUserDto> {
   phone: string;
 
   @ApiProperty({ example: '1234567q', description: 'Пароль' })
-  @Column({ type: DataType.STRING, allowNull: false })
+  @Column({ type: DataType.TEXT, allowNull: false })
   password: string;
 
   @ApiProperty({ example: '+71234567890', description: 'Номер телефона' })
-  @Column({ type: DataType.STRING, allowNull: false })
+  @Column({ type: DataType.TEXT })
   firstName: string;
 
   @ApiProperty({ example: 'Румянцев', description: 'Фамилия пользователя' })
-  @Column({ type: DataType.STRING, allowNull: false })
+  @Column({ type: DataType.TEXT })
   lastName: string;
 
   @ApiProperty({
     example: 'Sun Dec 18 2022 01:20:50 GMT+0300 (Москва, стандартное время)',
     description: 'Дата рождения',
   })
-  @Column({ type: DataType.DATE, allowNull: false })
+  @Column({ type: DataType.DATE })
   birthdate: string;
 
   @ApiProperty({
     example: 0,
     description: 'Пол (0 - женский, 1 - мужской)',
   })
-  @Column({ type: DataType.SMALLINT, allowNull: false })
+  @Column({ type: DataType.SMALLINT })
   sex: number;
 
-  @Column({ type: DataType.STRING })
+  @Column({ type: DataType.TEXT })
   code: string;
 
   @ApiProperty({ example: false, description: 'Статус подтверждения кода' })

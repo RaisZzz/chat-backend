@@ -171,19 +171,8 @@ export class AuthService {
     const hashPassword = await bcrypt.hash(registerDto.password, 5);
 
     if (newUser) {
-      if (newUser.sex !== registerDto.sex) {
-        await newUser.update({
-          familyPositionId: null,
-          organisationId: null,
-        });
-        await newUser.$set('placeWishes', []);
-      }
       await newUser.update({
-        firstName: registerDto.firstName,
-        lastName: registerDto.lastName,
         phone: registerDto.phone,
-        birthdate: registerDto.birthdate,
-        sex: registerDto.sex,
         password: hashPassword,
         platform: registerDto.platform,
         v: registerDto.v,
@@ -202,11 +191,7 @@ export class AuthService {
       }
 
       newUser = await this.userRepository.create({
-        firstName: registerDto.firstName,
-        lastName: registerDto.lastName,
         phone: registerDto.phone,
-        birthdate: registerDto.birthdate,
-        sex: registerDto.sex,
         password: hashPassword,
         platform: registerDto.platform,
         v: registerDto.v,

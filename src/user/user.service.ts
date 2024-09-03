@@ -226,6 +226,9 @@ export class UserService {
           (select array(select main_quality_id from user_main_quality where user_id = "user".id)) as "mainQualitiesIds"
           from "user"
           where sex = ${anotherUserSex}
+          and first_name IS NOT NULL
+          and last_name IS NOT NULL
+          and birthdate IS NOT NULL
           and (SELECT COUNT(*) FROM jsonb_object_keys(photos)) >= 2
           and code_confirmed = true
           and birth_place_id IS NOT NULL
@@ -376,6 +379,7 @@ export class UserService {
       requirements: updateUserDto.requirements ?? user.requirements,
       educationId: updateUserDto.educationId ?? user.educationId,
       tutorialDone: updateUserDto.tutorialDone ?? user.tutorialDone,
+      sex: updateUserDto.sex ?? user.sex,
     });
 
     if (
@@ -418,6 +422,17 @@ export class UserService {
       updateUserDto.interestsIds.length
     ) {
       await user.$set('interests', updateUserDto.interestsIds);
+    }
+
+    if (user.sex !== updateUserDto.sex) {
+      await user.update({
+        familyPositionId: null,
+        organisationId: null,
+        educationId: null,
+      });
+      await user.$set('placeWishes', []);
+      await user.$set('weddingWishes', []);
+      await user.$set('mainQualities', []);
     }
 
     delete user.dataValues.password;

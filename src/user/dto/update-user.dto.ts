@@ -24,88 +24,92 @@ export class UpdateUserDto {
   @IsOptional()
   readonly birthdate?: string;
 
+  @IsInt()
+  @IsOptional()
+  readonly sex?: number;
+
   @IsLatitude()
   @IsOptional()
-  readonly geo_lat: number;
+  readonly geo_lat?: number;
 
   @IsLongitude()
   @IsOptional()
-  readonly geo_lon: number;
+  readonly geo_lon?: number;
 
   @IsInt()
   @IsOptional()
-  readonly livePlaceId: number;
+  readonly livePlaceId?: number;
 
   @IsInt()
   @IsOptional()
-  readonly birthPlaceId: number;
+  readonly birthPlaceId?: number;
 
   @IsInt()
   @IsOptional()
-  readonly parentsId: number;
+  readonly parentsId?: number;
 
   @IsInt()
   @IsOptional()
-  readonly organisationId: number;
+  readonly organisationId?: number;
 
   @IsInt()
   @IsOptional()
-  readonly familyPositionId: number;
+  readonly familyPositionId?: number;
 
   @IsInt()
   @IsOptional()
-  readonly religionId: number;
+  readonly religionId?: number;
 
   @IsInt()
   @IsOptional()
-  readonly hasChildrenId: number;
+  readonly hasChildrenId?: number;
 
   @IsInt()
   @IsOptional()
-  readonly educationId: number;
+  readonly educationId?: number;
 
   @IsBoolean()
   @IsOptional()
-  readonly readNamaz: boolean;
+  readonly readNamaz?: boolean;
 
   @IsBoolean()
   @IsOptional()
-  readonly wearsHijab: boolean;
+  readonly wearsHijab?: boolean;
 
   @IsBoolean()
   @IsOptional()
-  readonly hasParents: boolean;
+  readonly hasParents?: boolean;
 
   @IsString()
   @IsNotEmpty()
   @IsOptional()
-  readonly requirements: string;
+  readonly requirements?: string;
 
   @IsInt({ each: true })
   @IsOptional()
-  readonly languagesIds: number[];
+  readonly languagesIds?: number[];
 
   @IsInt({ each: true })
   @IsOptional()
-  readonly placeWishesIds: number[];
+  readonly placeWishesIds?: number[];
 
   @IsInt({ each: true })
   @IsOptional()
-  readonly weddingWishesIds: number[];
+  readonly weddingWishesIds?: number[];
 
   @IsInt({ each: true })
   @IsOptional()
-  readonly mainQualitiesIds: number[];
+  readonly mainQualitiesIds?: number[];
 
   @IsInt({ each: true })
   @IsOptional()
-  readonly specialitiesIds: number[];
+  readonly specialitiesIds?: number[];
 
   @IsInt({ each: true })
   @IsOptional()
-  readonly interestsIds: number[];
+  readonly interestsIds?: number[];
 
   @IsBoolean()
   @IsOptional()
-  readonly tutorialDone: boolean;
+  readonly tutorialDone?: boolean;
 }
