@@ -379,7 +379,6 @@ export class UserService {
       requirements: updateUserDto.requirements ?? user.requirements,
       educationId: updateUserDto.educationId ?? user.educationId,
       tutorialDone: updateUserDto.tutorialDone ?? user.tutorialDone,
-      sex: updateUserDto.sex ?? user.sex,
     });
 
     if (
@@ -424,8 +423,9 @@ export class UserService {
       await user.$set('interests', updateUserDto.interestsIds);
     }
 
-    if (user.sex !== updateUserDto.sex) {
+    if ([0, 1].includes(updateUserDto.sex) && user.sex !== updateUserDto.sex) {
       await user.update({
+        sex: updateUserDto.sex,
         familyPositionId: null,
         organisationId: null,
         educationId: null,

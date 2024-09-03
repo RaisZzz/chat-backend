@@ -1,5 +1,6 @@
 import {
   IsBoolean,
+  IsIn,
   IsInt,
   IsISO8601,
   IsLatitude,
@@ -24,7 +25,7 @@ export class UpdateUserDto {
   @IsOptional()
   readonly birthdate?: string;
 
-  @IsInt()
+  @IsIn([0, 1])
   @IsOptional()
   readonly sex?: number;
 
