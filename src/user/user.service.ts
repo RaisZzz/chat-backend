@@ -223,7 +223,7 @@ export class UserService {
           (select array(select speciality_id from user_specialities where user_id = "user".id)) as "specialitiesIds",
           (select array(select place_wish_id from user_place_wish where user_id = "user".id)) as "placeWishesIds",
           (select array(select wedding_wish_id from user_wedding_wish where user_id = "user".id)) as "weddingWishesIds",
-          (select array(select main_quality_id from user_main_quality where user_id = "user".id)) as "mainQualities"
+          (select array(select main_quality_id from user_main_quality where user_id = "user".id)) as "mainQualitiesIds"
           from "user"
           where sex = ${anotherUserSex}
           and (SELECT COUNT(*) FROM jsonb_object_keys(photos)) >= 2
