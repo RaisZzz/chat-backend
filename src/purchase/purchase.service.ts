@@ -109,7 +109,7 @@ export class PurchaseService {
   }
 
   async addAdmin(createDto: CreatePurchaseDto): Promise<Purchase> {
-    const purchase = await this.purchaseRepository.create({
+    return await this.purchaseRepository.create({
       name: createDto.name,
       description: createDto.description,
       description_en: createDto.description_en,
@@ -125,7 +125,6 @@ export class PurchaseService {
       superLikes: createDto.superLikes,
       returns: createDto.returns,
     });
-    return purchase;
   }
 
   async editAdmin(editDto: EditPurchaseDto): Promise<Purchase> {
@@ -177,19 +176,16 @@ export class PurchaseService {
       );
     }
 
-    const transaction: UserPurchase = await this.userPurchaseRepository.create({
+    return await this.userPurchaseRepository.create({
       purchaseId: purchase.id,
       userId: user.id,
       state: TransactionState.STATE_NEW,
       amount: purchase.price,
       operator: getDto.operator,
     });
-
-    return transaction;
   }
 
   async clickPrepare(data: ClickPrepareDto): Promise<ClickPrepareResponse> {
-    console.log('CLICK PREPARE 1');
     // Check purchase exist and price equal amount
     const purchase: UserPurchase = await this.userPurchaseRepository.findOne({
       include: [Purchase],
@@ -198,16 +194,12 @@ export class PurchaseService {
       },
     });
 
-    console.log('CLICK PREPARE 2', purchase);
-
     if (!purchase) {
       throw new HttpException(
         this.sendClickErrorResponse(ClickError.TransactionDoesNotExist),
         HttpStatus.FORBIDDEN,
       );
     }
-
-    console.log('CLICK PREPARE 3');
 
     if (parseInt(purchase.amount) !== data.amount * 100) {
       throw new HttpException(
@@ -216,16 +208,12 @@ export class PurchaseService {
       );
     }
 
-    console.log('CLICK PREPARE 4');
-
     if (purchase.state === TransactionState.STATE_DONE) {
       throw new HttpException(
         this.sendClickErrorResponse(ClickError.AlreadyPaid),
         HttpStatus.FORBIDDEN,
       );
     }
-
-    console.log('CLICK PREPARE 5');
 
     if (purchase.state === TransactionState.STATE_CANCELED) {
       throw new HttpException(
@@ -234,15 +222,11 @@ export class PurchaseService {
       );
     }
 
-    console.log('CLICK PREPARE 6');
-
     const user: User = await this.userRepository.findOne({
       where: {
         id: purchase.userId,
       },
     });
-
-    console.log('CLICK PREPARE 7', user);
 
     if (!user) {
       throw new HttpException(
@@ -251,32 +235,21 @@ export class PurchaseService {
       );
     }
 
-    console.log('CLICK PREPARE 8');
-
-    const response = {
+    return {
       click_trans_id: data.click_trans_id,
       merchant_trans_id: data.merchant_trans_id,
       merchant_prepare_id: purchase.id,
       error: 0,
       error_note: '',
     };
-
-    console.log('CLICK PREPARE 9 RESPONSE ', response);
-
-    return response;
   }
 
   async clickComplete(data: ClickCompleteDto): Promise<ClickCompleteResponse> {
-    console.log('CLICK COMPLETE 1', data.action);
     if (data.action !== '1') {
       return;
     }
 
-    console.log('CLICK COMPLETE 2');
-
     await this.clickPrepare(data);
-
-    console.log('CLICK COMPLETE 3');
 
     const purchase: UserPurchase = await this.userPurchaseRepository.findOne({
       include: [Purchase],
@@ -285,15 +258,11 @@ export class PurchaseService {
       },
     });
 
-    console.log('CLICK COMPLETE 5', purchase);
-
     const user: User = await this.userRepository.findOne({
       where: {
         id: purchase.userId,
       },
     });
-
-    console.log('CLICK COMPLETE 6', user);
 
     await user.update({
       superLikes: user.superLikes + purchase.purchase.superLikes,
@@ -305,29 +274,20 @@ export class PurchaseService {
       state: TransactionState.STATE_DONE,
     });
 
-    console.log('CLICK COMPLETE 7');
-
     this.socketGateway.sendUpdateData(user.id);
 
-    console.log('CLICK COMPLETE 8');
-
-    const response = {
+    return {
       click_trans_id: data.click_trans_id,
       merchant_trans_id: data.merchant_trans_id,
       error: 0,
       error_note: '',
     };
-
-    console.log('CLICK COMPLETE 9 RESPONSE ', response);
-
-    return response;
   }
 
   clickPrepareCheckSign(data: ClickPrepareDto): void {
     const sign = md5(
       `${data.click_trans_id}${data.service_id}${process.env.CLICK_SECRET_KEY}${data.merchant_trans_id}${data.amount}${data.action}${data.sign_time}`,
     );
-    console.log('CLICK PREPARE CHECK SIGN', sign, data.sign_string);
     if (sign !== data.sign_string) {
       throw new HttpException(
         this.sendClickErrorResponse(ClickError.SignCheckFailed),
@@ -340,7 +300,6 @@ export class PurchaseService {
     const sign = md5(
       `${data.click_trans_id}${data.service_id}${process.env.CLICK_SECRET_KEY}${data.merchant_trans_id}${data.merchant_prepare_id}${data.amount}${data.action}${data.sign_time}`,
     );
-    console.log('CLICK COMPLETE CHECK SIGN', sign, data.sign_string);
     if (sign !== data.sign_string) {
       throw new HttpException(
         this.sendClickErrorResponse(ClickError.SignCheckFailed),
@@ -356,20 +315,16 @@ export class PurchaseService {
   async paymeEndpoint(data: PaymeEndpointDto): Promise<Result> {
     const params = data.params;
 
-    console.log('PAYMENT ENDPOINT', data);
-
     switch (data.method) {
       case 'CheckPerformTransaction':
-        const checkPerform = await this.checkPerformTransaction(
+        return await this.checkPerformTransaction(
           data.id,
           params.account.order,
           params.amount,
           params.account.phone,
         );
-        console.log('CHECK PERFORM TRANSACTION', checkPerform);
-        return checkPerform;
       case 'CreateTransaction':
-        const create = await this.createTransaction(
+        return await this.createTransaction(
           data.id,
           params.id,
           params.time,
@@ -377,27 +332,12 @@ export class PurchaseService {
           params.account.order,
           params.account.phone,
         );
-        console.log('CREATE TRANSACTION', create);
-        return create;
       case 'CheckTransaction':
-        const checkTransaction = await this.checkTransaction(
-          data.id,
-          params.id,
-        );
-        console.log('CHECK TRANSACTION', checkTransaction);
-        return checkTransaction;
+        return await this.checkTransaction(data.id, params.id);
       case 'PerformTransaction':
-        const perform = await this.performTransaction(data.id, params.id);
-        console.log('PERFORM TRANSACTION', perform);
-        return perform;
+        return await this.performTransaction(data.id, params.id);
       case 'CancelTransaction':
-        const cancel = await this.cancelTransaction(
-          data.id,
-          params.id,
-          params.reason,
-        );
-        console.log('CANCEL TRANSACTION', cancel);
-        return cancel;
+        return await this.cancelTransaction(data.id, params.id, params.reason);
     }
   }
 

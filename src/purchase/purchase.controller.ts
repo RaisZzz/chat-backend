@@ -102,10 +102,8 @@ export class PurchaseController {
   @HttpCode(200)
   @UseFilters(new PurchaseExceptionFilter())
   paymentEndpoint(@Body() data: PaymeEndpointDto, @Request() req) {
-    // TODO: Check authorization
     if (
-      req.headers.authorization !==
-      `Basic ${btoa('Paycom:yc6wm&BQ#EkDz21xJD9%kCEkGNwwKCP2n%jA')}`
+      req.headers.authorization !== `Basic ${btoa(process.env.PAYME_SIGN_KEY)}`
     ) {
       throw new HttpException(
         {
@@ -131,7 +129,6 @@ export class PurchaseController {
   @Post('/click_prepare')
   @HttpCode(200)
   clickPrepare(@Body() data: ClickPrepareDto): Promise<ClickPrepareResponse> {
-    console.log('CLICK PREPARE', data);
     this.purchaseService.clickPrepareCheckSign(data);
     return this.purchaseService.clickPrepare(data);
   }
@@ -143,7 +140,6 @@ export class PurchaseController {
   clickComplete(
     @Body() data: ClickCompleteDto,
   ): Promise<ClickCompleteResponse> {
-    console.log('CLICK COMPLETE', data);
     this.purchaseService.clickCompleteCheckSign(data);
     return this.purchaseService.clickComplete(data);
   }
