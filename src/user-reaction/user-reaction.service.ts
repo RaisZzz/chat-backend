@@ -20,6 +20,11 @@ import { NotificationType } from '../notifications/notification-type.enum';
 import { UserDevice } from '../user/user-device.model';
 import { BaseDto } from '../base/base.dto';
 
+export class SendReactionResponse {
+  readonly userReaction: UserReaction;
+  readonly chat?: Chat;
+}
+
 @Injectable()
 export class UserReactionService {
   constructor(
@@ -67,7 +72,10 @@ export class UserReactionService {
     return userReactions;
   }
 
-  async send(user: User, sendDto: SendUserReactionDto): Promise<UserReaction> {
+  async send(
+    user: User,
+    sendDto: SendUserReactionDto,
+  ): Promise<SendReactionResponse> {
     if (typeof sendDto.superLikeMsg === 'string') {
       sendDto.superLikeMsg = sendDto.superLikeMsg
         .trim()
@@ -141,6 +149,8 @@ export class UserReactionService {
       });
     }
 
+    let createdChat: Chat | null;
+
     if (!sendDto.isLiked) {
       // Delete chat if dislike
       const chat: Chat = await this.chatService.getChatWithTwoUsers(
@@ -160,7 +170,7 @@ export class UserReactionService {
     } else {
       if (recipientReaction && recipientReaction.isLiked) {
         // Create chat if above users likes
-        await this.chatService.createChatWithTwoUsers(
+        createdChat = await this.chatService.createChatWithTwoUsers(
           ChatType.user,
           user.id,
           sendDto.toUserId,
@@ -206,9 +216,7 @@ export class UserReactionService {
     reaction.dataValues['user'] = recipientExist.toJSON();
     this.socketGateway.sendUserReaction(user.id, [reaction]);
 
-    console.log(recipientExist.firstName, reaction.dataValues['user']);
-
-    return reaction;
+    return { userReaction: reaction, chat: createdChat };
   }
 
   async sendAllUnreceivedReactions(
