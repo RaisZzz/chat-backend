@@ -254,7 +254,6 @@ export class UserService {
   }
 
   async getUsers(user: User, getUsersDto: GetUsersDto): Promise<User[]> {
-    console.log('GET USERS REQUEST', getUsersDto);
     // Get users that should not display
     for (const usersDtoKey in getUsersDto) {
       try {
