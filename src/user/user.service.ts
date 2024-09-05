@@ -82,12 +82,12 @@ export class UserService {
       (select title from family_position where id = family_position_id) as "familyPosition",
       (select title from religion where id = religion_id) as "religion",
       (select title from children where id = has_children_id) as "hasChildren",
-      (select array(select title from interest where id in (select interest_id from user_interests where user_id = "user".id))) as "interestsIds",
-      (select array(select title from language where id in (select language_id from user_language where user_id = "user".id))) as "languagesIds",
-      (select array(select title from speciality where id in (select speciality_id from user_specialities where user_id = "user".id))) as "specialitiesIds",
-      (select array(select title from place_wish where id in (select place_wish_id from user_place_wish where user_id = "user".id))) as "placeWishesIds",
-      (select array(select title from wedding_wish where id in (select wedding_wish_id from user_wedding_wish where user_id = "user".id))) as "weddingWishesIds",
-      (select array(select title from main_quality where id in (select main_quality_id from user_main_quality where user_id = "user".id))) as "mainQualitiesIds"
+      (select array(select title from interest where id in (select interest_id from user_interests where user_id = "user".id))) as "interests",
+      (select array(select title from language where id in (select language_id from user_language where user_id = "user".id))) as "languages",
+      (select array(select title from speciality where id in (select speciality_id from user_specialities where user_id = "user".id))) as "specialities",
+      (select array(select title from place_wish where id in (select place_wish_id from user_place_wish where user_id = "user".id))) as "placeWishes",
+      (select array(select title from wedding_wish where id in (select wedding_wish_id from user_wedding_wish where user_id = "user".id))) as "weddingWishes",
+      (select array(select title from main_quality where id in (select main_quality_id from user_main_quality where user_id = "user".id))) as "mainQualities"
       from "user"
     `);
     return `
@@ -252,6 +252,7 @@ export class UserService {
   }
 
   async getUsers(user: User, getUsersDto: GetUsersDto): Promise<User[]> {
+    console.log('GET USERS REQUEST', getUsersDto);
     // Get users that should not display
     for (const usersDtoKey in getUsersDto) {
       try {
