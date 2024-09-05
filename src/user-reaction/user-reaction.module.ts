@@ -9,6 +9,7 @@ import { UserReactionReceived } from './user-reaction-received.model';
 import { WebsocketsModule } from '../websockets/websockets.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { UserDevice } from '../user/user-device.model';
+import { Notification } from '../notifications/notifications.model';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { UserDevice } from '../user/user-device.model';
       UserReaction,
       UserReactionReceived,
       UserDevice,
+      Notification,
     ]),
     ChatModule,
     WebsocketsModule,
