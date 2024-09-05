@@ -67,7 +67,9 @@ export class UserService {
 
   // TODO: REMOVE THIS ON PROD
   async getAllUsersTest(): Promise<string> {
-    const [users] = await this.sequelize.query(`
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    const [users]: [Record<any, any>] = await this.sequelize.query(`
       select id, phone, first_name, last_name,
       (EXTRACT(year FROM age(current_date, birthdate))) as "age", sex,
       (select title from city where id = birth_place_id) as "birthPlace",
@@ -109,8 +111,59 @@ export class UserService {
       </head>
       <body>
         <table>
+          <thead>
+            <tr>
+              <td>ID</td>
+              <td>Телефон</td>
+              <td>Имя</td>
+              <td>Фамилия</td>
+              <td>Возраст</td>
+              <td>Пол</td>
+              <td>Место рождения</td>
+              <td>Место проживания</td>
+              <td>Читает намаз</td>
+              <td>Носит хиджаб</td>
+              <td>Образование</td>
+              <td>Родители</td>
+              <td>Организация</td>
+              <td>Семейное положение</td>
+              <td>Религия</td>
+              <td>Есть дети</td>
+              <td>Интересы</td>
+              <td>Знание языков</td>
+              <td>Специальность</td>
+              <td>Пожелания места жительства</td>
+              <td>Пожелания после свадьбы</td>
+              <td>Главные качества</td>
+            </tr>
+          </thead>
           <tbody>
-            ${users.map((user) => `<tr><td>${user}</td></tr>`)}
+            ${users.map(
+              (user) => `<tr>
+                <td>${user.id}</td>
+                <td>${user.phone}</td>
+                <td>${user.first_name}</td>
+                <td>${user.last_name}</td>
+                <td>${user.age}</td>
+                <td>${user.sex === 0 ? 'Женский' : 'Мужской'}</td>
+                <td>${user.birthPlace}</td>
+                <td>${user.livePlace}</td>
+                <td>${user.read_namaz ? 'Да' : 'Нет'}</td>
+                <td>${user.wears_hijab ? 'Да' : 'Нет'}</td>
+                <td>${user.education}</td>
+                <td>${user.parents}</td>
+                <td>${user.organisation}</td>
+                <td>${user.familyPosition}</td>
+                <td>${user.religion}</td>
+                <td>${user.hasChildren}</td>
+                <td>${user.interests}</td>
+                <td>${user.languages}</td>
+                <td>${user.specialities}</td>
+                <td>${user.placeWishes}</td>
+                <td>${user.weddingWishes}</td>
+                <td>${user.mainQualities}</td>
+              </tr>`,
+            )}
           </tbody>
         </table>
       </body>
