@@ -182,6 +182,13 @@ export class UserReactionService {
           title: `${user.firstName} ${user.lastName}`,
           body: `Образовал${user.sex === 0 ? 'а' : ''} с вами пару`,
         });
+        this.notificationsService.sendNotification({
+          from: sendDto.toUserId,
+          to: user.id,
+          type: NotificationType.mutual,
+          title: `${recipientExist.firstName} ${recipientExist.lastName}`,
+          body: `Образовал${recipientExist.sex === 0 ? 'а' : ''} с вами пару`,
+        });
       } else {
         // Remove 1 super like from user balance
         await user.update({ superLikes: user.superLikes - 1 });
