@@ -89,6 +89,8 @@ export class UserService {
       (select array(select title from wedding_wish where id in (select wedding_wish_id from user_wedding_wish where user_id = "user".id))) as "weddingWishes",
       (select array(select title from main_quality where id in (select main_quality_id from user_main_quality where user_id = "user".id))) as "mainQualities"
       from "user"
+      where first_name <> 'Admin'
+      order by sex
     `);
     return `
       <!doctype html>
