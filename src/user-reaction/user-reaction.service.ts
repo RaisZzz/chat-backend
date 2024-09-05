@@ -19,6 +19,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification-type.enum';
 import { UserDevice } from '../user/user-device.model';
 import { BaseDto } from '../base/base.dto';
+import { Notification } from '../notifications/notifications.model';
 
 export class SendReactionResponse {
   readonly userReaction: UserReaction;
@@ -30,6 +31,8 @@ export class UserReactionService {
   constructor(
     @InjectModel(User) private userRepository: typeof User,
     @InjectModel(UserDevice) private userDeviceRepository: typeof UserDevice,
+    @InjectModel(Notification)
+    private notificationRepository: typeof Notification,
     @InjectModel(UserReactionReceived)
     private userReactionReceivedRepository: typeof UserReactionReceived,
     @InjectModel(UserReaction)
@@ -159,6 +162,8 @@ export class UserReactionService {
       );
 
       if (chat) await this.chatService.deleteChat(chat.id);
+
+      // Delete reaction another user
       if (recipientReaction) {
         await recipientReaction.destroy();
         this.setUserReactionUnreceived(
@@ -167,6 +172,16 @@ export class UserReactionService {
           UserReactionReceivedType.deleted,
         );
       }
+
+      // Delete all notifications
+      this.notificationRepository.destroy({
+        where: {
+          [Op.or]: [
+            { from: user.id, to: recipientExist.id },
+            { from: recipientExist.id, to: user.id },
+          ],
+        },
+      });
     } else {
       if (recipientReaction && recipientReaction.isLiked) {
         // Create chat if above users likes
