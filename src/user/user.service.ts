@@ -321,7 +321,7 @@ export class UserService {
       `
       select * from (
         select *,
-        (select ROUND(abs(sqrt(x * y + y * y))::numeric, 3)) as "distance" -- distance in kilometers
+        (select ROUND(abs(sqrt(x * x + y * y))::numeric, 3)) as "distance" -- distance in kilometers
         from(
           select *,
           (EXTRACT(year FROM age(current_date, birthdate))) as "age",
