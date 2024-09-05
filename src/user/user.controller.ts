@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Post,
   Query,
   Req,
@@ -37,6 +38,13 @@ import { SetMainPhotoDto } from './dto/set-main-photo.dto';
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  // TODO: REMOVE THIS ON PROD
+  @Get('get_all_test')
+  @Header('content-type', 'text/html')
+  getAllUsersTest(): Promise<string> {
+    return this.userService.getAllUsersTest();
+  }
 
   @Get('check')
   check(@Query() checkDto: GetUserByPhoneDto) {
