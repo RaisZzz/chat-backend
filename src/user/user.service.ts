@@ -107,18 +107,30 @@ export class UserService {
           initMap();
 
           async function initMap() {
-              await ymaps3.ready;
-              const {YMap, YMapDefaultSchemeLayer} = ymaps3;
-              const map = new YMap(
-                  document.getElementById('map'),
-                  {
-                      location: {
-                          center: [37.588144, 55.733842],
-                          zoom: 10
-                      }
-                  }
-              );
-              map.addChild(new YMapDefaultSchemeLayer());
+            await ymaps3.ready;
+            const {YMap, YMapDefaultSchemeLayer} = ymaps3;
+            const map = new YMap(
+              document.getElementById('map'),
+              {
+                location: {
+                  center: [41.315163, 69.256048],
+                  zoom: 5,
+                },
+              },
+            );
+            map.addChild(new YMapDefaultSchemeLayer());
+            
+            try {
+              map.addChild(new YMapPlacemark([41.315163, 69.256048]));              
+            } catch (e) {
+              console.log(123, e);
+            }
+            
+            try {
+              map.addChild(new ymaps3.Placemark([41.315163, 69.256048]));              
+            } catch (e) {
+              console.log(321, e);
+            }
           }
         </script>
         <style>
