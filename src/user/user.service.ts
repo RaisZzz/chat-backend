@@ -701,7 +701,7 @@ export class UserService {
   async getAnotherUsersOnline(user: User): Promise<Record<number, any>> {
     const usersOnline: Record<number, any> = {};
 
-    const [userIds] = await this.sequelize.query(`
+    const [chatsUsers] = await this.sequelize.query(`
       SELECT user_id FROM "chat_user"
       WHERE chat_id IN (
         SELECT chat_id FROM "chat_user"
@@ -709,10 +709,25 @@ export class UserService {
       )
       AND user_id <> ${user.id}
     `);
-    for (const toUser of userIds) {
-      usersOnline[toUser['user_id']] = await this.getUserOnline(
-        toUser['user_id'],
-      );
+    const chatsUsersIds: number[] = chatsUsers.map(
+      (c) => parseInt(c['user_id']) || 0,
+    );
+    for (const userId of chatsUsersIds) {
+      usersOnline[userId] = await this.getUserOnline(userId);
+    }
+
+    const reactionsUsers: UserReaction[] =
+      await this.userReactionRepository.findAll({
+        attributes: ['senderId'],
+        where: {
+          recipientId: user.id,
+          isLiked: true,
+          senderId: { [Op.notIn]: chatsUsersIds },
+        },
+      });
+    const reactionsUsersIds: number[] = reactionsUsers.map((r) => r.senderId);
+    for (const userId of reactionsUsersIds) {
+      usersOnline[userId] = await this.getUserOnline(userId);
     }
 
     return usersOnline;
