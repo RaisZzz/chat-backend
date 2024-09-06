@@ -121,15 +121,9 @@ export class UserService {
             map.addChild(new YMapDefaultSchemeLayer());
             
             try {
-              map.addChild(new YMapPlacemark([41.315163, 69.256048]));              
+              map.addChild(new ymaps3.YMapMarker({coordinates: [37.588144, 55.733842],}));              
             } catch (e) {
               console.log(123, e);
-            }
-            
-            try {
-              map.addChild(new ymaps3.Placemark([41.315163, 69.256048]));              
-            } catch (e) {
-              console.log(321, e);
             }
           }
         </script>
