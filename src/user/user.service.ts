@@ -108,7 +108,7 @@ export class UserService {
 
           async function initMap() {
             await ymaps3.ready;
-            const {YMap, YMapDefaultSchemeLayer} = ymaps3;
+            const {YMap, YMapDefaultSchemeLayer, YMapDefaultFeaturesLayer, YMapMarker} = ymaps3;
             const map = new YMap(
               document.getElementById('map'),
               {
@@ -121,9 +121,8 @@ export class UserService {
             map.addChild(new YMapDefaultSchemeLayer());
             
             try {
-              map.addChild(new ymaps3.YMapDefaultSchemeLayer());
-              map.addChild(new ymaps3.YMapDefaultFeaturesLayer());
-              map.addChild(new ymaps3.YMapMarker({coordinates: [37.588144, 55.733842],}));              
+              map.addChild(new YMapDefaultFeaturesLayer());
+              map.addChild(new YMapMarker({coordinates: [37.588144, 55.733842],}));              
             } catch (e) {
               console.log(123, e);
             }
