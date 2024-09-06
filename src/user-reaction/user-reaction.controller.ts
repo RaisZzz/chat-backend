@@ -7,7 +7,10 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { UserReactionService } from './user-reaction.service';
+import {
+  SendReactionResponse,
+  UserReactionService,
+} from './user-reaction.service';
 import { UserReaction } from './user-reaction.model';
 import { SendUserReactionDto } from './dto/send-user-reaction.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -35,7 +38,7 @@ export class UserReactionController {
   send(
     @Req() req,
     @Body() sendDto: SendUserReactionDto,
-  ): Promise<UserReaction> {
+  ): Promise<SendReactionResponse> {
     return this.userReactionService.send(req.user, sendDto);
   }
 
