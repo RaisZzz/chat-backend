@@ -6,8 +6,9 @@ import {
   Req,
   Res,
   Head,
+  Get,
 } from '@nestjs/common';
-import { AuthResponse, AuthService, Tokens } from './auth.service';
+import { AuthData, AuthResponse, AuthService, Tokens } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -36,6 +37,12 @@ export class AuthController {
     @Body() baseDto: BaseDto,
   ): Promise<AuthResponse> {
     return this.authService.auth(req.user, baseDto.deviceId, response);
+  }
+
+  @Get('/data')
+  @UseGuards(JwtAuthGuard)
+  getDataItems(): Promise<AuthData> {
+    return this.authService.getDataItems();
   }
 
   @Post('login')

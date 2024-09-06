@@ -39,7 +39,7 @@ import { SuccessInterface } from '../base/success.interface';
 import { WeddingWish } from '../wedding-wish/wedding-wish.model';
 import { MainQuality } from '../main-quality/main-quality.model';
 
-abstract class AuthData {
+export abstract class AuthData {
   readonly cities: City[];
   readonly educations: Education[];
   readonly specialities: Speciality[];
@@ -116,7 +116,7 @@ export class AuthService {
     this.checkUnconfirmedUsers();
   }
 
-  private async getDataItems(): Promise<AuthData> {
+  async getDataItems(): Promise<AuthData> {
     const cities: City[] = await this.cityRepository.findAll();
     const educations: Education[] = await this.educationRepository.findAll();
     const specialities: Speciality[] =
