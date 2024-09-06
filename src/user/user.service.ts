@@ -122,6 +122,7 @@ export class UserService {
             
             try {
               map.addChild(new ymaps3.YMapDefaultSchemeLayer());
+              map.addChild(new ymaps3.YMapDefaultFeaturesLayer());
               map.addChild(new ymaps3.YMapMarker({coordinates: [37.588144, 55.733842],}));              
             } catch (e) {
               console.log(123, e);
