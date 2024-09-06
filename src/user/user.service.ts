@@ -268,8 +268,17 @@ export class UserService {
       await this.userReactionRepository.findAll({
         attributes: ['recipientId'],
         where: {
-          senderId: user.id,
-          updatedAt: { [Op.gt]: userReactionsLastDate.getTime() },
+          [Op.or]: [
+            {
+              senderId: user.id,
+              isLiked: true,
+            },
+            {
+              senderId: user.id,
+              isLiked: false,
+              updatedAt: { [Op.gt]: userReactionsLastDate.getTime() },
+            },
+          ],
         },
       });
     const userReports: Report[] = await this.reportRepository.findAll({
