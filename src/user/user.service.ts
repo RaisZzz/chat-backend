@@ -92,6 +92,7 @@ export class UserService {
       where first_name <> 'Admin'
       order by sex
     `);
+
     return `
       <!doctype html>
       <html lang="en">
@@ -101,6 +102,25 @@ export class UserService {
               content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>Document</title>
+        <script src="https://api-maps.yandex.ru/v3/?apikey=edeffdd0-72ad-488a-a53f-3e8c28db1de3&lang=ru_RU"></script>
+        <script>
+          initMap();
+
+          async function initMap() {
+              await ymaps3.ready;
+              const {YMap, YMapDefaultSchemeLayer} = ymaps3;
+              const map = new YMap(
+                  document.getElementById('map'),
+                  {
+                      location: {
+                          center: [37.588144, 55.733842],
+                          zoom: 10
+                      }
+                  }
+              );
+              map.addChild(new YMapDefaultSchemeLayer());
+          }
+        </script>
         <style>
           table {
             border-collapse: collapse;
@@ -169,6 +189,9 @@ export class UserService {
             )}
           </tbody>
         </table>
+        <br>
+        <br>
+        <div id="map" style="width: 600px; height: 400px"></div>
       </body>
       </html>
     `;
