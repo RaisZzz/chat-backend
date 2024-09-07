@@ -189,6 +189,7 @@ export class UserService {
             v: "weekly",
           });
         </script>
+        <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
 
         <script>
           let map;
@@ -207,7 +208,7 @@ export class UserService {
           
             ${users.map((u) => `markers.push(new AdvancedMarkerElement({position: { lat: ${u.geo_lat}, lng: ${u.geo_lon} },content: (new google.maps.marker.PinElement({glyph: '${u.first_name} ${u.last_name}',glyphColor: "white",})).element,}));`).join(' ')}
           
-            new MarkerClusterer({ markers, map })
+            new markerClusterer.MarkerClusterer({ markers, map });
           }
           
           initMap();
