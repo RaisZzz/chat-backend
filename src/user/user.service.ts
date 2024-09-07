@@ -203,7 +203,8 @@ export class UserService {
               mapId: "DEMO_MAP_ID",
             });
           
-            ${users.map((u) => `new google.maps.marker.AdvancedMarkerElement({position: { lat: ${u.geo_lat}, lng: ${u.geo_lon} },content: (new google.maps.marker.PinElement({glyph: '${u.first_name} ${u.last_name}',glyphColor: "white",})).element,});`)}}
+            ${users.map((u) => `new google.maps.marker.AdvancedMarkerElement({position: { lat: ${u.geo_lat}, lng: ${u.geo_lon} },content: (new google.maps.marker.PinElement({glyph: '${u.first_name} ${u.last_name}',glyphColor: "white",})).element,});`).join(' ')}
+          }
           
           initMap();
         </script>
