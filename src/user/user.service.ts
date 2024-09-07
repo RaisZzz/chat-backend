@@ -196,15 +196,14 @@ export class UserService {
           async function initMap() {
             const { Map } = await google.maps.importLibrary("maps");
             const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
-            const { PinElement } = await google.maps.importLibrary("PinElement");
-          
+
             map = new Map(document.getElementById("map"), {
               zoom: 5,
               center: { lat: 41.315163, lng: 69.256048 },
               mapId: "DEMO_MAP_ID",
             });
           
-            ${users.map((u) => `new AdvancedMarkerElement({map: map, position: { lat: ${u.geo_lat}, lng: ${u.geo_lon} },content: (new PinElement({glyph: '${u.first_name} ${u.last_name}',glyphColor: "white",})).element,});`).join(' ')}
+            ${users.map((u) => `new AdvancedMarkerElement({map: map, position: { lat: ${u.geo_lat}, lng: ${u.geo_lon} },content: (new google.maps.marker.PinElement({glyph: '${u.first_name} ${u.last_name}',glyphColor: "white",})).element,});`).join(' ')}
           }
           
           initMap();
