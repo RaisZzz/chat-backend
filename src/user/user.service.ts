@@ -199,7 +199,7 @@ export class UserService {
           
             map = new Map(document.getElementById("map"), {
               zoom: 5,
-              center: { late: 41.315163, lng: 69.256048 },
+              center: { lat: 41.315163, lng: 69.256048 },
               mapId: "DEMO_MAP_ID",
             });
           
@@ -207,7 +207,7 @@ export class UserService {
               (u) => `
               
               new google.maps.marker.AdvancedMarkerElement({
-                { late: ${u.geo_lat}, lng: ${u.geo_lon} },
+                position: { lat: ${u.geo_lat}, lng: ${u.geo_lon} },
                 content: (new google.maps.marker.PinElement({
                   glyph: '${u.first_name} ${u.last_name}',
                   glyphColor: "white",
