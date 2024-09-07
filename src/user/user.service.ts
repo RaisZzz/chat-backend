@@ -102,33 +102,16 @@ export class UserService {
               content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>Document</title>
-        <script src="https://api-maps.yandex.ru/v3/?apikey=edeffdd0-72ad-488a-a53f-3e8c28db1de3&lang=ru_RU"></script>
-        <script>
-          initMap();
-
-          async function initMap() {
-            await ymaps3.ready;
-            const {YMap, YMapDefaultSchemeLayer, YMapDefaultFeaturesLayer, YMapMarker} = ymaps3;
-            const map = new YMap(
-              document.getElementById('map'),
-              {
-                location: {
-                  center: [41.315163, 69.256048],
-                  zoom: 5,
-                },
-              },
-            );
-            map.addChild(new YMapDefaultSchemeLayer());
-            
-            try {
-              map.addChild(new YMapDefaultFeaturesLayer());
-              map.addChild(new YMapMarker({coordinates: [37.588144, 55.733842],}));              
-            } catch (e) {
-              console.log(123, e);
-            }
-          }
-        </script>
         <style>
+        #map {
+    height: 400px;
+    width: 400px;
+  }
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
           table {
             border-collapse: collapse;
           }
@@ -198,7 +181,40 @@ export class UserService {
         </table>
         <br>
         <br>
-        <div id="map" style="width: 600px; height: 400px"></div>
+        <div id="map"></div>
+
+    <!-- prettier-ignore -->
+    <script>
+    (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=\`https://maps.${c}apis.com/maps/api/js?\`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})
+        ({key: "AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg", v: "weekly"});</script>
+        <script>
+          let map;
+
+          async function initMap() {
+            // The location of Uluru
+            const position = { lat: -25.344, lng: 131.031 };
+            // Request needed libraries.
+            //@ts-ignore
+            const { Map } = await google.maps.importLibrary("maps");
+            const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+          
+            // The map, centered at Uluru
+            map = new Map(document.getElementById("map"), {
+              zoom: 4,
+              center: position,
+              mapId: "DEMO_MAP_ID",
+            });
+          
+            // The marker, positioned at Uluru
+            const marker = new AdvancedMarkerElement({
+              map: map,
+              position: position,
+              title: "Uluru",
+            });
+          }
+          
+          initMap();
+        </script>
       </body>
       </html>
     `;
