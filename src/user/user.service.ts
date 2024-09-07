@@ -70,7 +70,7 @@ export class UserService {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
     const [users]: [Record<any, any>] = await this.sequelize.query(`
-      select id, phone, first_name, last_name,
+      select id, phone, first_name, last_name, geo_lat, geo_lon,
       (EXTRACT(year FROM age(current_date, birthdate))) as "age", sex,
       (select title from city where id = birth_place_id) as "birthPlace",
       (select title from city where id = live_place_id) as "livePlace",
@@ -194,26 +194,28 @@ export class UserService {
           let map;
 
           async function initMap() {
-            // The location of Uluru
-            const position = { lat: -25.344, lng: 131.031 };
-            // Request needed libraries.
-            //@ts-ignore
             const { Map } = await google.maps.importLibrary("maps");
             const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
           
-            // The map, centered at Uluru
             map = new Map(document.getElementById("map"), {
-              zoom: 4,
-              center: position,
+              zoom: 5,
+              center: { late: 41.315163, lng: 69.256048 },
               mapId: "DEMO_MAP_ID",
             });
           
-            // The marker, positioned at Uluru
-            const marker = new AdvancedMarkerElement({
-              map: map,
-              position: position,
-              title: "Uluru",
-            });
+            ${users.map(
+              (u) => `
+              
+              new google.maps.marker.AdvancedMarkerElement({
+                { late: ${u.geo_lat}, lng: ${u.geo_lon} },
+                content: (new google.maps.marker.PinElement({
+                  glyph: '${u.first_name} ${u.last_name}',
+                  glyphColor: "white",
+                })).element,
+              });
+              
+              `,
+            )}
           }
           
           initMap();
