@@ -102,15 +102,15 @@ export class UserService {
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>Document</title>
         <style>
-        #map {
-    height: 400px;
-    width: 400px;
-  }
-  html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-  }
+          #map {
+            height: 400px;
+            width: 100%;
+          }
+          html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+          }
           table {
             border-collapse: collapse;
           }
@@ -206,7 +206,7 @@ export class UserService {
           
             const markers = [];
           
-            ${users.map((u) => `markers.push(new AdvancedMarkerElement({position: { lat: ${u.geo_lat}, lng: ${u.geo_lon} },content: (new google.maps.marker.PinElement({glyph: '${u.first_name} ${u.last_name}',glyphColor: "white",})).element,}));`).join(' ')}
+            ${users.map((u) => `markers.push(new AdvancedMarkerElement({position: { lat: ${u.geo_lat}, lng: ${u.geo_lon} },content: (new google.maps.marker.PinElement({glyph: '${u.first_name}',glyphColor: "black",})).element,}));`).join(' ')}
           
             new markerClusterer.MarkerClusterer({ markers, map });
           }
