@@ -103,7 +103,7 @@ export class UserService {
         <title>Document</title>
         <style>
           #map {
-            height: 400px;
+            height: 70vh;
             width: 100%;
           }
           html, body {
