@@ -48,7 +48,12 @@ export class VoiceService {
       );
     }
 
-    const waveFormLines: number[] = await getAudioSamplesFormFilePath(path, 14);
+    const anotherSecondsLines: number = seconds > 15 ? 15 : seconds;
+
+    const waveFormLines: number[] = await getAudioSamplesFormFilePath(
+      path,
+      16 + anotherSecondsLines,
+    );
 
     // Save voice info to database
     return await this.voiceRepository.create({
