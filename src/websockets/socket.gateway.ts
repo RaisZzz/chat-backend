@@ -155,6 +155,9 @@ export class SocketGateway
   sendWriting = (userId: number, writingUserId: number) =>
     this.sendSocket('writing', userId, writingUserId);
 
+  sendVoiceRecording = (userId: number, recordingUserId: number) =>
+    this.sendSocket('voiceRecording', userId, recordingUserId);
+
   sendUserReadChat = (userId: number, readedUserId: number, chatId: number) =>
     this.sendSocket('userReadChat', userId, { chatId, readedUserId });
 
@@ -180,6 +183,28 @@ export class SocketGateway
     `);
     for (const toUser of userIds) {
       this.sendWriting(toUser['user_id'], parseInt(userId));
+    }
+  }
+
+  @SubscribeMessage('voiceRecording')
+  async onVoiceRecording(client: Socket, data) {
+    if (!data || !data.chatId) return;
+
+    const connectedUserIndex: number = Object.values(
+      this.connectedUsers,
+    ).findIndex((s) => s.includes(client.id));
+
+    if (connectedUserIndex < 0) return;
+
+    const userId: string = Object.keys(this.connectedUsers)[connectedUserIndex];
+
+    const [userIds] = await this.sequelize.query(`
+      SELECT user_id FROM "chat_user"
+      WHERE chat_id = ${data.chatId}
+      AND user_id <> ${userId}
+    `);
+    for (const toUser of userIds) {
+      this.sendVoiceRecording(toUser['user_id'], parseInt(userId));
     }
   }
 
