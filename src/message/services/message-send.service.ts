@@ -119,7 +119,10 @@ export class MessageSendService {
     return message;
   }
 
-  async sendMessageToAllUsersInChat(message: Message): Promise<void> {
+  async sendMessageToAllUsersInChat(
+    message: Message,
+    withoutNotification: boolean = false,
+  ): Promise<void> {
     const user: User = await this.userRepository.findOne({
       attributes: ['firstName', 'lastName', 'sex'],
       where: { id: message.ownerId },
@@ -172,7 +175,7 @@ export class MessageSendService {
 
       this.socketGateway.sendMessage(userId, [message]);
 
-      if (userId !== message.ownerId) {
+      if (userId !== message.ownerId && !withoutNotification) {
         this.notificationService.sendNotification(
           {
             from: message.ownerId,

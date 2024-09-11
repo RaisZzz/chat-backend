@@ -56,8 +56,14 @@ export class MessageService {
       linkId,
     );
 
-  sendMessageToAllUsersInChat = async (message: Message): Promise<void> =>
-    this.messageSendService.sendMessageToAllUsersInChat(message);
+  sendMessageToAllUsersInChat = async (
+    message: Message,
+    withoutNotification: boolean = false,
+  ): Promise<void> =>
+    this.messageSendService.sendMessageToAllUsersInChat(
+      message,
+      withoutNotification,
+    );
 
   sendUnreceivedMessages = async (
     userId: number,
@@ -136,7 +142,10 @@ export class MessageService {
     );
     message.liked = setLikeDto.like;
 
-    this.messageSendService.sendMessageToAllUsersInChat({ ...message }['_doc']);
+    this.messageSendService.sendMessageToAllUsersInChat(
+      { ...message }['_doc'],
+      true,
+    );
 
     return { success: true };
   }

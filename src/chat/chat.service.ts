@@ -454,7 +454,10 @@ export class ChatService {
     });
 
     if (message) {
-      this.messageService.sendMessageToAllUsersInChat({ ...message }['_doc']);
+      this.messageService.sendMessageToAllUsersInChat(
+        { ...message }['_doc'],
+        true,
+      );
     }
 
     return { success: true };
