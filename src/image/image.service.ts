@@ -9,6 +9,9 @@ import { GetImageDto } from './dto/get-image.dto';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const sharp = require('sharp');
 
+const MAX_IMAGE_WIDTH: number = 1400;
+const MAX_IMAGE_HEIGHT: number = 1400;
+
 @Injectable()
 export class ImageService {
   constructor(@InjectModel(Image) private imageRepository: typeof Image) {}
@@ -69,7 +72,7 @@ export class ImageService {
     return stream.pipe(res);
   }
 
-  async saveFile(image: Express.Multer.File, key?: string | number) {
+  async saveFile(file: Express.Multer.File, key?: string | number) {
     const dir = 'uploads';
 
     // if (!fs.existsSync(dir)) {
@@ -80,11 +83,34 @@ export class ImageService {
       key ? `${key}_` : ''
     }${new Date().getTime()}.jpeg`;
 
+    const image = sharp(file.buffer);
+    const metadata = await image.metadata();
+
+    let newWidth = metadata.width;
+    let newHeight = metadata.height;
+
+    if (
+      metadata.width > MAX_IMAGE_WIDTH ||
+      metadata.height > MAX_IMAGE_HEIGHT
+    ) {
+      if (metadata.width > metadata.height) {
+        newWidth = MAX_IMAGE_WIDTH;
+        newHeight = Math.round(
+          (metadata.height * MAX_IMAGE_WIDTH) / metadata.width,
+        );
+      } else {
+        newHeight = MAX_IMAGE_HEIGHT;
+        newWidth = Math.round(
+          (metadata.width * MAX_IMAGE_HEIGHT) / metadata.height,
+        );
+      }
+    }
+
     // Optimize and save image
-    const metadata = await sharp(image.buffer)
+    const newMetadata = await image
       .resize({
-        width: 1400,
-        height: 1400,
+        width: newWidth,
+        height: newHeight,
         fit: sharp.fit.inside,
       })
       .jpeg({ quality: 90, mozjpeg: true })
@@ -93,9 +119,9 @@ export class ImageService {
 
     // Save image info to database
     return await this.imageRepository.create({
-      width: metadata?.width || 0,
-      height: metadata?.height || 0,
-      size: metadata?.size || 0,
+      width: newMetadata?.width || 0,
+      height: newMetadata?.height || 0,
+      size: newMetadata?.size || 0,
       path,
     });
   }
