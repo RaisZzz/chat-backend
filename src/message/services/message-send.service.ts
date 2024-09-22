@@ -52,8 +52,6 @@ export class MessageSendService {
         .replace(/ +/g, ' ');
     }
 
-    console.log(sendMessageDto.text, photos, voice);
-
     if (
       !sendMessageDto.text?.length &&
       !(Array.isArray(photos) && photos.length) &&

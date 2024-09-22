@@ -34,7 +34,6 @@ export class NotificationsService {
     dataChat?: Chat,
     dataUser?: User,
   ): Promise<Notification> {
-    console.log('SEND NOTIFICATION', withoutSave);
     try {
       await this.firebaseService.sendNotification(
         sendDto.to,
