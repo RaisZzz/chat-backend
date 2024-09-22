@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import imageSize from 'image-size';
 import { InjectModel } from '@nestjs/sequelize';
 import { Image } from './image.model';
@@ -17,14 +17,13 @@ export class ImageService {
   constructor(@InjectModel(Image) private imageRepository: typeof Image) {}
 
   async getFile(getImageDto: GetImageDto, res) {
-    const image = await this.imageRepository.findOne({
-      where: {
-        id: getImageDto.id,
-      },
+    const image: Image = await this.imageRepository.findOne({
+      where: { id: getImageDto.id },
     });
+    if (!image) throw new HttpException(null, HttpStatus.NOT_FOUND);
 
     const imageBuffer: Buffer = readFileSync(
-      join(process.cwd(), `/${image.path}`),
+      join(process.cwd(), `/${image?.path}`),
     );
     const size = imageSize(imageBuffer);
 
