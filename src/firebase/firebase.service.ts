@@ -76,7 +76,7 @@ export class FirebaseService {
       }
 
       for (const token of userDevices) {
-        await this.sendFirebaseNotification(token, type, title, body, data);
+        this.sendFirebaseNotification(token, type, title, body, data);
       }
     } catch (e) {
       console.log('FIREBASE SEND NOTIFICATION ERROR ' + e);
@@ -127,7 +127,7 @@ export class FirebaseService {
     };
 
     try {
-      const response = await fetch(
+      fetch(
         'https://fcm.googleapis.com/v1/projects/tidy-federation-375304/messages:send',
         {
           headers: {
@@ -138,8 +138,6 @@ export class FirebaseService {
           body: JSON.stringify({ message }),
         },
       );
-      const json = await response.json();
-      console.log('SEND FCM RESPONSE', json);
     } catch (e) {
       console.error('SEND FCM ERROR', e);
     }
