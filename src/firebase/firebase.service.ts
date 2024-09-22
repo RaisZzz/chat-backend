@@ -127,7 +127,7 @@ export class FirebaseService {
     };
 
     try {
-      await fetch(
+      const response = await fetch(
         'https://fcm.googleapis.com/v1/projects/tidy-federation-375304/messages:send',
         {
           headers: {
@@ -138,6 +138,8 @@ export class FirebaseService {
           body: JSON.stringify({ message }),
         },
       );
+      const json = await response.json();
+      console.log('SEND FCM RESPONSE', json);
     } catch (e) {
       console.error('SEND FCM ERROR', e);
     }
