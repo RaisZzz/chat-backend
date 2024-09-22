@@ -126,17 +126,21 @@ export class FirebaseService {
       data,
     };
 
-    await fetch(
-      'https://fcm.googleapis.com/v1/projects/tidy-federation-375304/messages:send',
-      {
-        headers: {
-          Authorization: `Bearer ${await this.generateToken()}`,
-          'Content-Type': 'application/json',
+    try {
+      await fetch(
+        'https://fcm.googleapis.com/v1/projects/tidy-federation-375304/messages:send',
+        {
+          headers: {
+            Authorization: `Bearer ${await this.generateToken()}`,
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+          body: JSON.stringify({ message }),
         },
-        method: 'POST',
-        body: JSON.stringify({ message }),
-      },
-    );
+      );
+    } catch (e) {
+      console.error('SEND FCM ERROR', e);
+    }
   }
 
   private async generateToken(): Promise<string> {
