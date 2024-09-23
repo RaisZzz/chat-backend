@@ -122,11 +122,6 @@ export class UserService {
         </style>
       </head>
       <body>
-        <div style="display: flex; align-items: center; gap: 5px; margin: 10px 0; font-weight: 600;">
-          <span>Пользователей онлайн:</span>
-          <span>${Object.keys(this.socketGateway.getConnectedUsers()).length}</span>
-          <span style="width: 6px;height: 6px;border-radius: 50%;background-color: rgb(52, 211, 77);"></span>
-        </div>
         <table>
           <thead>
             <tr>
@@ -159,12 +154,7 @@ export class UserService {
               (user) => `<tr>
                 <td>${user.id}</td>
                 <td>${user.phone}</td>
-                <td>
-                  <span style="display: flex;">
-                    <span>${user.first_name}</span>
-                    ${this.socketGateway.getUserConnected(user.id) ? '<span style="width: 6px;height: 6px;border-radius: 50%;background-color: rgb(52, 211, 77);"></span>' : ''}
-                  </span>
-                </td>
+                <td>${user.first_name}</td>
                 <td>${user.last_name}</td>
                 <td>${user.age}</td>
                 <td>${user.sex === 0 ? 'Женский' : 'Мужской'}</td>

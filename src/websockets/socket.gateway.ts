@@ -41,8 +41,6 @@ export class SocketGateway
   getUserConnected = (userId: number): boolean =>
     !!this.connectedUsers[userId]?.length;
 
-  getConnectedUsers = (): Record<string, string[]> => this.connectedUsers;
-
   private getUserIdBySocket(client: Socket): string {
     const userConnectedIndex: number = Object.values(
       this.connectedUsers,
@@ -71,7 +69,7 @@ export class SocketGateway
     } catch (e) {}
   }
 
-  async handleConnection(client: Socket): Promise<void> {
+  handleConnection(client: Socket): void {
     console.log('SOCKET TRY CONNECT', client.handshake.query.token);
 
     // Get user by token
@@ -82,40 +80,33 @@ export class SocketGateway
         expiresIn: process.env.JWT_ACCESS_EXPIRE,
         secret: process.env.JWT_ACCESS_SECRET,
       };
-      jwtUser = await this.jwtService.verifyAsync(
+      jwtUser = this.jwtService.verify(
         String(client.handshake.query.token),
         accessOptions,
       );
     } catch (e) {
       client.disconnect();
+      return;
     }
 
     if (jwtUser?.id) {
-      const userExist = await this.userRepository.count({
-        where: { id: jwtUser.id },
-      });
+      if (!this.connectedUsers[String(jwtUser.id)]) {
+        this.connectedUsers[String(jwtUser.id)] = [];
+      }
+      if (!this.connectedUsers[String(jwtUser.id)].includes(client.id)) {
+        this.connectedUsers[String(jwtUser.id)].push(client.id);
+      }
 
-      if (userExist) {
-        if (!this.connectedUsers[String(jwtUser.id)]) {
-          this.connectedUsers[String(jwtUser.id)] = [];
-        }
-        if (!this.connectedUsers[String(jwtUser.id)].includes(client.id)) {
-          this.connectedUsers[String(jwtUser.id)].push(client.id);
-        }
-
-        const newOnline = String(Date.now());
-        this.redisService.hSet(String(jwtUser.id), 'online', newOnline);
-        this.sendUserOnline(jwtUser.id, true);
-        console.log(
-          `
+      const newOnline = String(Date.now());
+      this.redisService.hSet(String(jwtUser.id), 'online', newOnline);
+      this.sendUserOnline(jwtUser.id, true);
+      console.log(
+        `
             User #${jwtUser.id} connected with:
             token: ${client.handshake.query.token},
             socket: ${client.id}
           `,
-        );
-      } else {
-        client.disconnect();
-      }
+      );
     } else {
       client.disconnect();
     }
