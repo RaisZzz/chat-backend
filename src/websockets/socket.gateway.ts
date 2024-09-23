@@ -41,6 +41,8 @@ export class SocketGateway
   getUserConnected = (userId: number): boolean =>
     !!this.connectedUsers[userId]?.length;
 
+  getConnectedUsers = (): Record<string, string[]> => this.connectedUsers;
+
   private getUserIdBySocket(client: Socket): string {
     const userConnectedIndex: number = Object.values(
       this.connectedUsers,
