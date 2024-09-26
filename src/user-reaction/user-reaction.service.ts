@@ -190,30 +190,43 @@ export class UserReactionService {
           user.id,
           sendDto.toUserId,
         );
-        this.notificationsService.sendNotification({
-          from: user.id,
-          to: sendDto.toUserId,
-          type: NotificationType.mutual,
-          title: `${user.firstName} ${user.lastName}`,
-          body: `Образовал${user.sex === 0 ? 'а' : ''} с вами пару`,
-        });
-        this.notificationsService.sendNotification({
-          from: sendDto.toUserId,
-          to: user.id,
-          type: NotificationType.mutual,
-          title: `${recipientExist.firstName} ${recipientExist.lastName}`,
-          body: `Образовал${recipientExist.sex === 0 ? 'а' : ''} с вами пару`,
-        });
+        this.notificationsService.sendNotification(
+          {
+            from: user.id,
+            to: sendDto.toUserId,
+            type: NotificationType.mutual,
+            title: `${user.firstName} ${user.lastName}`,
+            body: `Образовал${user.sex === 0 ? 'а' : ''} с вами пару`,
+          },
+          false,
+          createdChat,
+        );
+        this.notificationsService.sendNotification(
+          {
+            from: sendDto.toUserId,
+            to: user.id,
+            type: NotificationType.mutual,
+            title: `${recipientExist.firstName} ${recipientExist.lastName}`,
+            body: `Образовал${recipientExist.sex === 0 ? 'а' : ''} с вами пару`,
+          },
+          false,
+          createdChat,
+        );
       } else {
         // Remove 1 super like from user balance
         await user.update({ superLikes: user.superLikes - 1 });
-        this.notificationsService.sendNotification({
-          from: user.id,
-          to: sendDto.toUserId,
-          type: NotificationType.superlike,
-          title: `${user.firstName} ${user.lastName}`,
-          body: `Отправил${user.sex === 0 ? 'а' : ''} вам симпатию`,
-        });
+        this.notificationsService.sendNotification(
+          {
+            from: user.id,
+            to: sendDto.toUserId,
+            type: NotificationType.superlike,
+            title: `${user.firstName} ${user.lastName}`,
+            body: `Отправил${user.sex === 0 ? 'а' : ''} вам симпатию`,
+          },
+          false,
+          null,
+          user,
+        );
       }
     }
 
