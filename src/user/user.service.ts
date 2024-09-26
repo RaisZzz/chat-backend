@@ -401,7 +401,6 @@ export class UserService {
           and organisation_id IS NOT NULL
           and family_position_id IS NOT NULL
           and religion_id IS NOT NULL
-          and has_children_id IS NOT NULL
           ${excludingUsersIds.length ? `and id not in (${excludingUsersIds})` : ''}
           ${getUsersDto.birthPlaceId?.length ? `and birth_place_id IN (${getUsersDto.birthPlaceId})` : ''}
           ${getUsersDto.livePlaceId?.length ? `and live_place_id IN (${getUsersDto.livePlaceId})` : ''}
