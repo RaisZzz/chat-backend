@@ -26,6 +26,7 @@ import { ChatLink } from './chat-link.model';
 import { CreateChatLinkDto } from './dto/create-chat-link.dto';
 import { SendMessageDto } from '../message/dto/send-message.dto';
 import { ConfirmShareChatDto } from './dto/confirm-share-chat.dto';
+import { GetSharedChatDto } from './dto/get-shared-chat.dto';
 
 @Injectable()
 export class ChatService {
@@ -461,6 +462,50 @@ export class ChatService {
     }
 
     return { success: true };
+  }
+
+  async getSharedChat(getSharedChatDto: GetSharedChatDto): Promise<Chat> {
+    // Check chat link exist
+    const chatLink: ChatLink = await this.chatLinkRepository.findOne({
+      where: {
+        uuid: getSharedChatDto.chatLinkUuid,
+        confirmed: true,
+        canceled: false,
+      },
+    });
+    if (!chatLink) {
+      throw new HttpException(
+        new Error(ErrorType.Forbidden),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    // Check chat link not expired
+    const today: Date = new Date();
+    const linkExpiredAt: Date = new Date(chatLink.createdAt);
+    linkExpiredAt.setMinutes(linkExpiredAt.getMinutes() + chatLink.expireTime);
+    if (linkExpiredAt.getTime() < today.getTime()) {
+      throw new HttpException(
+        new Error(ErrorType.Forbidden),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    // Get chat
+    const [chatInfoRes] = await this.sequelize.query(
+      `
+        SELECT *,
+        ${chatInfoPsqlQuery(chatLink.userId)}
+        FROM
+        (SELECT *,
+          (SELECT ARRAY(SELECT user_id FROM "chat_user" WHERE chat_id = "chat".id)) as "users"
+          FROM "chat"
+          WHERE id = ${chatLink.chatId}
+        ) asd
+        LIMIT 1;
+      `,
+    );
+    return chatInfoRes[0] as Chat;
   }
 
   private async setChatUnreceived(
