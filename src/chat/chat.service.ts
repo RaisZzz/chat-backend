@@ -523,7 +523,7 @@ export class ChatService {
 
     return await this.messageService.getAll(
       new User(),
-      { chatId: chat.id, offset: getSharedChatMessagesDto.offset ?? 0 },
+      { chatId: chat.id, offset: getSharedChatMessagesDto.offset },
       false,
     );
   }
