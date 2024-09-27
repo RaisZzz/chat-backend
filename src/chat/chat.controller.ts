@@ -18,6 +18,8 @@ import { BaseDto } from '../base/base.dto';
 import { ShareChatDto } from './dto/share-chat.dto';
 import { ConfirmShareChatDto } from './dto/confirm-share-chat.dto';
 import { GetSharedChatDto } from './dto/get-shared-chat.dto';
+import { GetSharedChatMessagesDto } from './dto/get-shared-chat-messages.dto';
+import { Message } from '../message/message.model';
 
 @Controller('chat')
 export class ChatController {
@@ -54,11 +56,15 @@ export class ChatController {
   }
 
   @Get('shared')
-  getSharedChat(
-    @Req() req,
-    @Query() getSharedChatDto: GetSharedChatDto,
-  ): Promise<Chat> {
+  getSharedChat(@Query() getSharedChatDto: GetSharedChatDto): Promise<Chat> {
     return this.chatService.getSharedChat(getSharedChatDto);
+  }
+
+  @Get('shared_messages')
+  getSharedChatMessages(
+    @Query() getSharedChatMessagesDto: GetSharedChatMessagesDto,
+  ): Promise<Message[]> {
+    return this.chatService.getSharedChatMessages(getSharedChatMessagesDto);
   }
 
   @Post('set-received')

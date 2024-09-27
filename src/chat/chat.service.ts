@@ -27,6 +27,7 @@ import { CreateChatLinkDto } from './dto/create-chat-link.dto';
 import { SendMessageDto } from '../message/dto/send-message.dto';
 import { ConfirmShareChatDto } from './dto/confirm-share-chat.dto';
 import { GetSharedChatDto } from './dto/get-shared-chat.dto';
+import { GetSharedChatMessagesDto } from './dto/get-shared-chat-messages.dto';
 
 @Injectable()
 export class ChatService {
@@ -505,7 +506,26 @@ export class ChatService {
         LIMIT 1;
       `,
     );
+    if (!chatInfoRes.length) {
+      throw new HttpException(
+        new Error(ErrorType.Forbidden),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
     return chatInfoRes[0] as Chat;
+  }
+
+  async getSharedChatMessages(
+    getSharedChatMessagesDto: GetSharedChatMessagesDto,
+  ): Promise<Message[]> {
+    const chat: Chat = await this.getSharedChat(getSharedChatMessagesDto);
+
+    return await this.messageService.getAll(
+      new User(),
+      { chatId: chat.id, offset: getSharedChatMessagesDto.offset ?? 0 },
+      false,
+    );
   }
 
   private async setChatUnreceived(

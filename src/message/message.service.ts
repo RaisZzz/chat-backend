@@ -71,12 +71,18 @@ export class MessageService {
   ): Promise<SuccessInterface> =>
     this.sendUnreceivedMessagesService.sendAll(userId, deviceId);
 
-  async getAll(user: User, getDto: GetMessagesDto): Promise<Message[]> {
-    const userExistInChat: ChatUser = await this.chatUserRepository.findOne({
-      where: { chatId: getDto.chatId, userId: user.id },
-    });
-    if (!userExistInChat) {
-      throw new HttpException('No', HttpStatus.FORBIDDEN);
+  async getAll(
+    user: User,
+    getDto: GetMessagesDto,
+    userExistCheck: boolean = true,
+  ): Promise<Message[]> {
+    if (userExistCheck) {
+      const userExistInChat: ChatUser = await this.chatUserRepository.findOne({
+        where: { chatId: getDto.chatId, userId: user.id },
+      });
+      if (!userExistInChat) {
+        throw new HttpException('No', HttpStatus.FORBIDDEN);
+      }
     }
 
     const messages: Message[] = await this.messageModel.find(
