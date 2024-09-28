@@ -514,7 +514,7 @@ export class ChatService {
     }
 
     const chat: Chat = chatInfoRes[0] as Chat;
-    chat.dataValues['ownerId'] = chatLink.userId;
+    chat['ownerId'] = chatLink.userId;
 
     return chat;
   }
