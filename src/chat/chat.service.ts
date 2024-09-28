@@ -513,7 +513,10 @@ export class ChatService {
       );
     }
 
-    return chatInfoRes[0] as Chat;
+    const chat: Chat = chatInfoRes[0] as Chat;
+    chat.dataValues['ownerId'] = chatLink.userId;
+
+    return chat;
   }
 
   async getSharedChatMessages(
