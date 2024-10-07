@@ -26,6 +26,7 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
   app.setGlobalPrefix('api_v2');
+  app.enableCors();
 
   const config = new DocumentBuilder()
     .setTitle('Nikohlik')
