@@ -4,7 +4,7 @@ import { Transform, Type, TransformOptions } from 'class-transformer';
 export class BaseDto {
   @IsString()
   @IsNotEmpty()
-  @IsIn(['android', 'ios'])
+  @IsIn(['android', 'ios', 'admin'])
   @Trim()
   readonly platform: string;
 
