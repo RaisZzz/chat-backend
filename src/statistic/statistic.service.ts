@@ -143,8 +143,7 @@ export class StatisticService {
 
     const response = {};
 
-    if (offset === 0) {
-      const [allCounts] = await this.sequelize.query(`
+    const [allCounts] = await this.sequelize.query(`
         SELECT name, title,
         (
           SELECT COUNT(*) FROM user_purchase p
@@ -158,29 +157,29 @@ export class StatisticService {
         ) as "total"
         FROM purchase
       `);
-      response['allCounts'] = allCounts;
+    response['allCounts'] = allCounts;
 
-      const [firstPurchase] = await this.sequelize.query(`
+    const [firstPurchase] = await this.sequelize.query(`
         SELECT created_at FROM user_purchase
         ORDER BY created_at ASC
         LIMIT 1
       `);
 
-      const today: Date = new Date();
-      const startDate: Date =
-        filterDto.startDate || new Date(firstPurchase[0]['created_at']);
-      const dateSteps = (today.getTime() - startDate.getTime()) / 7;
-      const chartData = [];
-      for (
-        let i: Date = startDate;
-        i < today;
-        i.setMilliseconds(i.getMilliseconds() + dateSteps)
-      ) {
-        const date: Date = new Date(i.getTime());
-        const firstDate: string = date.toISOString();
-        date.setMilliseconds(date.getMilliseconds() + dateSteps);
-        const lastDate: string = date.toISOString();
-        const [successChart] = await this.sequelize.query(`
+    const today: Date = new Date();
+    const startDate: Date =
+      filterDto.startDate || new Date(firstPurchase[0]['created_at']);
+    const dateSteps = (today.getTime() - startDate.getTime()) / 7;
+    const chartData = [];
+    for (
+      let i: Date = startDate;
+      i < today;
+      i.setMilliseconds(i.getMilliseconds() + dateSteps)
+    ) {
+      const date: Date = new Date(i.getTime());
+      const firstDate: string = date.toISOString();
+      date.setMilliseconds(date.getMilliseconds() + dateSteps);
+      const lastDate: string = date.toISOString();
+      const [successChart] = await this.sequelize.query(`
           SELECT coalesce(SUM(amount), 0) "allSum", COUNT(*) "allCount"
           FROM user_purchase p
           WHERE
@@ -190,7 +189,7 @@ export class StatisticService {
           AND created_at >= '${firstDate}'
           AND created_at < '${lastDate}'
         `);
-        const [refundsChart] = await this.sequelize.query(`
+      const [refundsChart] = await this.sequelize.query(`
           SELECT coalesce(SUM(amount), 0) "allSum", COUNT(*) "allCount"
           FROM user_purchase p
           WHERE
@@ -200,16 +199,15 @@ export class StatisticService {
           AND cancel_time >= ${new Date(firstDate).getTime()}
           AND cancel_time < ${new Date(lastDate).getTime()}
         `);
-        chartData.push({
-          date: firstDate,
-          successSum: parseInt(successChart[0]['allSum']) || 0,
-          successCount: parseInt(successChart[0]['allCount']) || 0,
-          refundsSum: parseInt(refundsChart[0]['allSum']) || 0,
-          refundsCount: parseInt(refundsChart[0]['allCount']) || 0,
-        });
-      }
-      response['chartData'] = chartData;
+      chartData.push({
+        date: firstDate,
+        successSum: parseInt(successChart[0]['allSum']) || 0,
+        successCount: parseInt(successChart[0]['allCount']) || 0,
+        refundsSum: parseInt(refundsChart[0]['allSum']) || 0,
+        refundsCount: parseInt(refundsChart[0]['allCount']) || 0,
+      });
     }
+    response['chartData'] = chartData;
 
     return response;
   }
