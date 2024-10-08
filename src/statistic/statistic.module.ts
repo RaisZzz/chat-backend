@@ -5,9 +5,13 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { UserPurchase } from '../purchase/user-purchase.model';
 import { Purchase } from '../purchase/purchase.model';
 import { AuthModule } from '../auth/auth.module';
+import { User } from '../user/user.model';
 
 @Module({
-  imports: [SequelizeModule.forFeature([Purchase, UserPurchase]), AuthModule],
+  imports: [
+    SequelizeModule.forFeature([Purchase, UserPurchase, User]),
+    AuthModule,
+  ],
   providers: [StatisticService],
   controllers: [StatisticController],
 })
