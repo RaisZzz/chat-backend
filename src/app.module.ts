@@ -42,6 +42,7 @@ import { WeddingWish } from './wedding-wish/wedding-wish.model';
 import { UserWeddingWish } from './wedding-wish/user-wedding-wish.model';
 import { MainQuality } from './main-quality/main-quality.model';
 import { UserMainQuality } from './main-quality/user-main-quality.model';
+import { StatisticModule } from './statistic/statistic.module';
 
 @Module({
   imports: [
@@ -117,6 +118,7 @@ import { UserMainQuality } from './main-quality/user-main-quality.model';
     VoiceModule,
     UserModule,
     PurchaseModule,
+    StatisticModule,
   ],
 })
 export class AppModule {}
