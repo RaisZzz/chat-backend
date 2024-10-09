@@ -6,7 +6,6 @@ import {
 import { Sequelize } from 'sequelize-typescript';
 import { StatisticFilterDto } from './dto/statistic-filter.dto';
 import { UserPurchase } from '../purchase/user-purchase.model';
-import { AppPlatform } from 'firebase-admin/lib/project-management';
 
 export class MainStat {
   totalProfit: number;
@@ -301,10 +300,10 @@ export class StatisticService {
     ) "monthlyRefunds"`;
 
     const totalAndroidUsersQuery = `(
-      SELECT count(*) FROM user WHERE platform = ${AppPlatform.ANDROID}
+      SELECT count(*) FROM user WHERE platform = 'android'
     ) "totalAndroidUsers"`;
     const totalIosUsersQuery = `(
-      SELECT count(*) FROM user WHERE platform = ${AppPlatform.IOS}
+      SELECT count(*) FROM user WHERE platform = 'ios'
     ) "totalIosUsers"`;
 
     const [response] = await this.sequelize.query(`
