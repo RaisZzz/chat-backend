@@ -48,9 +48,9 @@ export class StatisticService {
     const dateFilter: string = filterDto.startDate
       ? filterDto.showRefunds === true
         ? `
-          AND p.cancel_time >= ${filterDto.startDate.getDate()}`
+          AND p.cancel_time >= ${new Date(filterDto.startDate).getTime()}`
         : `
-          AND p.created_at >= '${filterDto.startDate.toISOString()}'
+          AND p.created_at >= '${filterDto.startDate}'
           `
       : '';
 
@@ -128,9 +128,9 @@ export class StatisticService {
     const dateFilter: string = filterDto.startDate
       ? filterDto.showRefunds === true
         ? `
-          AND p.cancel_time >= ${filterDto.startDate.getDate()}`
+          AND p.cancel_time >= ${new Date(filterDto.startDate).getTime()}`
         : `
-          AND p.created_at >= '${filterDto.startDate.toISOString()}'
+          AND p.created_at >= '${filterDto.startDate}'
           `
       : '';
 
@@ -168,7 +168,8 @@ export class StatisticService {
 
       const today: Date = new Date();
       const startDate: Date =
-        filterDto.startDate || new Date(firstPurchase[0]['created_at']);
+        new Date(filterDto.startDate) ||
+        new Date(firstPurchase[0]['created_at']);
       const dateSteps = (today.getTime() - startDate.getTime()) / 7;
       const chartData = [];
       for (

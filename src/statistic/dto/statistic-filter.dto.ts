@@ -1,9 +1,9 @@
 import {
   IsArray,
   IsBoolean,
-  IsDate,
   IsIn,
   IsInt,
+  IsISO8601,
   IsOptional,
   IsString,
 } from 'class-validator';
@@ -33,10 +33,9 @@ export class StatisticFilterDto extends OffsetDto {
   @IsOptional()
   readonly showRefunds: boolean;
 
-  @IsDate()
-  @Type(() => Date)
+  @IsISO8601()
   @IsOptional()
-  readonly startDate: Date;
+  readonly startDate: string;
 
   @IsString()
   @IsOptional()
