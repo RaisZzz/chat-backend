@@ -29,8 +29,9 @@ export class StatisticService {
 
     const refundsFilter = `state IN (${TransactionState.STATE_CANCELED}, ${TransactionState.STATE_POST_CANCELED}) AND reason = ${TransactionCancelReason.REFUND}`;
     const successFilter = `state = ${TransactionState.STATE_DONE}`;
-    const stateFilter: string =
-      filterDto.showRefunds == true ? refundsFilter : successFilter;
+    const stateFilter: string = [true, 'true'].includes(filterDto.showRefunds)
+      ? refundsFilter
+      : successFilter;
 
     const genderFilter: string = [0, 1].includes(filterDto.sex)
       ? `AND (
