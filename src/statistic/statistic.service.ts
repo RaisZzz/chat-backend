@@ -6,6 +6,7 @@ import {
 import { Sequelize } from 'sequelize-typescript';
 import { StatisticFilterDto } from './dto/statistic-filter.dto';
 import { UserPurchase } from '../purchase/user-purchase.model';
+import { AppPlatform } from 'firebase-admin/lib/project-management';
 
 export class MainStat {
   totalProfit: number;
@@ -16,6 +17,8 @@ export class MainStat {
   monthlyRefunds: number;
   totalRefundsSum: number;
   monthlyRefundsSum: number;
+  totalAndroidUsers: number;
+  totalIosUsers: number;
 }
 
 @Injectable()
@@ -219,6 +222,8 @@ export class StatisticService {
     let monthlyRefunds = 0;
     let totalRefundsSum = 0;
     let monthlyRefundsSum = 0;
+    let totalAndroidUsers = 0;
+    let totalIosUsers = 0;
 
     const today = new Date();
     const month = today.getMonth();
@@ -295,6 +300,13 @@ export class StatisticService {
       ).getTime()}
     ) "monthlyRefunds"`;
 
+    const totalAndroidUsersQuery = `(
+      SELECT count(*) FROM user WHERE platform = ${AppPlatform.ANDROID}
+    ) "totalAndroidUsers"`;
+    const totalIosUsersQuery = `(
+      SELECT count(*) FROM user WHERE platform = ${AppPlatform.IOS}
+    ) "totalIosUsers"`;
+
     const [response] = await this.sequelize.query(`
       SELECT
       ${totalProfitQuery},
@@ -304,7 +316,9 @@ export class StatisticService {
       ${totalRefundsSumQuery},
       ${monthlyRefundsSumQuery},
       ${totalRefundsQuery},
-      ${monthlyRefundsQuery}
+      ${monthlyRefundsQuery},
+      ${totalAndroidUsersQuery},
+      ${totalIosUsersQuery}
     `);
 
     if (response.length) {
@@ -316,6 +330,8 @@ export class StatisticService {
       monthlyRefunds = parseInt(response[0]['monthlyRefunds']) || 0;
       totalRefundsSum = parseInt(response[0]['totalRefundsSum']) || 0;
       monthlyRefundsSum = parseInt(response[0]['monthlyRefundsSum']) || 0;
+      totalAndroidUsers = parseInt(response[0]['totalAndroidUsers']) || 0;
+      totalIosUsers = parseInt(response[0]['totalIosUsers']) || 0;
     }
 
     return {
@@ -327,6 +343,8 @@ export class StatisticService {
       monthlyRefunds,
       totalRefundsSum,
       monthlyRefundsSum,
+      totalAndroidUsers,
+      totalIosUsers,
     };
   }
 }
