@@ -300,10 +300,10 @@ export class StatisticService {
     ) "monthlyRefunds"`;
 
     const totalAndroidUsersQuery = `(
-      SELECT count(*) FROM user WHERE platform = 'android'
+      SELECT count(*) FROM "user" WHERE platform = 'android'
     ) "totalAndroidUsers"`;
     const totalIosUsersQuery = `(
-      SELECT count(*) FROM user WHERE platform = 'ios'
+      SELECT count(*) FROM "user" WHERE platform = 'ios'
     ) "totalIosUsers"`;
 
     const [response] = await this.sequelize.query(`
