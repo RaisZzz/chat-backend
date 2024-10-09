@@ -103,8 +103,6 @@ export class StatisticService {
   }
 
   async purchaseStatistic(filterDto: StatisticFilterDto): Promise<any> {
-    const offset: number = filterDto.offset || 0;
-
     const refundsFilter = `state IN (${TransactionState.STATE_CANCELED}, ${TransactionState.STATE_POST_CANCELED}) AND reason = ${TransactionCancelReason.REFUND}`;
     const successFilter = `state = ${TransactionState.STATE_DONE}`;
     const stateFilter: string =
@@ -165,22 +163,21 @@ export class StatisticService {
         LIMIT 1
       `);
 
-      const today: Date = new Date();
-      const startDate: Date =
-        new Date(filterDto.startDate) ||
-        new Date(firstPurchase[0]['created_at']);
-      const dateSteps = (today.getTime() - startDate.getTime()) / 7;
-      const chartData = [];
-      for (
-        let i: Date = startDate;
-        i < today;
-        i.setMilliseconds(i.getMilliseconds() + dateSteps)
-      ) {
-        const date: Date = new Date(i.getTime());
-        const firstDate: string = date.toISOString();
-        date.setMilliseconds(date.getMilliseconds() + dateSteps);
-        const lastDate: string = date.toISOString();
-        const [successChart] = await this.sequelize.query(`
+    const today: Date = new Date();
+    const startDate: Date =
+      new Date(filterDto.startDate) || new Date(firstPurchase[0]['created_at']);
+    const dateSteps = (today.getTime() - startDate.getTime()) / 7;
+    const chartData = [];
+    for (
+      let i: Date = startDate;
+      i < today;
+      i.setMilliseconds(i.getMilliseconds() + dateSteps)
+    ) {
+      const date: Date = new Date(i.getTime());
+      const firstDate: string = date.toISOString();
+      date.setMilliseconds(date.getMilliseconds() + dateSteps);
+      const lastDate: string = date.toISOString();
+      const [successChart] = await this.sequelize.query(`
           SELECT coalesce(SUM(amount), 0) "allSum", COUNT(*) "allCount"
           FROM user_purchase p
           WHERE
