@@ -110,7 +110,9 @@ export class StatisticService {
     const stateFilter: string =
       filterDto.showRefunds == true ? refundsFilter : successFilter;
 
-    const genderFilter: string = [0, 1].includes(filterDto.sex)
+    const genderFilter: string = [0, 1].includes(
+      parseInt(filterDto.sex.toString()),
+    )
       ? `AND (
         SELECT sex FROM "user"
         WHERE id = p.user_id
