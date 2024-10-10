@@ -57,15 +57,15 @@ export class ReportService {
     }
 
     // Check if report doesn't already exist
-    const reportExist = await this.reportRepository.count({
-      where: { ownerId: user.id, reportedId: sendDto.reportedId },
-    });
-    if (reportExist) {
-      throw new HttpException(
-        new Error(ErrorType.BadFields, { info: 'Report already exist' }),
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    // const reportExist = await this.reportRepository.count({
+    //   where: { ownerId: user.id, reportedId: sendDto.reportedId },
+    // });
+    // if (reportExist) {
+    //   throw new HttpException(
+    //     new Error(ErrorType.BadFields, { info: 'Report already exist' }),
+    //     HttpStatus.BAD_REQUEST,
+    //   );
+    // }
 
     // Set dislike to reported user
     await this.userReactionService.send(user, {
@@ -135,7 +135,7 @@ export class ReportService {
 
     if (filterDto.startDate) {
       reportsWhere['createdAt'] = {
-        [Op.gte]: filterDto.startDate.toISOString(),
+        [Op.gte]: filterDto.startDate,
       };
     }
 
@@ -233,7 +233,7 @@ export class ReportService {
 
     const dateFilter: string = filterDto.startDate
       ? `
-      AND created_at >= '${filterDto.startDate.toISOString()}'
+      AND created_at >= '${filterDto.startDate}'
     `
       : '';
 
