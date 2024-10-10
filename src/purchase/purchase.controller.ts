@@ -129,6 +129,7 @@ export class PurchaseController {
   @Post('/click_prepare')
   @HttpCode(200)
   clickPrepare(@Body() data: ClickPrepareDto): Promise<ClickPrepareResponse> {
+    console.log('CLICK PREPARE', data);
     this.purchaseService.clickPrepareCheckSign(data);
     return this.purchaseService.clickPrepare(data);
   }
@@ -140,6 +141,7 @@ export class PurchaseController {
   clickComplete(
     @Body() data: ClickCompleteDto,
   ): Promise<ClickCompleteResponse> {
+    console.log('CLICK COMPLETE', data);
     this.purchaseService.clickCompleteCheckSign(data);
     return this.purchaseService.clickComplete(data);
   }
