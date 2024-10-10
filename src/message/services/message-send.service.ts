@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { Message, SystemMessageType } from '../message.model';
 import { SendMessageDto } from '../dto/send-message.dto';
 import { User } from '../../user/user.model';
-import { Chat, chatInfoPsqlQuery } from '../../chat/chat.model';
+import { Chat, chatInfoPsqlQuery, ChatType } from '../../chat/chat.model';
 import { Error, ErrorType } from '../../error.class';
 import { SocketGateway } from '../../websockets/socket.gateway';
 import { ChatUser } from '../../chat/chat-user.model';
@@ -179,8 +179,14 @@ export class MessageSendService {
             from: message.ownerId,
             to: userId,
             type: NotificationType.message,
-            title: `${user.firstName} ${user.lastName}`,
-            body: `Отправил${user.sex === 0 ? 'а' : ''} вам сообщение`,
+            title:
+              chat.type === ChatType.support
+                ? 'Тех. поддержка'
+                : `${user.firstName} ${user.lastName}`,
+            body:
+              chat.type === ChatType.support
+                ? 'Отправила вам сообщение'
+                : `Отправил${user.sex === 0 ? 'а' : ''} вам сообщение`,
           },
           true,
           chat,
