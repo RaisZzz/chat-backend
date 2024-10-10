@@ -47,9 +47,14 @@ export class ReportService {
 
     // Check that reported user exist
     const reportedUser = await this.userRepository.count({
+      include: [Role],
       where: { id: sendDto.reportedId },
     });
-    if (!reportedUser || user.id === sendDto.reportedId) {
+    if (
+      !reportedUser ||
+      user.id === sendDto.reportedId ||
+      user.roles.includes('admin')
+    ) {
       throw new HttpException(
         new Error(ErrorType.BadFields, { field: 'reportedId' }),
         HttpStatus.BAD_REQUEST,
