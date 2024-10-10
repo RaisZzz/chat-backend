@@ -20,11 +20,13 @@ import { Voice } from '../voice/voice.model';
 import { ReadMessagesDto } from './dto/read-messages.dto';
 import { SocketGateway } from '../websockets/socket.gateway';
 import { ChatLink } from '../chat/chat-link.model';
+import { Report } from '../report/report.model';
 
 @Injectable()
 export class MessageService {
   constructor(
     @InjectModel(Chat) private chatRepository: typeof Chat,
+    @InjectModel(Report) private reportRepository: typeof Report,
     @InjectModel(ChatLink) private chatLinkRepository: typeof ChatLink,
     @InjectModel(Voice) private voiceRepository: typeof Voice,
     @InjectModel(ChatUser) private chatUserRepository: typeof ChatUser,
@@ -107,6 +109,11 @@ export class MessageService {
       if (m.linkId) {
         m['link'] = await this.chatLinkRepository.findOne({
           where: { id: m.linkId },
+        });
+      }
+      if (m.reportId) {
+        m['report'] = await this.reportRepository.findOne({
+          where: { id: m.reportId },
         });
       }
     }

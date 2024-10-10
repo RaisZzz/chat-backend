@@ -18,11 +18,13 @@ import { InjectModel } from '@nestjs/sequelize';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { NotificationType } from '../../notifications/notification-type.enum';
 import { ChatLink } from '../../chat/chat-link.model';
+import { Report } from '../../report/report.model';
 
 @Injectable()
 export class MessageSendService {
   constructor(
     @InjectModel(User) private userRepository: typeof User,
+    @InjectModel(Report) private reportRepository: typeof Report,
     @InjectModel(Chat) private chatRepository: typeof Chat,
     @InjectModel(ChatLink) private chatLinkRepository: typeof ChatLink,
     @InjectModel(Voice) private voiceRepository: typeof Voice,
@@ -169,6 +171,11 @@ export class MessageSendService {
             where: { id: message.linkId },
           })
         ).toJSON();
+      }
+      if (message.reportId) {
+        message['report'] = await this.reportRepository.findOne({
+          where: { id: message.reportId },
+        });
       }
 
       this.socketGateway.sendMessage(userId, [message]);

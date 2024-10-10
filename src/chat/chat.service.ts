@@ -28,6 +28,7 @@ import { SendMessageDto } from '../message/dto/send-message.dto';
 import { ConfirmShareChatDto } from './dto/confirm-share-chat.dto';
 import { GetSharedChatDto } from './dto/get-shared-chat.dto';
 import { GetSharedChatMessagesDto } from './dto/get-shared-chat-messages.dto';
+import { Report } from '../report/report.model';
 
 @Injectable()
 export class ChatService {
@@ -37,6 +38,7 @@ export class ChatService {
     @InjectMongooseModel(MessageReceived.name)
     private messageReceivedModel: Model<MessageReceived>,
     @InjectModel(User) private userRepository: typeof User,
+    @InjectModel(Report) private reportRepository: typeof Report,
     @InjectModel(UserDevice) private userDeviceRepository: typeof UserDevice,
     @InjectModel(Chat) private chatRepository: typeof Chat,
     @InjectModel(ChatLink) private chatLinkRepository: typeof ChatLink,
@@ -173,6 +175,11 @@ export class ChatService {
               where: { id: messageJson.linkId },
             })
           ).toJSON();
+        }
+        if (message.reportId) {
+          messageJson['report'] = await this.reportRepository.findOne({
+            where: { id: message.reportId },
+          });
         }
 
         chat['lastMessage'] = messageJson;
