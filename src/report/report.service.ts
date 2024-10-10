@@ -201,10 +201,12 @@ export class ReportService {
     await report.update({ answer: answerDto.answer });
 
     // Get or create support chat with user and admin
+    console.log(`CHECK CHAT WITH ${user.id} ${report.ownerId}`);
     let chat: Chat = await this.chatService.getChatWithTwoUsers(
       user.id,
       report.ownerId,
     );
+    console.log(`CHECK CHAT WITH ${chat}`);
     if (!chat) {
       chat = await this.chatService.createChatWithTwoUsers(
         ChatType.support,
@@ -212,15 +214,17 @@ export class ReportService {
         report.ownerId,
       );
     }
+    console.log(`CHECK CHAT WITH ${chat}`);
 
     // Send report answer to chat
     const uuid: string = uuidv4();
-    this.messageService.sendMessage(
+    const response = await this.messageService.sendMessage(
       user,
       { toChatId: chat.id, uuid, text: 'Ваша жалоба была обработана' },
       SystemMessageType.Default,
       report.id,
     );
+    console.log(response);
 
     return report;
   }
