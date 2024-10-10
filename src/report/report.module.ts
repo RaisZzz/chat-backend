@@ -12,6 +12,7 @@ import { ImageModule } from '../image/image.module';
 import { WebsocketsModule } from '../websockets/websockets.module';
 import { AuthModule } from '../auth/auth.module';
 import { UserReactionModule } from '../user-reaction/user-reaction.module';
+import { MessageModule } from '../message/message.module';
 
 @Module({
   providers: [ReportService],
@@ -24,6 +25,7 @@ import { UserReactionModule } from '../user-reaction/user-reaction.module';
     ImageModule,
     forwardRef(() => AuthModule),
     UserReactionModule,
+    MessageModule,
   ],
   exports: [ReportService],
 })

@@ -3,7 +3,7 @@ import { SendReportDto } from './dto/send-report.dto';
 import { InjectModel } from '@nestjs/sequelize';
 import { Report } from './report.model';
 import { excludedUserAttributes, User } from '../user/user.model';
-import { Chat } from '../chat/chat.model';
+import { Chat, ChatType } from '../chat/chat.model';
 import { Op } from 'sequelize';
 import { ChatService } from '../chat/chat.service';
 import { AnswerReportDto } from './dto/answer-report.dto';
@@ -15,6 +15,9 @@ import { SocketGateway } from 'src/websockets/socket.gateway';
 import { Role } from 'src/role/role.model';
 import { Error, ErrorType } from '../error.class';
 import { UserReactionService } from '../user-reaction/user-reaction.service';
+import { MessageService } from '../message/message.service';
+import { SystemMessageType } from '../message/message.model';
+import { v4 as uuidv4 } from 'uuid';
 
 export class ReportsStat {
   readonly totalReports: number;
@@ -31,6 +34,7 @@ export class ReportService {
     @InjectModel(Report) private reportRepository: typeof Report,
     @InjectModel(User) private userRepository: typeof User,
     private chatService: ChatService,
+    private messageService: MessageService,
     private userReactionService: UserReactionService,
     private readonly sequelize: Sequelize,
     private socketGateway: SocketGateway,
@@ -194,11 +198,29 @@ export class ReportService {
       );
     }
 
-    await report.update({
-      answer: answerDto.answer,
-    });
+    await report.update({ answer: answerDto.answer });
 
-    // TODO: Send support message
+    // Get or create support chat with user and admin
+    let chat: Chat = await this.chatService.getChatWithTwoUsers(
+      user.id,
+      report.ownerId,
+    );
+    if (!chat) {
+      chat = await this.chatService.createChatWithTwoUsers(
+        ChatType.support,
+        user.id,
+        report.ownerId,
+      );
+    }
+
+    // Send report answer to chat
+    const uuid: string = uuidv4();
+    this.messageService.sendMessage(
+      user,
+      { toChatId: chat.id, uuid, text: 'Ваша жалоба была обработана' },
+      SystemMessageType.Default,
+      report.id,
+    );
 
     return report;
   }
