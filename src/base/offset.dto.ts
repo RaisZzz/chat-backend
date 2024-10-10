@@ -1,8 +1,9 @@
-import { IsInt } from 'class-validator';
+import { IsInt, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class OffsetDto {
   @IsInt()
   @Type(() => Number)
-  readonly offset: number;
+  @IsOptional()
+  readonly offset?: number;
 }
