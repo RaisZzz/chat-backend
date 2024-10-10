@@ -135,7 +135,9 @@ export class ReportService {
     }
 
     if ([true, false, 'true', 'false'].includes(filterDto.showUnresolved)) {
-      reportsWhere['resolved'] = filterDto.showUnresolved != true;
+      reportsWhere['resolved'] = ![true, 'true'].includes(
+        filterDto.showUnresolved,
+      );
     }
 
     if (filterDto.startDate) {
