@@ -46,14 +46,14 @@ export class ReportService {
     }
 
     // Check that reported user exist
-    const reportedUser = await this.userRepository.count({
+    const reportedUser: User = await this.userRepository.findOne({
       include: [Role],
       where: { id: sendDto.reportedId },
     });
     if (
       !reportedUser ||
       user.id === sendDto.reportedId ||
-      user.roles.includes('admin')
+      reportedUser.roles.map((role) => role.value).includes('admin')
     ) {
       throw new HttpException(
         new Error(ErrorType.BadFields, { field: 'reportedId' }),
