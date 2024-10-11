@@ -36,6 +36,7 @@ import { SetMainPhotoDto } from './dto/set-main-photo.dto';
 import { RolesGuard } from '../role/roles.guard';
 import { Roles } from '../role/roles-auth.decorator';
 import { OffsetDto } from '../base/offset.dto';
+import { GetAdminUsersDto } from './dto/get-admin-users.dto';
 
 @Controller('user')
 export class UserController {
@@ -55,8 +56,11 @@ export class UserController {
   @Get('get_all_admin')
   @UseGuards(JwtAuthGuard, SmsGuard, RolesGuard)
   @Roles('admin')
-  getAllUsersAdmin(@Req() req, @Query() offsetDto: OffsetDto): Promise<User[]> {
-    return this.userService.getUsersForAdmin(req.user, offsetDto);
+  getAllUsersAdmin(
+    @Req() req,
+    @Query() getDto: GetAdminUsersDto,
+  ): Promise<User[]> {
+    return this.userService.getUsersForAdmin(req.user, getDto);
   }
 
   @Post('return_last')

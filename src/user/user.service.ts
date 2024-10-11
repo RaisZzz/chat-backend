@@ -34,6 +34,7 @@ import { ChangeGeoDto } from './dto/change-geo.dto';
 import { DeletePhotoDto } from './dto/delete-photo.dto';
 import { SetMainPhotoDto } from './dto/set-main-photo.dto';
 import { OffsetDto } from '../base/offset.dto';
+import { GetAdminUsersDto } from './dto/get-admin-users.dto';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const md5 = require('md5');
 
@@ -444,7 +445,17 @@ export class UserService {
     return users;
   }
 
-  async getUsersForAdmin(user: User, offsetDto: OffsetDto): Promise<User[]> {
+  async getUsersForAdmin(
+    user: User,
+    getDto: GetAdminUsersDto,
+  ): Promise<User[]> {
+    const filterQuery: string | null = getDto.searchQuery?.length
+      ? `
+      first_name LIKE '%${getDto.searchQuery}%'
+      OR last_name LIKE '%${getDto.searchQuery}%'
+    `
+      : null;
+
     // Get all users for admin, excluding admins users
     const users: User[] = await this.sequelize.query(
       `
@@ -453,7 +464,8 @@ export class UserService {
       from "user"
       where id <> ${user.id}
       and ('admin' <> ANY(select value from role where id in (select role_id from user_role where user_id = "user".id)))
-      offset ${offsetDto.offset ?? 0}
+      ${filterQuery ? `and (${filterQuery})` : ''}
+      offset ${getDto.offset ?? 0}
       limit 20
     `,
       { mapToModel: true, model: User },
