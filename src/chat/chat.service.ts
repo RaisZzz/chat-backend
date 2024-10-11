@@ -345,8 +345,14 @@ export class ChatService {
     }
 
     const [chatWithInfoResponse] = await this.sequelize.query(`
-      SELECT *, ${chatInfoPsqlQuery(userId)} FROM "chat"
-      WHERE id = ${chat.id}
+      SELECT *,
+      ${chatInfoPsqlQuery(userId)}
+      FROM
+      (SELECT *,
+        (SELECT ARRAY(SELECT user_id FROM "chat_user" WHERE chat_id = "chat".id)) as "users"
+        FROM "chat"
+        WHERE id = ${chat.id}
+      ) asd
       LIMIT 1
     `);
     return (chatWithInfoResponse as Chat[])[0];
