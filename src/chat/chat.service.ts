@@ -304,7 +304,7 @@ export class ChatService {
     return { success: true };
   }
 
-  async getUserSupportChat(userId: number): Promise<Chat> {
+  async getUserSupportChat(ownerId: number, userId: number): Promise<Chat> {
     // Check user has support chat
     const [chatResponse] = await this.sequelize.query(`
       SELECT * FROM "chat"
@@ -346,7 +346,7 @@ export class ChatService {
 
     const [chatWithInfoResponse] = await this.sequelize.query(`
       SELECT *,
-      ${chatInfoPsqlQuery(userId)}
+      ${chatInfoPsqlQuery(ownerId)}
       FROM
       (SELECT *,
         (SELECT ARRAY(SELECT user_id FROM "chat_user" WHERE chat_id = "chat".id)) as "users"

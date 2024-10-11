@@ -37,14 +37,17 @@ export class ChatController {
   @Get('get_support')
   @UseGuards(JwtAuthGuard, SmsGuard)
   getUserSupportChat(@Req() req): Promise<Chat> {
-    return this.chatService.getUserSupportChat(req.user.id);
+    return this.chatService.getUserSupportChat(req.user.id, req.user.id);
   }
 
   @Get('admin_get_chat_with_user')
   @UseGuards(JwtAuthGuard, SmsGuard, RolesGuard)
   @Roles('admin')
-  adminGetChatWithUser(@Query() getDto: GetChatWithUserDto): Promise<Chat> {
-    return this.chatService.getUserSupportChat(getDto.userId);
+  adminGetChatWithUser(
+    @Req() req,
+    @Query() getDto: GetChatWithUserDto,
+  ): Promise<Chat> {
+    return this.chatService.getUserSupportChat(req.user.id, getDto.userId);
   }
 
   @Post('share')
