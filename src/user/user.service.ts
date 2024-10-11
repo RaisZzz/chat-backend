@@ -451,8 +451,8 @@ export class UserService {
   ): Promise<User[]> {
     const filterQuery: string | null = getDto.searchQuery?.length
       ? `
-      first_name LIKE '%${getDto.searchQuery}%'
-      OR last_name LIKE '%${getDto.searchQuery}%'
+      LOWER(first_name) LIKE '%${getDto.searchQuery.trim().toLowerCase()}%'
+      OR LOWER(last_name) LIKE '%${getDto.searchQuery.trim().toLowerCase()}%'
     `
       : null;
 
