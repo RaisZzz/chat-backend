@@ -29,7 +29,6 @@ import { ConfirmShareChatDto } from './dto/confirm-share-chat.dto';
 import { GetSharedChatDto } from './dto/get-shared-chat.dto';
 import { GetSharedChatMessagesDto } from './dto/get-shared-chat-messages.dto';
 import { Report } from '../report/report.model';
-import { GetChatWithUserDto } from './dto/get-chat-with-user.dto';
 
 @Injectable()
 export class ChatService {
@@ -345,7 +344,12 @@ export class ChatService {
       );
     }
 
-    return chat;
+    const [chatWithInfoResponse] = await this.sequelize.query(`
+      SELECT *, ${chatInfoPsqlQuery(userId)} FROM "chat"
+      WHERE id = ${chat.id}
+      LIMIT 1
+    `);
+    return (chatWithInfoResponse as Chat[])[0];
   }
 
   async shareChat(
