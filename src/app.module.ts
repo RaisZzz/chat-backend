@@ -43,6 +43,7 @@ import { UserWeddingWish } from './wedding-wish/user-wedding-wish.model';
 import { MainQuality } from './main-quality/main-quality.model';
 import { UserMainQuality } from './main-quality/user-main-quality.model';
 import { StatisticModule } from './statistic/statistic.module';
+import { CityModule } from './city/city.module';
 
 @Module({
   imports: [
@@ -119,6 +120,7 @@ import { StatisticModule } from './statistic/statistic.module';
     UserModule,
     PurchaseModule,
     StatisticModule,
+    CityModule,
   ],
 })
 export class AppModule {}
