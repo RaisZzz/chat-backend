@@ -4,6 +4,7 @@ import {
   excludedUserAttributes,
   getUserQuery,
   User,
+  userAdditionalInfoQuery,
 } from './user.model';
 import { InjectModel } from '@nestjs/sequelize';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -32,6 +33,7 @@ import { SetUserSettingsDto } from './dto/set-user-settings.dto';
 import { ChangeGeoDto } from './dto/change-geo.dto';
 import { DeletePhotoDto } from './dto/delete-photo.dto';
 import { SetMainPhotoDto } from './dto/set-main-photo.dto';
+import { OffsetDto } from '../base/offset.dto';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const md5 = require('md5');
 
@@ -380,12 +382,7 @@ export class UserService {
           (EXTRACT(year FROM age(current_date, birthdate))) as "age",
           (select 111.12 * (${userLatitude} - geo_lat)) as "x",
           (select 111.12 * (${userLongitude} - geo_lon) * cos(geo_lat / 92.215)) as "y",
-          (select array(select interest_id from user_interests where user_id = "user".id)) as "interestsIds",
-          (select array(select language_id from user_language where user_id = "user".id)) as "languagesIds",
-          (select array(select speciality_id from user_specialities where user_id = "user".id)) as "specialitiesIds",
-          (select array(select place_wish_id from user_place_wish where user_id = "user".id)) as "placeWishesIds",
-          (select array(select wedding_wish_id from user_wedding_wish where user_id = "user".id)) as "weddingWishesIds",
-          (select array(select main_quality_id from user_main_quality where user_id = "user".id)) as "mainQualitiesIds"
+          ${userAdditionalInfoQuery}
           from "user"
           where sex = ${anotherUserSex}
           and first_name IS NOT NULL
@@ -441,6 +438,31 @@ export class UserService {
       delete someUser.dataValues['x'];
       delete someUser.dataValues['y'];
       delete someUser.dataValues['age'];
+      someUser.dataValues['online'] = await this.getUserOnline(someUser.id);
+    }
+
+    return users;
+  }
+
+  async getUsersForAdmin(user: User, offsetDto: OffsetDto): Promise<User[]> {
+    // Get all users for admin, excluding admins users
+    const users: User[] = await this.sequelize.query(
+      `
+      select *,
+      ${userAdditionalInfoQuery}
+      from "user"
+      where id <> ${user.id}
+      and ('admin' <> ANY(select value from role where id in (select role_id from user_role where user_id = "user".id)))
+      offset ${offsetDto.offset ?? 0}
+      limit 20
+    `,
+      { mapToModel: true, model: User },
+    );
+
+    for (const someUser of users) {
+      excludedMainUserAttributes.forEach(
+        (attribute) => delete someUser.dataValues[attribute],
+      );
       someUser.dataValues['online'] = await this.getUserOnline(someUser.id);
     }
 

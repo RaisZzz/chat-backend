@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Header,
   Post,
   Query,
   Req,
@@ -34,17 +33,13 @@ import { ChangeGeoDto } from './dto/change-geo.dto';
 import { Image } from '../image/image.model';
 import { DeletePhotoDto } from './dto/delete-photo.dto';
 import { SetMainPhotoDto } from './dto/set-main-photo.dto';
+import { RolesGuard } from '../role/roles.guard';
+import { Roles } from '../role/roles-auth.decorator';
+import { OffsetDto } from '../base/offset.dto';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
-  // TODO: REMOVE THIS ON PROD
-  @Get('get_all_test')
-  @Header('content-type', 'text/html')
-  getAllUsersTest(): Promise<string> {
-    return this.userService.getAllUsersTest();
-  }
 
   @Get('check')
   check(@Query() checkDto: GetUserByPhoneDto) {
@@ -55,6 +50,13 @@ export class UserController {
   @UseGuards(JwtAuthGuard, SmsGuard)
   getAllUsers(@Req() req, @Query() getUsersDto: GetUsersDto): Promise<User[]> {
     return this.userService.getUsers(req.user, getUsersDto);
+  }
+
+  @Get('get_all_admin')
+  @UseGuards(JwtAuthGuard, SmsGuard, RolesGuard)
+  @Roles('admin')
+  getAllUsersAdmin(@Req() req, @Query() offsetDto: OffsetDto): Promise<User[]> {
+    return this.userService.getUsersForAdmin(req.user, offsetDto);
   }
 
   @Post('return_last')
