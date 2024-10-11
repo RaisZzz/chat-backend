@@ -29,6 +29,7 @@ import { ConfirmShareChatDto } from './dto/confirm-share-chat.dto';
 import { GetSharedChatDto } from './dto/get-shared-chat.dto';
 import { GetSharedChatMessagesDto } from './dto/get-shared-chat-messages.dto';
 import { Report } from '../report/report.model';
+import { GetChatWithUserDto } from './dto/get-chat-with-user.dto';
 
 @Injectable()
 export class ChatService {
@@ -304,14 +305,14 @@ export class ChatService {
     return { success: true };
   }
 
-  async getUserSupportChat(user: User): Promise<Chat> {
+  async getUserSupportChat(userId: number): Promise<Chat> {
     // Check user has support chat
     const [chatResponse] = await this.sequelize.query(`
       SELECT * FROM "chat"
       WHERE type = ${ChatType.support}
       AND EXISTS (
         SELECT id FROM "chat_user"   
-        WHERE user_id = ${user.id}
+        WHERE user_id = ${userId}
         AND chat_id = "chat".id
       )
       LIMIT 1
@@ -339,7 +340,7 @@ export class ChatService {
       }
       chat = await this.createChatWithTwoUsers(
         ChatType.support,
-        user.id,
+        userId,
         availableAdminUser.id,
       );
     }

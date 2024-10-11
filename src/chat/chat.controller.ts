@@ -20,6 +20,9 @@ import { ConfirmShareChatDto } from './dto/confirm-share-chat.dto';
 import { GetSharedChatDto } from './dto/get-shared-chat.dto';
 import { GetSharedChatMessagesDto } from './dto/get-shared-chat-messages.dto';
 import { Message } from '../message/message.model';
+import { RolesGuard } from '../role/roles.guard';
+import { Roles } from '../role/roles-auth.decorator';
+import { GetChatWithUserDto } from './dto/get-chat-with-user.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -34,7 +37,14 @@ export class ChatController {
   @Get('get_support')
   @UseGuards(JwtAuthGuard, SmsGuard)
   getUserSupportChat(@Req() req): Promise<Chat> {
-    return this.chatService.getUserSupportChat(req.user);
+    return this.chatService.getUserSupportChat(req.user.id);
+  }
+
+  @Get('admin_get_chat_with_user')
+  @UseGuards(JwtAuthGuard, SmsGuard, RolesGuard)
+  @Roles('admin')
+  adminGetChatWithUser(@Query() getDto: GetChatWithUserDto): Promise<Chat> {
+    return this.chatService.getUserSupportChat(getDto.userId);
   }
 
   @Post('share')
