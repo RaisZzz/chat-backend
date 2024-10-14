@@ -455,16 +455,25 @@ export class UserService {
       OR LOWER(last_name) LIKE '%${getDto.searchQuery.trim().toLowerCase()}%'
     `
       : null;
+    const verifiedQuery: string | null = [true, 'true'].includes(
+      getDto.withVerificationRequest,
+    )
+      ? `
+        (SELECT COUNT(*) FROM user_verification_image WHERE user_id = "user".id) > 0
+        AND verified = false`
+      : null;
 
     // Get all users for admin, excluding admins users
     const users: User[] = await this.sequelize.query(
       `
       select *,
-      ${userAdditionalInfoQuery}
+      ${userAdditionalInfoQuery},
+      (select array(select image_id from user_verification_image where user_id = "user".id)) as "verificationImages"
       from "user"
       where id <> ${user.id}
       and ('admin' <> ANY(select value from role where id in (select role_id from user_role where user_id = "user".id)))
       ${filterQuery ? `and (${filterQuery})` : ''}
+      ${verifiedQuery ? `and (${verifiedQuery})` : ''}
       offset ${getDto.offset ?? 0}
       limit 20
     `,
