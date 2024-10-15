@@ -12,6 +12,7 @@ import { ImageModule } from '../image/image.module';
 import { Image } from '../image/image.model';
 import { UserDevice } from './user-device.model';
 import { ChatModule } from '../chat/chat.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { ChatModule } from '../chat/chat.module';
     RedisModule,
     ImageModule,
     ChatModule,
+    NotificationsModule,
   ],
   controllers: [UserController],
   providers: [UserService],
