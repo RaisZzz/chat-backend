@@ -157,6 +157,9 @@ export class SocketGateway
   sendVerificationUserRequest = (userId: number, user: User) =>
     this.sendSocket('verificationUserRequest', userId, user.toJSON());
 
+  sendVerification = (userId: number, verified: boolean) =>
+    this.sendSocket('verificationStatus', userId, verified);
+
   @SubscribeMessage('writing')
   async onWriting(client: Socket, data) {
     if (!data || !data.chatId) return;

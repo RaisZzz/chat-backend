@@ -37,6 +37,7 @@ import { RolesGuard } from '../role/roles.guard';
 import { Roles } from '../role/roles-auth.decorator';
 import { OffsetDto } from '../base/offset.dto';
 import { GetAdminUsersDto } from './dto/get-admin-users.dto';
+import { SetVerifiedStatusDto } from './dto/set-verified-status.dto';
 
 @Controller('user')
 export class UserController {
@@ -195,5 +196,15 @@ export class UserController {
     @UploadedFiles() files: { photos?: [Express.Multer.File] },
   ): Promise<Image> {
     return this.userService.sendVerificationPhotos(req.user, files.photos[0]);
+  }
+
+  @Post('set_verification_status')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  setUserVerificationStatus(
+    @Req() req,
+    @Body() setDto: SetVerifiedStatusDto,
+  ): Promise<SuccessInterface> {
+    return this.userService.setUserVerificationStatus(req.user, setDto);
   }
 }

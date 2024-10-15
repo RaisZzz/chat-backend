@@ -33,8 +33,10 @@ import { SetUserSettingsDto } from './dto/set-user-settings.dto';
 import { ChangeGeoDto } from './dto/change-geo.dto';
 import { DeletePhotoDto } from './dto/delete-photo.dto';
 import { SetMainPhotoDto } from './dto/set-main-photo.dto';
-import { OffsetDto } from '../base/offset.dto';
 import { GetAdminUsersDto } from './dto/get-admin-users.dto';
+import { SetVerifiedStatusDto } from './dto/set-verified-status.dto';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../notifications/notification-type.enum';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const md5 = require('md5');
 
@@ -66,6 +68,7 @@ export class UserService {
     private redisService: RedisService,
     private imageService: ImageService,
     private socketGateway: SocketGateway,
+    private notificationsService: NotificationsService,
   ) {}
 
   // TODO: REMOVE THIS ON PROD
@@ -833,6 +836,47 @@ export class UserService {
       attributes: { exclude: excludedUserAttributes },
       where: { id: getDto.userId, sex: user.sex == 0 ? 1 : 0 },
     });
+  }
+
+  async setUserVerificationStatus(
+    admin: User,
+    setDto: SetVerifiedStatusDto,
+  ): Promise<SuccessInterface> {
+    const user: User = await this.userRepository.findOne({
+      where: { id: setDto.userId },
+    });
+    if (!user) {
+      throw new HttpException(
+        new Error(ErrorType.UserNotFound),
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    if (user.verified) {
+      throw new HttpException(
+        new Error(ErrorType.AlreadyVerified),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    await user.update({
+      verifyAnsweredAt: new Date(),
+      verified: setDto.verified,
+    });
+    await user.$set('verificationImages', []);
+
+    this.socketGateway.sendVerification(setDto.userId, setDto.verified);
+    this.notificationsService.sendNotification({
+      from: admin.id,
+      to: user.id,
+      type: NotificationType.verification,
+      title: setDto.verified ? 'Верификация пройдена' : 'Верификация отклонена',
+      body: setDto.verified
+        ? 'Теперь ваш аккаунт верифицирован'
+        : 'Во время верификации произошла ошибка',
+    });
+
+    return { success: true };
   }
 
   private async getUserOnline(userId: number): Promise<boolean | number> {
