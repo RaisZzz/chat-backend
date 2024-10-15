@@ -18,6 +18,9 @@ export class MainStat {
   monthlyRefundsSum: number;
   totalAndroidUsers: number;
   totalIosUsers: number;
+  totalMaleUsers: number;
+  totalFemaleUsers: number;
+  totalCitiesUsers: Record<any, any>[];
 }
 
 @Injectable()
@@ -227,6 +230,9 @@ export class StatisticService {
     let monthlyRefundsSum = 0;
     let totalAndroidUsers = 0;
     let totalIosUsers = 0;
+    let totalMaleUsers = 0;
+    let totalFemaleUsers = 0;
+    let totalCitiesUsers: Record<any, any>[] = [];
 
     const today = new Date();
     const month = today.getMonth();
@@ -310,6 +316,13 @@ export class StatisticService {
       SELECT count(*) FROM "user" WHERE platform = 'ios'
     ) "totalIosUsers"`;
 
+    const totalMaleUsersQuery = `(
+      SELECT count(*) FROM "user" WHERE sex = 1
+    ) "totalMaleUsers"`;
+    const totalFemaleUsersQuery = `(
+      SELECT count(*) FROM "user" WHERE sex = 0
+    ) "totalFemaleUsers"`;
+
     const [response] = await this.sequelize.query(`
       SELECT
       ${totalProfitQuery},
@@ -321,7 +334,9 @@ export class StatisticService {
       ${totalRefundsQuery},
       ${monthlyRefundsQuery},
       ${totalAndroidUsersQuery},
-      ${totalIosUsersQuery}
+      ${totalIosUsersQuery},
+      ${totalMaleUsersQuery},
+      ${totalFemaleUsersQuery}
     `);
 
     if (response.length) {
@@ -335,6 +350,18 @@ export class StatisticService {
       monthlyRefundsSum = parseInt(response[0]['monthlyRefundsSum']) || 0;
       totalAndroidUsers = parseInt(response[0]['totalAndroidUsers']) || 0;
       totalIosUsers = parseInt(response[0]['totalIosUsers']) || 0;
+      totalMaleUsers = parseInt(response[0]['totalMaleUsers']) || 0;
+      totalFemaleUsers = parseInt(response[0]['totalFemaleUsers']) || 0;
+    }
+
+    const [citiesResponse] = await this.sequelize.query(`
+      SELECT id,
+      (SELECT COUNT(*) FROM "user" where birth_place_id = "city".id) as "birthPlaceUsers",
+      (SELECT COUNT(*) FROM "user" where live_place_id = "city".id) as "livePlaceUsers"
+      FROM city
+    `);
+    if (citiesResponse.length) {
+      totalCitiesUsers = citiesResponse;
     }
 
     return {
@@ -348,6 +375,9 @@ export class StatisticService {
       monthlyRefundsSum,
       totalAndroidUsers,
       totalIosUsers,
+      totalMaleUsers,
+      totalFemaleUsers,
+      totalCitiesUsers,
     };
   }
 }
