@@ -6,6 +6,7 @@ import {
 import { Sequelize } from 'sequelize-typescript';
 import { StatisticFilterDto } from './dto/statistic-filter.dto';
 import { UserPurchase } from '../purchase/user-purchase.model';
+import { ChatType } from '../chat/chat.model';
 
 export class MainStat {
   totalProfit: number;
@@ -21,6 +22,7 @@ export class MainStat {
   totalMaleUsers: number;
   totalFemaleUsers: number;
   totalCitiesUsers: Record<any, any>[];
+  totalPairs: number;
 }
 
 @Injectable()
@@ -233,6 +235,7 @@ export class StatisticService {
     let totalMaleUsers = 0;
     let totalFemaleUsers = 0;
     let totalCitiesUsers: Record<any, any>[] = [];
+    let totalPairs = 0;
 
     const today = new Date();
     const month = today.getMonth();
@@ -323,6 +326,10 @@ export class StatisticService {
       SELECT count(*) FROM "user" WHERE sex = 0
     ) "totalFemaleUsers"`;
 
+    const totalPairsQuery = `(
+      SELECT count(*) FROM "chat" WHERE type = ${ChatType.user}
+    ) "totalPairs"`;
+
     const [response] = await this.sequelize.query(`
       SELECT
       ${totalProfitQuery},
@@ -336,7 +343,8 @@ export class StatisticService {
       ${totalAndroidUsersQuery},
       ${totalIosUsersQuery},
       ${totalMaleUsersQuery},
-      ${totalFemaleUsersQuery}
+      ${totalFemaleUsersQuery},
+      ${totalPairsQuery}
     `);
 
     if (response.length) {
@@ -352,6 +360,7 @@ export class StatisticService {
       totalIosUsers = parseInt(response[0]['totalIosUsers']) || 0;
       totalMaleUsers = parseInt(response[0]['totalMaleUsers']) || 0;
       totalFemaleUsers = parseInt(response[0]['totalFemaleUsers']) || 0;
+      totalPairs = parseInt(response[0]['totalPairs']) || 0;
     }
 
     const [citiesResponse] = await this.sequelize.query(`
@@ -378,6 +387,7 @@ export class StatisticService {
       totalMaleUsers,
       totalFemaleUsers,
       totalCitiesUsers,
+      totalPairs,
     };
   }
 }
