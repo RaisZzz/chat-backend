@@ -2,7 +2,11 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { SendReportDto } from './dto/send-report.dto';
 import { InjectModel } from '@nestjs/sequelize';
 import { Report } from './report.model';
-import { excludedUserAttributes, User } from '../user/user.model';
+import {
+  excludedUserAttributes,
+  User,
+  userAdditionalInfoQuery,
+} from '../user/user.model';
 import { Chat, ChatType } from '../chat/chat.model';
 import { Op } from 'sequelize';
 import { ChatService } from '../chat/chat.service';
@@ -130,58 +134,42 @@ export class ReportService {
   }
 
   async getAll(filterDto: GetReportsDto): Promise<Report[]> {
-    const reportsWhere = {};
-    const userWhere = {};
-
-    const searchingReportId = parseInt(filterDto.search);
-    if (searchingReportId) {
-      reportsWhere['id'] = searchingReportId;
-    }
-
-    if ([true, false, 'true', 'false'].includes(filterDto.showUnresolved)) {
-      reportsWhere['resolved'] = ![true, 'true'].includes(
-        filterDto.showUnresolved,
-      );
-    }
-
-    if (filterDto.startDate) {
-      reportsWhere['createdAt'] = {
-        [Op.gte]: filterDto.startDate,
-      };
-    }
-
-    if ([0, 1].includes(filterDto.sex)) {
-      userWhere['sex'] = filterDto.sex;
-    }
-
-    if (Array.isArray(filterDto.livePlaceId) && filterDto.livePlaceId.length) {
-      userWhere['livePlaceId'] = {
-        [Op.in]: filterDto.livePlaceId,
-      };
-    }
-
-    return await this.reportRepository.findAll({
-      where: reportsWhere,
+    const reports: Report[] = await this.reportRepository.findAll({
       offset: filterDto.offset,
       limit: 20,
-      include: [
-        {
-          model: User,
-          as: 'owner',
-          attributes: { exclude: excludedUserAttributes },
-        },
-        {
-          model: User,
-          as: 'reported',
-          attributes: { exclude: excludedUserAttributes },
-          where: userWhere,
-        },
-      ],
       order: [
         ['answer', 'DESC'],
         ['createdAt', 'ASC'],
       ],
     });
+
+    for (const report of reports) {
+      report.dataValues.owner = (
+        await this.sequelize.query(
+          `
+        SELECT *,
+        ${userAdditionalInfoQuery}
+        FROM "user"
+        WHERE id = ${report.ownerId}
+      `,
+          { mapToModel: true, model: User },
+        )
+      )[0];
+
+      report.dataValues.reported = (
+        await this.sequelize.query(
+          `
+        SELECT *,
+        ${userAdditionalInfoQuery}
+        FROM "user"
+        WHERE id = ${report.reportedId}
+      `,
+          { mapToModel: true, model: User },
+        )
+      )[0];
+    }
+
+    return reports;
   }
 
   async answerReport(user: User, answerDto: AnswerReportDto): Promise<Report> {
