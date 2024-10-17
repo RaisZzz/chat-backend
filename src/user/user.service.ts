@@ -483,7 +483,7 @@ export class UserService {
         (select array(select image_id from user_verification_image where user_id = "user".id)) as "verificationImages"
         from "user"
         where id <> ${user.id}
-        ${getUsersDto.wearsHijab?.length && getUsersDto.wearsHijab.includes(true) ? 'and sex = 0' : ''}
+        ${getUsersDto.wearsHijab?.length && (getUsersDto.wearsHijab.includes(true) || getUsersDto.wearsHijab.includes('true')) ? 'and sex = 0' : ''}
         and ('admin' <> ANY(select value from role where id in (select role_id from user_role where user_id = "user".id)))
         ${filterQuery ? `and (${filterQuery})` : ''}
         ${verifiedQuery ? `and (${verifiedQuery})` : ''}
