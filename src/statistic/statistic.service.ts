@@ -151,6 +151,8 @@ export class StatisticService {
         femaleCount: parseInt(femaleChart[0]['allCount']) || 0,
       });
     }
+
+    return { chartData };
   }
 
   async purchaseStatistic(filterDto: StatisticFilterDto): Promise<any> {
