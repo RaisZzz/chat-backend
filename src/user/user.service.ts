@@ -509,6 +509,7 @@ export class UserService {
         ${getUsersDto.parents?.length ? `and parents_id IN (${getUsersDto.parents})` : ''}
         offset ${getUsersDto.offset ?? 0}
         limit 20
+        order by created_at desc
       ) a
       where age >= ${ageMin}
       and age <= ${ageMax}
