@@ -781,9 +781,14 @@ export class UserService {
     const admin: User = await this.userRepository.findOne({
       include: [{ model: Role, where: { value: 'admin' } }],
     });
-    // @ts-ignore
-    user.dataValues['verificationImages'] = [file.id];
-    this.socketGateway.sendVerificationUserRequest(admin.id, user);
+
+    const newUser: User = await this.userRepository.findOne({
+      attributes: { exclude: excludedUserAttributes },
+      include: { all: true, nested: true },
+      where: { id: user.id },
+    });
+
+    this.socketGateway.sendVerificationUserRequest(admin.id, newUser);
     return file;
   }
 
