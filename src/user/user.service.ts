@@ -478,6 +478,7 @@ export class UserService {
       `
       select * from (
         select *,
+        (EXTRACT(year FROM age(current_date, birthdate))) as "age",
         ${userAdditionalInfoQuery},
         (select array(select image_id from user_verification_image where user_id = "user".id)) as "verificationImages"
         from "user"
