@@ -921,7 +921,7 @@ export class UserService {
     });
     await user.$set('verificationImages', []);
 
-    this.socketGateway.sendVerification(setDto.userId, setDto.verified);
+    this.socketGateway.sendUpdateData(setDto.userId);
     this.notificationsService.sendNotification({
       from: admin.id,
       to: user.id,
