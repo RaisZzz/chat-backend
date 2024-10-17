@@ -112,7 +112,7 @@ export class StatisticService {
 
   async usersStatistic(filterDto: StatisticFilterDto): Promise<any> {
     const [firstUser] = await this.sequelize.query(`
-        SELECT created_at FROM user
+        SELECT created_at FROM "user"
         ORDER BY created_at ASC
         LIMIT 1
       `);
@@ -142,8 +142,8 @@ export class StatisticService {
           SELECT COUNT(*) "allCount"
           FROM "user"
           WHERE sex = 0
-          AND cancel_time >= ${firstDate}
-          AND cancel_time < ${lastDate}
+          AND created_at >= ${firstDate}
+          AND created_at < ${lastDate}
         `);
       chartData.push({
         date: new Date(firstDate).toISOString(),
