@@ -450,35 +450,62 @@ export class UserService {
 
   async getUsersForAdmin(
     user: User,
-    getDto: GetAdminUsersDto,
+    getUsersDto: GetAdminUsersDto,
   ): Promise<User[]> {
-    const filterQuery: string | null = getDto.searchQuery?.length
+    const filterQuery: string | null = getUsersDto.searchQuery?.length
       ? `
-      LOWER(first_name) LIKE '%${getDto.searchQuery.trim().toLowerCase()}%'
-      OR LOWER(last_name) LIKE '%${getDto.searchQuery.trim().toLowerCase()}%'
+      LOWER(first_name) LIKE '%${getUsersDto.searchQuery.trim().toLowerCase()}%'
+      OR LOWER(last_name) LIKE '%${getUsersDto.searchQuery.trim().toLowerCase()}%'
     `
       : null;
     const verifiedQuery: string | null = [true, 'true'].includes(
-      getDto.withVerificationRequest,
+      getUsersDto.withVerificationRequest,
     )
       ? `
         (SELECT COUNT(*) FROM user_verification_image WHERE user_id = "user".id) > 0
         AND verified = false`
       : null;
 
+    // Get min and max age
+    const ageMin: number = getUsersDto.ageMin >= 18 ? getUsersDto.ageMin : 18;
+    const ageMax: number =
+      getUsersDto.ageMax <= 100 && getUsersDto.ageMax >= ageMin
+        ? getUsersDto.ageMax
+        : 100;
+
     // Get all users for admin, excluding admins users
     const users: User[] = await this.sequelize.query(
       `
-      select *,
-      ${userAdditionalInfoQuery},
-      (select array(select image_id from user_verification_image where user_id = "user".id)) as "verificationImages"
-      from "user"
-      where id <> ${user.id}
-      and ('admin' <> ANY(select value from role where id in (select role_id from user_role where user_id = "user".id)))
-      ${filterQuery ? `and (${filterQuery})` : ''}
-      ${verifiedQuery ? `and (${verifiedQuery})` : ''}
-      offset ${getDto.offset ?? 0}
-      limit 20
+      select * from (
+        select *,
+        ${userAdditionalInfoQuery},
+        (select array(select image_id from user_verification_image where user_id = "user".id)) as "verificationImages"
+        from "user"
+        where id <> ${user.id}
+        and ('admin' <> ANY(select value from role where id in (select role_id from user_role where user_id = "user".id)))
+        ${filterQuery ? `and (${filterQuery})` : ''}
+        ${verifiedQuery ? `and (${verifiedQuery})` : ''}
+        ${getUsersDto.birthPlaceId?.length ? `and birth_place_id IN (${getUsersDto.birthPlaceId})` : ''}
+        ${getUsersDto.livePlaceId?.length ? `and live_place_id IN (${getUsersDto.livePlaceId})` : ''}
+        ${getUsersDto.educations?.length ? `and education_id IN (${getUsersDto.educations})` : ''}
+        ${getUsersDto.organisationTypes?.length ? `and organisation_id IN (${getUsersDto.organisationTypes})` : ''}
+        ${getUsersDto.readNamaz?.length ? `and read_namaz IN (${getUsersDto.readNamaz})` : ''}
+        ${getUsersDto.wearsHijab?.length ? `and wears_hijab IN (${getUsersDto.wearsHijab})` : ''}
+        ${getUsersDto.familyPositions?.length ? `and family_position_id IN (${getUsersDto.familyPositions})` : ''}
+        ${getUsersDto.religions?.length ? `and religion_id IN (${getUsersDto.religions})` : ''}
+        ${getUsersDto.hasChildrens?.length ? `and has_children_id IN (${getUsersDto.hasChildrens})` : ''}
+        ${getUsersDto.parents?.length ? `and parents_id IN (${getUsersDto.parents})` : ''}
+        offset ${getUsersDto.offset ?? 0}
+        limit 20
+      ) a
+      where age >= ${ageMin}
+      and age <= ${ageMax}
+      ${getUsersDto.interests?.length ? `and "interestsIds" && '{${getUsersDto.interests}}'` : ''}
+      ${getUsersDto.languages?.length ? `and "languagesIds" && '{${getUsersDto.languages}}'` : ''}
+      ${getUsersDto.specialities?.length ? `and "specialitiesIds" && '{${getUsersDto.specialities}}'` : ''}
+      ${getUsersDto.placeWishes?.length ? `and "placeWishesIds" && '{${getUsersDto.placeWishes}}'` : ''}
+      ${getUsersDto.weddingWishes?.length ? `and "weddingWishesIds" && '{${getUsersDto.weddingWishes}}'` : ''}
+      ${getUsersDto.mainQualities?.length ? `and "mainQualitiesIds" && '{${getUsersDto.mainQualities}}'` : ''}
     `,
       { mapToModel: true, model: User },
     );

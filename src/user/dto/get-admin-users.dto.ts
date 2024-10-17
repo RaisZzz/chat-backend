@@ -1,8 +1,8 @@
-import { OffsetDto } from '../../base/offset.dto';
 import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
+import { GetUsersDto } from './get-users.dto';
 
-export class GetAdminUsersDto extends OffsetDto {
+export class GetAdminUsersDto extends GetUsersDto {
   @IsString()
   @IsNotEmpty()
   @IsOptional()

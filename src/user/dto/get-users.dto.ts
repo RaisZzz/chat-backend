@@ -8,8 +8,9 @@ import {
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
+import { OffsetDto } from '../../base/offset.dto';
 
-export class GetUsersDto {
+export class GetUsersDto extends OffsetDto {
   @IsInt({ each: true })
   @IsOptional()
   @Transform((value) => {
