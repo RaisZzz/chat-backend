@@ -391,6 +391,8 @@ export class UserService {
           ${userAdditionalInfoQuery}
           from "user"
           where sex = ${anotherUserSex}
+          and blocked_at IS NULL
+          and deleted_at IS NULL
           and first_name IS NOT NULL
           and last_name IS NOT NULL
           and birthdate IS NOT NULL
