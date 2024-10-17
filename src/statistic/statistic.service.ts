@@ -23,6 +23,8 @@ export class MainStat {
   totalFemaleUsers: number;
   totalCitiesUsers: Record<any, any>[];
   totalPairs: number;
+  totalBlockedUsers: number;
+  totalDeletedUsers: number;
 }
 
 @Injectable()
@@ -281,6 +283,8 @@ export class StatisticService {
     let totalFemaleUsers = 0;
     let totalCitiesUsers: Record<any, any>[] = [];
     let totalPairs = 0;
+    let totalBlockedUsers = 0;
+    let totalDeletedUsers = 0;
 
     const today = new Date();
     const month = today.getMonth();
@@ -375,6 +379,14 @@ export class StatisticService {
       SELECT count(*) FROM "chat" WHERE type = ${ChatType.user}
     ) "totalPairs"`;
 
+    const totalBlockedUsersQuery = `(
+      SELECT count(*) FROM "user" WHERE blocked_at IS NOT null
+    ) "totalBlockedUsers"`;
+
+    const totalDeletedUsersQuery = `(
+      SELECT count(*) FROM "user" WHERE deleted_at IS NOT null
+    ) "totalDeletedUsers"`;
+
     const [response] = await this.sequelize.query(`
       SELECT
       ${totalProfitQuery},
@@ -389,7 +401,9 @@ export class StatisticService {
       ${totalIosUsersQuery},
       ${totalMaleUsersQuery},
       ${totalFemaleUsersQuery},
-      ${totalPairsQuery}
+      ${totalPairsQuery},
+      ${totalBlockedUsersQuery},
+      ${totalDeletedUsersQuery}
     `);
 
     if (response.length) {
@@ -406,6 +420,8 @@ export class StatisticService {
       totalMaleUsers = parseInt(response[0]['totalMaleUsers']) || 0;
       totalFemaleUsers = parseInt(response[0]['totalFemaleUsers']) || 0;
       totalPairs = parseInt(response[0]['totalPairs']) || 0;
+      totalBlockedUsers = parseInt(response[0]['totalBlockedUsers']) || 0;
+      totalDeletedUsers = parseInt(response[0]['totalDeletedUsers']) || 0;
     }
 
     const [citiesResponse] = await this.sequelize.query(`
@@ -433,6 +449,8 @@ export class StatisticService {
       totalFemaleUsers,
       totalCitiesUsers,
       totalPairs,
+      totalBlockedUsers,
+      totalDeletedUsers,
     };
   }
 }
