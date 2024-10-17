@@ -782,13 +782,22 @@ export class UserService {
       include: [{ model: Role, where: { value: 'admin' } }],
     });
 
-    const newUser: User = await this.userRepository.findOne({
-      attributes: { exclude: excludedUserAttributes },
-      include: { all: true, nested: true },
-      where: { id: user.id },
-    });
+    const userForAdmin: User[] = await this.sequelize.query(
+      `
+      select *,
+      ${userAdditionalInfoQuery},
+      (select array(select image_id from user_verification_image where user_id = "user".id)) as "verificationImages"
+      FROM "user"
+      WHERE id = ${user.id}
+      LIMIT 1
+    `,
+      { mapToModel: true, model: User },
+    );
+    for (const attr of excludedUserAttributes) {
+      delete userForAdmin[0].dataValues[attr];
+    }
 
-    this.socketGateway.sendVerificationUserRequest(admin.id, newUser);
+    this.socketGateway.sendVerificationUserRequest(admin.id, userForAdmin[0]);
     return file;
   }
 
