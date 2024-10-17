@@ -776,13 +776,11 @@ export class UserService {
       );
     }
     const file: Image = await this.imageService.saveFile(photo, user.id);
-    await user.$set('verificationImages', [file]);
+    await user.$set('verificationImages', [file.id]);
     await user.update({ tryVerifiedAt: new Date(), verifyAnsweredAt: null });
     const admin: User = await this.userRepository.findOne({
       include: [{ model: Role, where: { value: 'admin' } }],
     });
-    // @ts-ignore
-    user.dataValues['verificationImages'] = [file.id];
     this.socketGateway.sendVerificationUserRequest(admin.id, user);
     return file;
   }

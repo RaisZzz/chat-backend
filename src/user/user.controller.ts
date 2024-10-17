@@ -35,7 +35,6 @@ import { DeletePhotoDto } from './dto/delete-photo.dto';
 import { SetMainPhotoDto } from './dto/set-main-photo.dto';
 import { RolesGuard } from '../role/roles.guard';
 import { Roles } from '../role/roles-auth.decorator';
-import { OffsetDto } from '../base/offset.dto';
 import { GetAdminUsersDto } from './dto/get-admin-users.dto';
 import { SetVerifiedStatusDto } from './dto/set-verified-status.dto';
 
