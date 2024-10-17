@@ -37,6 +37,7 @@ import { GetAdminUsersDto } from './dto/get-admin-users.dto';
 import { SetVerifiedStatusDto } from './dto/set-verified-status.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification-type.enum';
+import { BlockUserDto } from './dto/block-user.dto';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const md5 = require('md5');
 
@@ -927,6 +928,32 @@ export class UserService {
       body: setDto.verified
         ? 'Теперь ваш аккаунт верифицирован'
         : 'Во время верификации произошла ошибка',
+    });
+
+    return { success: true };
+  }
+
+  async blockUser(blockUserDto: BlockUserDto): Promise<SuccessInterface> {
+    const user: User = await this.userRepository.findOne({
+      where: { id: blockUserDto.userId },
+    });
+    if (!user) {
+      throw new HttpException(
+        new Error(ErrorType.UserNotFound),
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    if (user.blockedAt) {
+      throw new HttpException(
+        new Error(ErrorType.Forbidden),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    await user.update({
+      blockedAt: new Date(),
+      blockReason: blockUserDto.blockReason,
     });
 
     return { success: true };
