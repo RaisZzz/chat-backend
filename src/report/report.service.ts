@@ -134,7 +134,16 @@ export class ReportService {
   }
 
   async getAll(filterDto: GetReportsDto): Promise<Report[]> {
+    const reportsWhere = {};
+
+    if ([true, false, 'true', 'false'].includes(filterDto.showUnresolved)) {
+      reportsWhere['resolved'] = ![true, 'true'].includes(
+        filterDto.showUnresolved,
+      );
+    }
+
     const reports: Report[] = await this.reportRepository.findAll({
+      where: reportsWhere,
       offset: filterDto.offset,
       limit: 20,
       order: [
