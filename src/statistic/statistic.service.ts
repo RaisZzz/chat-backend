@@ -128,25 +128,25 @@ export class StatisticService {
       i.setMilliseconds(i.getMilliseconds() + dateSteps)
     ) {
       const date: Date = new Date(i.getTime());
-      const firstDate: string = date.toISOString();
+      const firstDate: number = date.getTime();
       date.setMilliseconds(date.getMilliseconds() + dateSteps);
-      const lastDate: string = date.toISOString();
+      const lastDate: number = date.getTime();
       const [maleChat] = await this.sequelize.query(`
           SELECT COUNT(*) "allCount"
-          FROM user p
+          FROM "user"
           WHERE sex = 1
-          AND created_at >= '${firstDate}'
-          AND created_at < '${lastDate}'
+          AND created_at >= ${firstDate}
+          AND created_at < ${lastDate}
         `);
       const [femaleChart] = await this.sequelize.query(`
           SELECT COUNT(*) "allCount"
-          FROM user_purchase p
+          FROM "user"
           WHERE sex = 0
-          AND cancel_time >= ${new Date(firstDate).getTime()}
-          AND cancel_time < ${new Date(lastDate).getTime()}
+          AND cancel_time >= ${firstDate}
+          AND cancel_time < ${lastDate}
         `);
       chartData.push({
-        date: firstDate,
+        date: new Date(firstDate).toISOString(),
         maleCount: parseInt(maleChat[0]['allCount']) || 0,
         femaleCount: parseInt(femaleChart[0]['allCount']) || 0,
       });
