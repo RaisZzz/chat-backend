@@ -38,6 +38,7 @@ import { Roles } from '../role/roles-auth.decorator';
 import { GetAdminUsersDto } from './dto/get-admin-users.dto';
 import { SetVerifiedStatusDto } from './dto/set-verified-status.dto';
 import { BlockUserDto } from './dto/block-user.dto';
+import { UnblockUserDto } from './dto/unblock-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -213,5 +214,12 @@ export class UserController {
   @Roles('admin')
   blockUser(@Body() blockDto: BlockUserDto): Promise<SuccessInterface> {
     return this.userService.blockUser(blockDto);
+  }
+
+  @Post('unblock')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  unblockUser(@Body() unblockDto: UnblockUserDto): Promise<SuccessInterface> {
+    return this.userService.unblockUser(unblockDto);
   }
 }

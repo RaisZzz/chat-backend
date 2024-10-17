@@ -38,6 +38,7 @@ import { SetVerifiedStatusDto } from './dto/set-verified-status.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification-type.enum';
 import { BlockUserDto } from './dto/block-user.dto';
+import { UnblockUserDto } from './dto/unblock-user.dto';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const md5 = require('md5');
 
@@ -955,6 +956,29 @@ export class UserService {
       blockedAt: new Date(),
       blockReason: blockUserDto.blockReason,
     });
+
+    return { success: true };
+  }
+
+  async unblockUser(unblockUserDto: UnblockUserDto): Promise<SuccessInterface> {
+    const user: User = await this.userRepository.findOne({
+      where: { id: unblockUserDto.userId },
+    });
+    if (!user) {
+      throw new HttpException(
+        new Error(ErrorType.UserNotFound),
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    if (!user.blockedAt) {
+      throw new HttpException(
+        new Error(ErrorType.Forbidden),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    await user.update({ blockedAt: null, blockReason: null });
 
     return { success: true };
   }
