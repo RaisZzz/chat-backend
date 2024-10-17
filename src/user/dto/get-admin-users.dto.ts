@@ -12,4 +12,9 @@ export class GetAdminUsersDto extends GetUsersDto {
   @Type(() => Boolean)
   @IsOptional()
   readonly withVerificationRequest?: boolean;
+
+  @IsBoolean()
+  @Type(() => Boolean)
+  @IsOptional()
+  readonly showBlocked?: boolean;
 }

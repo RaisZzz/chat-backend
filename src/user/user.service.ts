@@ -465,6 +465,13 @@ export class UserService {
         (SELECT COUNT(*) FROM user_verification_image WHERE user_id = "user".id) > 0
         AND verified = false`
       : null;
+    const blockedQuery: string | null = [true, 'true', false, 'false'].includes(
+      getUsersDto.showBlocked,
+    )
+      ? [true, 'true'].includes(getUsersDto.showBlocked)
+        ? 'AND blocked_at IS NOT null'
+        : 'AND blocked_at IS null'
+      : null;
 
     // Get min and max age
     const ageMin: number = getUsersDto.ageMin >= 18 ? getUsersDto.ageMin : 18;
@@ -487,6 +494,7 @@ export class UserService {
         and ('admin' <> ANY(select value from role where id in (select role_id from user_role where user_id = "user".id)))
         ${filterQuery ? `and (${filterQuery})` : ''}
         ${verifiedQuery ? `and (${verifiedQuery})` : ''}
+        ${blockedQuery ?? ''}
         ${getUsersDto.birthPlaceId?.length ? `and birth_place_id IN (${getUsersDto.birthPlaceId})` : ''}
         ${getUsersDto.livePlaceId?.length ? `and live_place_id IN (${getUsersDto.livePlaceId})` : ''}
         ${getUsersDto.educations?.length ? `and education_id IN (${getUsersDto.educations})` : ''}
