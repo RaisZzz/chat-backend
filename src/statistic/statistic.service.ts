@@ -110,6 +110,49 @@ export class StatisticService {
     `;
   }
 
+  async usersStatistic(filterDto: StatisticFilterDto): Promise<any> {
+    const [firstUser] = await this.sequelize.query(`
+        SELECT created_at FROM user
+        ORDER BY created_at ASC
+        LIMIT 1
+      `);
+
+    const today: Date = new Date();
+    const startDate: Date =
+      new Date(filterDto.startDate) || new Date(firstUser[0]['created_at']);
+    const dateSteps = (today.getTime() - startDate.getTime()) / 7;
+    const chartData = [];
+    for (
+      let i: Date = startDate;
+      i < today;
+      i.setMilliseconds(i.getMilliseconds() + dateSteps)
+    ) {
+      const date: Date = new Date(i.getTime());
+      const firstDate: string = date.toISOString();
+      date.setMilliseconds(date.getMilliseconds() + dateSteps);
+      const lastDate: string = date.toISOString();
+      const [maleChat] = await this.sequelize.query(`
+          SELECT COUNT(*) "allCount"
+          FROM user p
+          WHERE sex = 1
+          AND created_at >= '${firstDate}'
+          AND created_at < '${lastDate}'
+        `);
+      const [femaleChart] = await this.sequelize.query(`
+          SELECT COUNT(*) "allCount"
+          FROM user_purchase p
+          WHERE sex = 0
+          AND cancel_time >= ${new Date(firstDate).getTime()}
+          AND cancel_time < ${new Date(lastDate).getTime()}
+        `);
+      chartData.push({
+        date: firstDate,
+        maleCount: parseInt(maleChat[0]['allCount']) || 0,
+        femaleCount: parseInt(femaleChart[0]['allCount']) || 0,
+      });
+    }
+  }
+
   async purchaseStatistic(filterDto: StatisticFilterDto): Promise<any> {
     const refundsFilter = `state IN (${TransactionState.STATE_CANCELED}, ${TransactionState.STATE_POST_CANCELED}) AND reason = ${TransactionCancelReason.REFUND}`;
     const successFilter = `state = ${TransactionState.STATE_DONE}`;

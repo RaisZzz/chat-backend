@@ -18,6 +18,16 @@ export class StatisticController {
     return this.statisticService.getPurchases(filterDto);
   }
 
+  @ApiOperation({
+    summary: 'Статистика зарегистрированных пользователей (для админа)',
+  })
+  @Get('users')
+  @Roles('admin')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  getUsersStat(@Query() filterDto: StatisticFilterDto) {
+    return this.statisticService.usersStatistic(filterDto);
+  }
+
   @ApiOperation({ summary: 'Статистика покупок (для админа)' })
   @Get('purchase')
   @Roles('admin')
