@@ -65,7 +65,6 @@ export class GetUsersDto extends OffsetDto {
   readonly ageMax?: number;
 
   @ApiProperty({ example: [], description: 'Образование', required: false })
-  @IsInt({ each: true })
   @IsArray()
   @IsOptional()
   @Transform((value) => {
@@ -78,7 +77,6 @@ export class GetUsersDto extends OffsetDto {
   readonly educations?: number[];
 
   @ApiProperty({ example: [], description: 'Специальности', required: false })
-  @IsInt({ each: true })
   @IsArray()
   @IsOptional()
   @Transform((value) => {
@@ -91,7 +89,6 @@ export class GetUsersDto extends OffsetDto {
   readonly specialities?: number[];
 
   @ApiProperty({ example: [], description: 'Вид организации', required: false })
-  @IsInt({ each: true })
   @IsArray()
   @IsOptional()
   @Transform((value) => {
@@ -108,7 +105,6 @@ export class GetUsersDto extends OffsetDto {
     description: 'Читает намаз',
     required: false,
   })
-  @IsBoolean({ each: true })
   @IsArray()
   @IsOptional()
   @Transform((value) => {
@@ -125,7 +121,6 @@ export class GetUsersDto extends OffsetDto {
     description: 'Носит хиджаб',
     required: false,
   })
-  @IsBoolean({ each: true })
   @IsArray()
   @IsOptional()
   @Transform((value) => {
@@ -142,7 +137,6 @@ export class GetUsersDto extends OffsetDto {
     description: 'Семейное положение',
     required: false,
   })
-  @IsInt({ each: true })
   @IsArray()
   @IsOptional()
   @Transform((value) => {
@@ -159,7 +153,6 @@ export class GetUsersDto extends OffsetDto {
     description: 'Религия',
     required: false,
   })
-  @IsInt({ each: true })
   @IsArray()
   @IsOptional()
   @Transform((value) => {
@@ -176,7 +169,6 @@ export class GetUsersDto extends OffsetDto {
     description: 'Есть дети',
     required: false,
   })
-  @IsInt({ each: true })
   @IsArray()
   @IsOptional()
   @Transform((value) => {
@@ -241,7 +233,6 @@ export class GetUsersDto extends OffsetDto {
     description: 'Родители',
     required: false,
   })
-  @IsInt({ each: true })
   @IsArray()
   @IsOptional()
   @Transform((value) => {
@@ -258,7 +249,6 @@ export class GetUsersDto extends OffsetDto {
     description: 'Интересы',
     required: false,
   })
-  @IsInt({ each: true })
   @IsArray()
   @IsOptional()
   @Transform((value) => {
