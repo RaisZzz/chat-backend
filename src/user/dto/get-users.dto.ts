@@ -130,7 +130,7 @@ export class GetUsersDto extends OffsetDto {
       return value.value;
     }
   })
-  readonly wearsHijab?: boolean[];
+  readonly wearsHijab?: any[];
 
   @ApiProperty({
     example: [],
