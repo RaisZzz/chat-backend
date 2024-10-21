@@ -86,6 +86,13 @@ export class MessageSendService {
       );
     }
 
+    if (chat.type !== ChatType.support && user.blockedAt) {
+      throw new HttpException(
+        new Error(ErrorType.UserBlocked),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
     const imagesIds: number[] = await this.saveMessageImages(
       user.id,
       photos,
