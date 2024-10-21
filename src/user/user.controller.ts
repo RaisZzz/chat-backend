@@ -222,4 +222,16 @@ export class UserController {
   unblockUser(@Body() unblockDto: UnblockUserDto): Promise<SuccessInterface> {
     return this.userService.unblockUser(unblockDto);
   }
+
+  @Delete('delete_account')
+  @UseGuards(JwtAuthGuard)
+  deleteAccount(@Req() req): Promise<SuccessInterface> {
+    return this.userService.deleteAccount(req.user);
+  }
+
+  @Post('recovery_account')
+  @UseGuards(JwtAuthGuard)
+  recoveryAccount(@Req() req): Promise<SuccessInterface> {
+    return this.userService.recoveryAccount(req.user);
+  }
 }

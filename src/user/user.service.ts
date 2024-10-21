@@ -837,6 +837,32 @@ export class UserService {
     return { success: true };
   }
 
+  async deleteAccount(user: User): Promise<SuccessInterface> {
+    if (user.deletedAt) {
+      throw new HttpException(
+        new Error(ErrorType.Forbidden),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    await user.update({ deletedAt: new Date().getTime() });
+    this.socketGateway.sendUpdateData(user.id);
+    return { success: true };
+  }
+
+  async recoveryAccount(user: User): Promise<SuccessInterface> {
+    if (!user.deletedAt) {
+      throw new HttpException(
+        new Error(ErrorType.Forbidden),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    await user.update({ deletedAt: null });
+    this.socketGateway.sendUpdateData(user.id);
+    return { success: true };
+  }
+
   private async getUserOnline(userId: number): Promise<boolean | number> {
     if (this.socketGateway.getUserConnected(userId)) return true;
 
