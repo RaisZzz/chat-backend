@@ -73,159 +73,6 @@ export class UserService {
     private notificationsService: NotificationsService,
   ) {}
 
-  // TODO: REMOVE THIS ON PROD
-  async getAllUsersTest(): Promise<string> {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    const [users]: [Record<any, any>] = await this.sequelize.query(`
-      select id, phone, first_name, last_name, geo_lat, geo_lon,
-      (EXTRACT(year FROM age(current_date, birthdate))) as "age", sex,
-      (select title from city where id = birth_place_id) as "birthPlace",
-      (select title from city where id = live_place_id) as "livePlace",
-      read_namaz,
-      wears_hijab,
-      (select title from education where id = education_id) as "education",
-      (select title from parents where id = parents_id) as "parents",
-      (select title from organisation where id = organisation_id) as "organisation",
-      (select title from family_position where id = family_position_id) as "familyPosition",
-      (select title from religion where id = religion_id) as "religion",
-      (select title from children where id = has_children_id) as "hasChildren",
-      (select array(select title from interest where id in (select interest_id from user_interests where user_id = "user".id))) as "interests",
-      (select array(select title from language where id in (select language_id from user_language where user_id = "user".id))) as "languages",
-      (select array(select title from speciality where id in (select speciality_id from user_specialities where user_id = "user".id))) as "specialities",
-      (select array(select title from place_wish where id in (select place_wish_id from user_place_wish where user_id = "user".id))) as "placeWishes",
-      (select array(select title from wedding_wish where id in (select wedding_wish_id from user_wedding_wish where user_id = "user".id))) as "weddingWishes",
-      (select array(select title from main_quality where id in (select main_quality_id from user_main_quality where user_id = "user".id))) as "mainQualities"
-      from "user"
-      where first_name <> 'Admin'
-      order by sex
-    `);
-
-    return `
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport"
-              content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <title>Document</title>
-        <style>
-          #map {
-            height: 70vh;
-            width: 100%;
-          }
-          html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-          }
-          table {
-            border-collapse: collapse;
-          }
-          table td,
-          table th {
-            padding: 5px;
-            border: 1px solid #000;
-          }
-        </style>
-      </head>
-      <body>
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Телефон</th>
-              <th>Имя</th>
-              <th>Фамилия</th>
-              <th>Возраст</th>
-              <th>Пол</th>
-              <th>Место рождения</th>
-              <th>Место проживания</th>
-              <th>Читает намаз</th>
-              <th>Носит хиджаб</th>
-              <th>Образование</th>
-              <th>Родители</th>
-              <th>Организация</th>
-              <th>Семейное положение</th>
-              <th>Религия</th>
-              <th>Есть дети</th>
-              <th>Интересы</th>
-              <th>Знание языков</th>
-              <th>Специальность</th>
-              <th>Пожелания места жительства</th>
-              <th>Пожелания после свадьбы</th>
-              <th>Главные качества</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${users.map(
-              (user) => `<tr>
-                <td>${user.id}</td>
-                <td>${user.phone}</td>
-                <td>${user.first_name}</td>
-                <td>${user.last_name}</td>
-                <td>${user.age}</td>
-                <td>${user.sex === 0 ? 'Женский' : 'Мужской'}</td>
-                <td>${user.birthPlace}</td>
-                <td>${user.livePlace}</td>
-                <td>${user.read_namaz ? 'Да' : 'Нет'}</td>
-                <td>${user.wears_hijab ? 'Да' : 'Нет'}</td>
-                <td>${user.education}</td>
-                <td>${user.parents}</td>
-                <td>${user.organisation}</td>
-                <td>${user.familyPosition}</td>
-                <td>${user.religion}</td>
-                <td>${user.hasChildren}</td>
-                <td>${user.interests}</td>
-                <td>${user.languages}</td>
-                <td>${user.specialities}</td>
-                <td>${user.placeWishes}</td>
-                <td>${user.weddingWishes}</td>
-                <td>${user.mainQualities}</td>
-              </tr>`,
-            )}
-          </tbody>
-        </table>
-        <br>
-        <br>
-        <div id="map"></div>
-
-        <script>
-          var c = 'google';
-          (g=>{var h,a,k,p="The Google Maps JavaScript API",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=\`https://maps.googleapis.com/maps/api/js?\`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
-            key: "AIzaSyBC8mhpt_IufNyq5crWF0JNOW4HJxIW5hI",
-            v: "weekly",
-          });
-        </script>
-        <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
-
-        <script>
-          let map;
-
-          async function initMap() {
-            const { Map } = await google.maps.importLibrary("maps");
-            const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
-
-            map = new Map(document.getElementById("map"), {
-              zoom: 5,
-              center: { lat: 41.315163, lng: 69.256048 },
-              mapId: "DEMO_MAP_ID",
-            });
-          
-            const markers = [];
-          
-            ${users.map((u) => `markers.push(new AdvancedMarkerElement({position: { lat: ${u.geo_lat}, lng: ${u.geo_lon} },content: (new google.maps.marker.PinElement({glyph: '${u.first_name}',glyphColor: "black",})).element,}));`).join(' ')}
-          
-            new markerClusterer.MarkerClusterer({ markers, map });
-          }
-          
-          initMap();
-        </script>
-      </body>
-      </html>
-    `;
-  }
-
   async getUserInfo(user: User, baseDto: BaseDto): Promise<UserInfoResponse> {
     const [newUser] = await this.sequelize.query(getUserQuery(user.id), {
       mapToModel: true,
@@ -960,6 +807,8 @@ export class UserService {
       blockReason: blockUserDto.blockReason,
     });
 
+    this.socketGateway.sendUpdateData(user.id);
+
     return { success: true };
   }
 
@@ -982,6 +831,8 @@ export class UserService {
     }
 
     await user.update({ blockedAt: null, blockReason: null });
+
+    this.socketGateway.sendUpdateData(user.id);
 
     return { success: true };
   }
