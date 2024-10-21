@@ -767,6 +767,7 @@ export class UserService {
     await user.update({
       verifyAnsweredAt: new Date(),
       verified: setDto.verified,
+      tryVerifiedAt: null,
     });
     await user.$set('verificationImages', []);
 
