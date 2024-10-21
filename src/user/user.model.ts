@@ -308,7 +308,6 @@ export class User extends Model<User, CreateUserDto> {
 
   @Column({
     type: DataType.BIGINT,
-    allowNull: false,
     defaultValue: Math.floor(Date.now() / 1000),
   })
   declare deletedAt: number;
