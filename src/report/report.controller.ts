@@ -20,6 +20,7 @@ import { UserBlockGuard } from '../user/user-block.guard';
 import { Roles } from '../role/roles-auth.decorator';
 import { RolesGuard } from '../role/roles.guard';
 import { SmsGuard } from '../user/sms.guard';
+import { UserDeletedGuard } from '../user/user-deleted.guard';
 
 @ApiTags('Жалобы')
 @Controller('report')
@@ -28,7 +29,7 @@ export class ReportController {
 
   @ApiOperation({ summary: 'Отправить жалобу' })
   @ApiResponse({ status: 200, type: Report })
-  @UseGuards(JwtAuthGuard, UserBlockGuard, SmsGuard)
+  @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   @Post('/send')
   send(@Req() req, @Body() reportDto: SendReportDto): Promise<Report> {
     return this.reportService.send(req.user, reportDto);

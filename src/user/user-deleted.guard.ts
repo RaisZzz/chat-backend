@@ -9,22 +9,22 @@ import { Reflector } from '@nestjs/core';
 import { Error, ErrorType } from '../error.class';
 
 @Injectable()
-export class UserBlockGuard implements CanActivate {
+export class UserDeletedGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
     const req = context.switchToHttp().getRequest();
 
-    if (req.user.blockedAt) {
-      this.blockError(req.user.blockedAt);
+    if (req.user.deletedAt) {
+      this.deletedError(req.user.deletedAt);
     }
 
     return true;
   }
 
-  blockError(blockedAt): void {
+  deletedError(deletedAt): void {
     throw new HttpException(
-      new Error(ErrorType.UserBlocked, { blockedAt }),
+      new Error(ErrorType.UserBlocked, { deletedAt }),
       HttpStatus.FORBIDDEN,
     );
   }

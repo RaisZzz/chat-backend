@@ -39,6 +39,8 @@ import { GetAdminUsersDto } from './dto/get-admin-users.dto';
 import { SetVerifiedStatusDto } from './dto/set-verified-status.dto';
 import { BlockUserDto } from './dto/block-user.dto';
 import { UnblockUserDto } from './dto/unblock-user.dto';
+import { UserBlockGuard } from './user-block.guard';
+import { UserDeletedGuard } from './user-deleted.guard';
 
 @Controller('user')
 export class UserController {
@@ -50,7 +52,7 @@ export class UserController {
   }
 
   @Get('get_all')
-  @UseGuards(JwtAuthGuard, SmsGuard)
+  @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   getAllUsers(@Req() req, @Query() getUsersDto: GetUsersDto): Promise<User[]> {
     return this.userService.getUsers(req.user, getUsersDto);
   }
@@ -66,7 +68,7 @@ export class UserController {
   }
 
   @Post('return_last')
-  @UseGuards(JwtAuthGuard, SmsGuard)
+  @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   returnLast(
     @Req() req,
     @Body() returnUserDto: ReturnUserDto,
@@ -75,13 +77,13 @@ export class UserController {
   }
 
   @Get('get_users_online')
-  @UseGuards(JwtAuthGuard, SmsGuard)
+  @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   getAnotherUsersOnline(@Req() req): Promise<Record<number, any>> {
     return this.userService.getAnotherUsersOnline(req.user);
   }
 
   @Post('update_info')
-  @UseGuards(JwtAuthGuard, SmsGuard)
+  @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   updateInfo(@Req() req, @Body() updateUserDto: UpdateUserDto): Promise<User> {
     return this.userService.updateUserInfo(req.user, updateUserDto);
   }
@@ -96,13 +98,13 @@ export class UserController {
   }
 
   @Post('geo')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, UserBlockGuard, UserDeletedGuard)
   changeGeo(@Req() req, @Body() changeDto: ChangeGeoDto) {
     return this.userService.changeGeo(req.token, req.user, changeDto);
   }
 
   @Get('get-by-id')
-  @UseGuards(JwtAuthGuard, SmsGuard)
+  @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   getUserById(@Req() req, @Query() getUserByIdDto: GetUserById): Promise<User> {
     return this.userService.getUserById(req.user, getUserByIdDto);
   }
@@ -138,7 +140,7 @@ export class UserController {
   }
 
   @Post('check_sms_code')
-  @UseGuards(JwtAuthGuard, NoSmsGuard)
+  @UseGuards(JwtAuthGuard, NoSmsGuard, UserBlockGuard, UserDeletedGuard)
   checkSmsCode(
     @Req() req,
     @Body() checkSmsDto: SmsDto,
@@ -148,7 +150,7 @@ export class UserController {
 
   @ApiOperation({ summary: 'Загрузка фото' })
   @Post('upload_photo')
-  @UseGuards(JwtAuthGuard, SmsGuard)
+  @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   @UseInterceptors(
     FileFieldsInterceptor([{ name: 'photos', maxCount: 1 }], {
       limits: { fileSize: 10 * 1024 * 1024 },
@@ -166,7 +168,7 @@ export class UserController {
     );
   }
 
-  @UseGuards(JwtAuthGuard, SmsGuard)
+  @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   @Post('set_main_photo')
   setMainPhoto(
     @Req() req,
@@ -176,7 +178,7 @@ export class UserController {
   }
 
   @Delete('delete_photo')
-  @UseGuards(JwtAuthGuard, SmsGuard)
+  @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   deletePhoto(
     @Body() deletePhotoDto: DeletePhotoDto,
     @Req() req,
@@ -186,7 +188,7 @@ export class UserController {
 
   @ApiOperation({ summary: 'Отправка фото для верификации' })
   @Post('send_verification_photo')
-  @UseGuards(JwtAuthGuard, SmsGuard)
+  @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   @UseInterceptors(
     FileFieldsInterceptor([{ name: 'photos', maxCount: 1 }], {
       limits: { fileSize: 10 * 1024 * 1024 },

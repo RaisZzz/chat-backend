@@ -35,6 +35,7 @@ import { RolesGuard } from '../role/roles.guard';
 import { Roles } from '../role/roles-auth.decorator';
 import { UserBlockGuard } from '../user/user-block.guard';
 import { OffsetDto } from '../base/offset.dto';
+import { UserDeletedGuard } from '../user/user-deleted.guard';
 
 @ApiTags('Покупки')
 @Controller('purchase')
@@ -44,7 +45,7 @@ export class PurchaseController {
   @ApiOperation({ summary: 'Получение всех товаров' })
   @ApiResponse({ status: 200, type: [Purchase] })
   @Get('/get_all')
-  @UseGuards(JwtAuthGuard, UserBlockGuard, SmsGuard)
+  @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   getAll() {
     return this.purchaseService.getAll();
   }
@@ -88,7 +89,7 @@ export class PurchaseController {
   @ApiOperation({ summary: 'Создать транзакцию' })
   @ApiResponse({ status: 200, type: UserPurchase })
   @Get('/get_order_id')
-  @UseGuards(JwtAuthGuard, UserBlockGuard, SmsGuard)
+  @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   getOrderId(
     @Req() req,
     @Query() getDto: GetPurchaseIdDto,
@@ -149,7 +150,7 @@ export class PurchaseController {
   @ApiOperation({ summary: 'Получение всех транзакций пользователя' })
   @ApiResponse({ status: 200, type: [UserPurchase] })
   @Get('/get_transactions')
-  @UseGuards(JwtAuthGuard, UserBlockGuard, SmsGuard)
+  @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   getTransactions(@Req() req, @Query() offsetDto: OffsetDto) {
     return this.purchaseService.getTransactions(req.user, offsetDto);
   }

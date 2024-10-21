@@ -19,6 +19,8 @@ import { SuccessInterface } from '../base/success.interface';
 import { SetUserReactionReceivedDto } from './dto/set-received.dto';
 import { OffsetDto } from '../base/offset.dto';
 import { BaseDto } from '../base/base.dto';
+import { UserBlockGuard } from '../user/user-block.guard';
+import { UserDeletedGuard } from '../user/user-deleted.guard';
 
 @Controller('user-reaction')
 export class UserReactionController {
@@ -26,7 +28,7 @@ export class UserReactionController {
 
   @Get('get_all')
   @UseGuards(JwtAuthGuard)
-  getAllUserChats(
+  getAllUserReactions(
     @Req() req,
     @Query() offsetDto: OffsetDto,
   ): Promise<UserReaction[]> {
@@ -34,7 +36,7 @@ export class UserReactionController {
   }
 
   @Post('send')
-  @UseGuards(JwtAuthGuard, SmsGuard)
+  @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   send(
     @Req() req,
     @Body() sendDto: SendUserReactionDto,

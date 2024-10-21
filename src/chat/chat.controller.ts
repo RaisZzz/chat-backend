@@ -23,13 +23,15 @@ import { Message } from '../message/message.model';
 import { RolesGuard } from '../role/roles.guard';
 import { Roles } from '../role/roles-auth.decorator';
 import { GetChatWithUserDto } from './dto/get-chat-with-user.dto';
+import { UserBlockGuard } from '../user/user-block.guard';
+import { UserDeletedGuard } from '../user/user-deleted.guard';
 
 @Controller('chat')
 export class ChatController {
   constructor(private chatService: ChatService) {}
 
   @Get('get_all')
-  @UseGuards(JwtAuthGuard, SmsGuard)
+  @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   getAllUserChats(@Req() req, @Query() offsetDto: OffsetDto): Promise<Chat[]> {
     return this.chatService.getAllChatsForUser(req.user, offsetDto);
   }
@@ -51,7 +53,7 @@ export class ChatController {
   }
 
   @Post('share')
-  @UseGuards(JwtAuthGuard, SmsGuard)
+  @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   shareChat(
     @Req() req,
     @Body() shareChatDto: ShareChatDto,
@@ -60,7 +62,7 @@ export class ChatController {
   }
 
   @Post('share_confirm')
-  @UseGuards(JwtAuthGuard, SmsGuard)
+  @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   shareChatConfirm(
     @Req() req,
     @Body() shareConfirmDto: ConfirmShareChatDto,
