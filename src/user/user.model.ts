@@ -306,9 +306,6 @@ export class User extends Model<User, CreateUserDto> {
   })
   declare updatedAt: number;
 
-  @Column({
-    type: DataType.BIGINT,
-    defaultValue: Math.floor(Date.now() / 1000),
-  })
+  @Column({ type: DataType.BIGINT })
   declare deletedAt: number;
 }
