@@ -5,7 +5,7 @@ import { excludedUserAttributes, User } from '../user/user.model';
 import { SendUserReactionDto } from './dto/send-user-reaction.dto';
 import { Error, ErrorType } from '../error.class';
 import { ChatService } from '../chat/chat.service';
-import { Chat, ChatType } from '../chat/chat.model';
+import { Chat, chatInfoPsqlQuery, ChatType } from '../chat/chat.model';
 import {
   UserReactionReceived,
   UserReactionReceivedType,
@@ -20,6 +20,7 @@ import { NotificationType } from '../notifications/notification-type.enum';
 import { UserDevice } from '../user/user-device.model';
 import { BaseDto } from '../base/base.dto';
 import { Notification } from '../notifications/notifications.model';
+import { Sequelize } from 'sequelize-typescript';
 
 export class SendReactionResponse {
   readonly userReaction: UserReaction;
@@ -40,6 +41,7 @@ export class UserReactionService {
     private chatService: ChatService,
     private socketGateway: SocketGateway,
     private notificationsService: NotificationsService,
+    private sequelize: Sequelize,
   ) {}
 
   async getAllUserReactions(
@@ -251,7 +253,23 @@ export class UserReactionService {
     reaction.dataValues['user'] = recipientExist.toJSON();
     this.socketGateway.sendUserReaction(user.id, [reaction]);
 
-    return { userReaction: reaction, chat: createdChat };
+    let chatWithInfo: Chat | undefined;
+    if (createdChat) {
+      const [chatsResponse] = await this.sequelize.query(`
+      SELECT *,
+      ${chatInfoPsqlQuery(user.id)}
+      FROM
+      (SELECT *,
+        (SELECT ARRAY(SELECT user_id FROM "chat_user" WHERE chat_id = "chat".id)) as "users"
+        FROM "chat"
+        WHERE id = ${createdChat.id}
+      ) asd
+    `);
+      const chats: Chat[] = chatsResponse as Chat[];
+      if (chats.length) chatWithInfo = chats[0];
+    }
+
+    return { userReaction: reaction, chat: chatWithInfo };
   }
 
   async sendAllUnreceivedReactions(
