@@ -380,15 +380,14 @@ export class ChatService {
       order: [['createdAt', 'DESC']],
     });
     if (lastChatLink) {
-      const today: Date = new Date();
-      const lastLinkCreatedAt: Date = new Date(lastChatLink.createdAt);
-      const hourInSeconds = 3600;
-      const seconds: number =
-        (today.getTime() - lastLinkCreatedAt.getTime()) / 1000;
-      if (seconds < hourInSeconds) {
+      const today: number = Date.now();
+      const lastLinkCreatedAt: number = lastChatLink.createdAt;
+      const milliseconds: number = lastChatLink.expireTime * 60 * 1000;
+
+      if (lastLinkCreatedAt + milliseconds > today) {
         throw new HttpException(
           new Error(ErrorType.Forbidden, {
-            timeLeft: Math.ceil(hourInSeconds - seconds),
+            timeLeft: Math.ceil(lastLinkCreatedAt + milliseconds - today),
           }),
           HttpStatus.FORBIDDEN,
         );
