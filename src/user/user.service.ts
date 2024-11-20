@@ -877,6 +877,12 @@ export class UserService {
   }
 
   private async getUserOnline(userId: number): Promise<boolean | number> {
+    const user: User = await this.userRepository.findOne({
+      attributes: ['onlineVisibility'],
+      where: { id: userId },
+    });
+    if (!user || !user.onlineVisibility) return false;
+
     if (this.socketGateway.getUserConnected(userId)) return true;
 
     const lastOnlineAt = await this.redisService.hGet(String(userId), 'online');
