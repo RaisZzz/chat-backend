@@ -308,4 +308,8 @@ export class User extends Model<User, CreateUserDto> {
 
   @Column({ type: DataType.BIGINT })
   declare deletedAt: number;
+
+  @ApiProperty({ example: false, description: 'Отображать статус "В сети"' })
+  @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: true })
+  onlineVisibility: boolean;
 }
