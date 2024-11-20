@@ -41,6 +41,7 @@ import { BlockUserDto } from './dto/block-user.dto';
 import { UnblockUserDto } from './dto/unblock-user.dto';
 import { UserBlockGuard } from './user-block.guard';
 import { UserDeletedGuard } from './user-deleted.guard';
+import { SetOnlineVisibilityDto } from './dto/set-online-visibility.dto';
 
 @Controller('user')
 export class UserController {
@@ -235,5 +236,14 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   recoveryAccount(@Req() req): Promise<SuccessInterface> {
     return this.userService.recoveryAccount(req.user);
+  }
+
+  @Post('set_online_visibility')
+  @UseGuards(JwtAuthGuard)
+  setOnlineVisibility(
+    @Req() req,
+    @Body() setDto: SetOnlineVisibilityDto,
+  ): Promise<SuccessInterface> {
+    return this.userService.setOnlineVisibility(req.user, setDto);
   }
 }

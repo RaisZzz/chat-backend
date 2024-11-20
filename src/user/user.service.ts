@@ -39,6 +39,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationType } from '../notifications/notification-type.enum';
 import { BlockUserDto } from './dto/block-user.dto';
 import { UnblockUserDto } from './dto/unblock-user.dto';
+import { SetOnlineVisibilityDto } from './dto/set-online-visibility.dto';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const md5 = require('md5');
 
@@ -861,6 +862,17 @@ export class UserService {
 
     await user.update({ deletedAt: null });
     this.socketGateway.sendUpdateData(user.id);
+    return { success: true };
+  }
+
+  async setOnlineVisibility(
+    user: User,
+    setDto: SetOnlineVisibilityDto,
+  ): Promise<SuccessInterface> {
+    await user.update({ onlineVisibility: setDto.flag });
+
+    this.socketGateway.sendUserOnline(user.id, setDto.flag);
+
     return { success: true };
   }
 

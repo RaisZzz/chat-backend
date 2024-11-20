@@ -204,7 +204,7 @@ export class SocketGateway
     }
   }
 
-  private async sendUserOnline(userId: number, online: any) {
+  async sendUserOnline(userId: number, online: any) {
     const [userIds] = await this.sequelize.query(`
       SELECT user_id FROM "chat_user"
       WHERE chat_id IN (
