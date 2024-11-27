@@ -106,6 +106,7 @@ export class UserReactionService {
 
     // Check liked user exist
     const recipientExist: User = await this.userRepository.findOne({
+      include: { all: true },
       attributes: { exclude: excludedUserAttributes },
       where: { id: sendDto.toUserId },
     });
