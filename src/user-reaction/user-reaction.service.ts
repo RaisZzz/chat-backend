@@ -327,6 +327,7 @@ export class UserReactionService {
       user.id === r.recipientId ? r.senderId : r.recipientId,
     );
     const userReactionsUsers: User[] = await this.userRepository.findAll({
+      include: { all: true },
       attributes: { exclude: excludedUserAttributes },
       where: { id: { [Op.in]: userReactionsIds } },
     });
