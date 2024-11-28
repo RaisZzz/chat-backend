@@ -40,6 +40,7 @@ import { NotificationType } from '../notifications/notification-type.enum';
 import { BlockUserDto } from './dto/block-user.dto';
 import { UnblockUserDto } from './dto/unblock-user.dto';
 import { SetOnlineVisibilityDto } from './dto/set-online-visibility.dto';
+import { ApiProperty } from '@nestjs/swagger';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const md5 = require('md5');
 
@@ -48,8 +49,19 @@ export class CheckUserExistResponse {
 }
 
 export class UserSettings {
+  @ApiProperty({
+    example: true,
+    description: 'Reactions notifications enabled',
+  })
   readonly reactionsNotificationsEnabled: boolean;
+
+  @ApiProperty({ example: true, description: 'Messages notifications enabled' })
   readonly messagesNotificationsEnabled: boolean;
+
+  @ApiProperty({
+    example: true,
+    description: 'Messages reactions notifications enabled',
+  })
   readonly messagesReactionsNotificationsEnabled: boolean;
 }
 

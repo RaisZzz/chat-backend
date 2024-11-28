@@ -38,6 +38,7 @@ import { RecoveryPasswordDto } from './dto/recovery-password.dto';
 import { SuccessInterface } from '../base/success.interface';
 import { WeddingWish } from '../wedding-wish/wedding-wish.model';
 import { MainQuality } from '../main-quality/main-quality.model';
+import { ApiProperty } from '@nestjs/swagger';
 
 export abstract class AuthData {
   readonly cities: City[];
