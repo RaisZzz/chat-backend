@@ -25,25 +25,31 @@ import { Roles } from '../role/roles-auth.decorator';
 import { GetChatWithUserDto } from './dto/get-chat-with-user.dto';
 import { UserBlockGuard } from '../user/user-block.guard';
 import { UserDeletedGuard } from '../user/user-deleted.guard';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Чаты')
 @Controller('chat')
 export class ChatController {
   constructor(private chatService: ChatService) {}
 
+  @ApiOperation({ summary: 'Получить все чаты' })
+  @ApiResponse({ status: 200, type: [Chat] })
   @Get('get_all')
   @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   getAllUserChats(@Req() req, @Query() offsetDto: OffsetDto): Promise<Chat[]> {
     return this.chatService.getAllChatsForUser(req.user, offsetDto);
   }
 
+  @ApiOperation({ summary: 'Получить чат поддержки' })
+  @ApiResponse({ status: 200, type: Chat })
   @Get('get_support')
   @UseGuards(JwtAuthGuard, SmsGuard)
   getUserSupportChat(@Req() req): Promise<Chat> {
     return this.chatService.getUserSupportChat(req.user.id, req.user.id);
   }
 
+  @ApiOperation({ summary: 'Получить чат с пользователем (для админа)' })
+  @ApiResponse({ status: 200, type: Chat })
   @Get('admin_get_chat_with_user')
   @UseGuards(JwtAuthGuard, SmsGuard, RolesGuard)
   @Roles('admin')
@@ -54,6 +60,8 @@ export class ChatController {
     return this.chatService.getUserSupportChat(req.user.id, getDto.userId);
   }
 
+  @ApiOperation({ summary: 'Запрос на поделиться чатом' })
+  @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('share')
   @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   shareChat(
@@ -63,6 +71,8 @@ export class ChatController {
     return this.chatService.shareChat(req.user, shareChatDto);
   }
 
+  @ApiOperation({ summary: 'Подвертить запрос на поделиться чатом' })
+  @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('share_confirm')
   @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   shareChatConfirm(
@@ -72,11 +82,15 @@ export class ChatController {
     return this.chatService.confirmShareChat(req.user, shareConfirmDto);
   }
 
+  @ApiOperation({ summary: 'Получить расшареный чат' })
+  @ApiResponse({ status: 200, type: Chat })
   @Get('shared')
   getSharedChat(@Query() getSharedChatDto: GetSharedChatDto): Promise<Chat> {
     return this.chatService.getSharedChat(getSharedChatDto);
   }
 
+  @ApiOperation({ summary: 'Получить сообщения расшареного чата' })
+  @ApiResponse({ status: 200, type: [Message] })
   @Get('shared_messages')
   getSharedChatMessages(
     @Query() getSharedChatMessagesDto: GetSharedChatMessagesDto,
@@ -84,6 +98,8 @@ export class ChatController {
     return this.chatService.getSharedChatMessages(getSharedChatMessagesDto);
   }
 
+  @ApiOperation({ summary: 'Пометить чат доставленным' })
+  @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('set-received')
   @UseGuards(JwtAuthGuard, SmsGuard)
   setChatReceived(
@@ -93,6 +109,8 @@ export class ChatController {
     return this.chatService.setChatReceived(req.user, setDto);
   }
 
+  @ApiOperation({ summary: 'Отправить недоставленные чаты по сокетам' })
+  @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('send-unreceived')
   @UseGuards(JwtAuthGuard, SmsGuard)
   sendUnreceived(
