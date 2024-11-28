@@ -45,6 +45,7 @@ import { ApiProperty } from '@nestjs/swagger';
 const md5 = require('md5');
 
 export class CheckUserExistResponse {
+  @ApiProperty({ example: true, description: 'Is user registered' })
   readonly userRegistered: boolean;
 }
 

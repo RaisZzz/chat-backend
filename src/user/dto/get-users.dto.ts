@@ -1,6 +1,5 @@
 import {
   IsArray,
-  IsBoolean,
   IsInt,
   IsLatitude,
   IsLongitude,
@@ -11,6 +10,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { OffsetDto } from '../../base/offset.dto';
 
 export class GetUsersDto extends OffsetDto {
+  @ApiProperty({
+    example: [1, 2],
+    description: 'Users ids that shouldnt show',
+    required: false,
+  })
   @IsInt({ each: true })
   @IsOptional()
   @Transform((value) => {
@@ -22,6 +26,11 @@ export class GetUsersDto extends OffsetDto {
   })
   readonly usersIds: number[];
 
+  @ApiProperty({
+    example: [1, 2],
+    description: 'Filter by live places IDs',
+    required: false,
+  })
   @IsArray()
   @IsOptional()
   @Transform((value) => {
@@ -33,6 +42,11 @@ export class GetUsersDto extends OffsetDto {
   })
   readonly livePlaceId?: number[];
 
+  @ApiProperty({
+    example: [1, 2],
+    description: 'Filter by birth places IDs',
+    required: false,
+  })
   @IsArray()
   @IsOptional()
   @Transform((value) => {
