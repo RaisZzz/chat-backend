@@ -12,6 +12,7 @@ import { Error, ErrorType } from '../error.class';
 import { OffsetDto } from '../base/offset.dto';
 import { UserReaction } from '../user-reaction/user-reaction.model';
 import { Sequelize } from 'sequelize-typescript';
+import { SuccessInterface } from '../base/success.interface';
 
 @Injectable()
 export class NotificationsService {
@@ -57,7 +58,7 @@ export class NotificationsService {
   async readNotification(
     user: User,
     readDto: ReadNotificationDto,
-  ): Promise<any> {
+  ): Promise<SuccessInterface> {
     const notification: Notification =
       await this.notificationRepository.findOne({
         where: {
