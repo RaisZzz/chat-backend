@@ -45,7 +45,7 @@ export class ReportController {
   }
 
   @ApiOperation({ summary: 'Статистика по жалобам (для админа)' })
-  @ApiResponse({ status: 200, type: [Report] })
+  @ApiResponse({ status: 200, type: ReportsStat })
   @Roles('admin')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/get_stat')

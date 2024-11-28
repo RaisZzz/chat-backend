@@ -22,13 +22,25 @@ import { UserReactionService } from '../user-reaction/user-reaction.service';
 import { MessageService } from '../message/message.service';
 import { SystemMessageType } from '../message/message.model';
 import { v4 as uuidv4 } from 'uuid';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class ReportsStat {
+  @ApiProperty({ example: 1, description: 'Total reports' })
   readonly totalReports: number;
+
+  @ApiProperty({ example: 1, description: 'Monthly reports' })
   readonly monthlyReports: number;
+
+  @ApiProperty({ example: 1, description: 'Total unresolved reports' })
   readonly totalUnresolved: number;
+
+  @ApiProperty({ example: 1, description: 'Monthly unresolved reports' })
   readonly monthlyUnresolved: number;
+
+  @ApiProperty({ example: 1, description: 'Total resolved reports' })
   readonly totalResolved: number;
+
+  @ApiProperty({ example: 1, description: 'Monthly resolved reports' })
   readonly monthlyResolved: number;
 }
 
