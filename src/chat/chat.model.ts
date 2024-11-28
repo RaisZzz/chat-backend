@@ -1,4 +1,5 @@
 import { Column, DataType, Model, Table } from 'sequelize-typescript';
+import { ApiProperty } from '@nestjs/swagger';
 
 export enum ChatType {
   user,
@@ -44,6 +45,7 @@ export const chatInfoPsqlQuery = (userId: number) => {
 
 @Table({ tableName: 'chat', underscored: true, timestamps: false })
 export class Chat extends Model<Chat> {
+  @ApiProperty({ example: 1, description: 'Chat ID' })
   @Column({
     type: DataType.INTEGER,
     unique: true,
@@ -52,6 +54,7 @@ export class Chat extends Model<Chat> {
   })
   id: number;
 
+  @ApiProperty({ enum: ChatType, description: 'Chat type' })
   @Column({ type: DataType.INTEGER, allowNull: false })
   type: ChatType;
 }

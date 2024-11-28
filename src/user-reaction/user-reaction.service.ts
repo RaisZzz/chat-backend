@@ -21,9 +21,12 @@ import { UserDevice } from '../user/user-device.model';
 import { BaseDto } from '../base/base.dto';
 import { Notification } from '../notifications/notifications.model';
 import { Sequelize } from 'sequelize-typescript';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class SendReactionResponse {
+  @ApiProperty({ description: 'User reaction' })
   readonly userReaction: UserReaction;
+  @ApiProperty({ description: 'Chat', required: false })
   readonly chat?: Chat;
 }
 

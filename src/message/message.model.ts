@@ -31,7 +31,7 @@ export class Message {
   voiceId: number | null;
 
   @ApiProperty({
-    example: SystemMessageType.ChatCreated,
+    enum: SystemMessageType,
     description: 'System message ID',
   })
   @Prop({
