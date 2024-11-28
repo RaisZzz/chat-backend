@@ -35,7 +35,7 @@ async function bootstrap() {
     .addTag('raiszzz')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('/api/docs', app, document);
+  SwaggerModule.setup('/api_v2/docs', app, document);
 
   const port: number = parseInt(process.env.PORT) || 3000;
   await app.listen(port);

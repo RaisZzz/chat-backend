@@ -21,7 +21,9 @@ import { OffsetDto } from '../base/offset.dto';
 import { BaseDto } from '../base/base.dto';
 import { UserBlockGuard } from '../user/user-block.guard';
 import { UserDeletedGuard } from '../user/user-deleted.guard';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Симпатии')
 @Controller('user-reaction')
 export class UserReactionController {
   constructor(private userReactionService: UserReactionService) {}

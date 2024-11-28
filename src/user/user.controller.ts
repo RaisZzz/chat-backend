@@ -20,7 +20,7 @@ import { NoSmsGuard } from './no-sms.guard';
 import { SmsDto } from './dto/sms.dto';
 import { SuccessInterface } from '../base/success.interface';
 import { GetUserByPhoneDto } from './dto/get-user-by-phone.dto';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { UploadPhotoDto } from './dto/upload-photo.dto';
 import { SetFCMTokenDto } from './dto/set-fcm-token.dto';
@@ -43,6 +43,7 @@ import { UserBlockGuard } from './user-block.guard';
 import { UserDeletedGuard } from './user-deleted.guard';
 import { SetOnlineVisibilityDto } from './dto/set-online-visibility.dto';
 
+@ApiTags('Пользователи')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}

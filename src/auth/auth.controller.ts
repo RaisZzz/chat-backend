@@ -19,7 +19,9 @@ import { RecoveryDto } from './dto/recovery.dto';
 import { CheckRecoveryDto } from './dto/check-recovery.dto';
 import { RecoveryPasswordDto } from './dto/recovery-password.dto';
 import { SuccessInterface } from '../base/success.interface';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Авторизация')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}

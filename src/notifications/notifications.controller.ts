@@ -7,7 +7,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { NotificationsService } from './notifications.service';
 import { CreateNotificationDto } from './dto/send-notification.dto';
@@ -15,6 +15,7 @@ import { ReadNotificationDto } from './dto/read-notification.dto';
 import { SmsGuard } from '../user/sms.guard';
 import { OffsetDto } from '../base/offset.dto';
 
+@ApiTags('Уведомления')
 @Controller('notification')
 export class NotificationsController {
   constructor(private notificationsService: NotificationsService) {}

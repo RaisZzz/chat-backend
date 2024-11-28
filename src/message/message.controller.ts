@@ -21,17 +21,23 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { SmsGuard } from '../user/sms.guard';
 import { ReadMessagesDto } from './dto/read-messages.dto';
 import { BaseDto } from '../base/base.dto';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Сообщения')
 @Controller('message')
 export class MessageController {
   constructor(private messageService: MessageService) {}
 
+  @ApiOperation({ summary: 'Получить все сообщения' })
+  @ApiResponse({ status: 200, type: [Message] })
   @Get('get_all')
   @UseGuards(JwtAuthGuard)
   getAll(@Req() req, @Query() getDto: GetMessagesDto): Promise<Message[]> {
     return this.messageService.getAll(req.user, getDto);
   }
 
+  @ApiOperation({ summary: 'Отправить сообщение' })
+  @ApiResponse({ status: 200, type: Message })
   @Post('send')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(
@@ -61,6 +67,8 @@ export class MessageController {
     );
   }
 
+  @ApiOperation({ summary: 'Лайкнуть сообщения' })
+  @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('like')
   @UseGuards(JwtAuthGuard)
   likeMessage(
@@ -70,6 +78,8 @@ export class MessageController {
     return this.messageService.setMessageLike(req.user, likeMessageDto);
   }
 
+  @ApiOperation({ summary: 'Пометить сообщение доставленым' })
+  @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('set-received')
   @UseGuards(JwtAuthGuard)
   setMessageReceived(
@@ -82,6 +92,8 @@ export class MessageController {
     );
   }
 
+  @ApiOperation({ summary: 'Пометить сообщение прочитаным' })
+  @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('read-messages')
   @UseGuards(JwtAuthGuard, SmsGuard)
   readMessages(
@@ -91,6 +103,8 @@ export class MessageController {
     return this.messageService.readChatMessages(req.user, readDto);
   }
 
+  @ApiOperation({ summary: 'Отправить недоставленные сообщения по сокетам' })
+  @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('send-unreceived')
   @UseGuards(JwtAuthGuard)
   sendUnreceivedMessages(

@@ -1,7 +1,9 @@
 import { Controller, Get, Query, Res } from '@nestjs/common';
 import { VoiceService } from './voice.service';
 import { GetVoiceDto } from './dto/get-voice.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Голосовые сообщения')
 @Controller('voice')
 export class VoiceController {
   constructor(private voiceService: VoiceService) {}

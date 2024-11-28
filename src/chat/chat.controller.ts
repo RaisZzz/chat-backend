@@ -25,7 +25,9 @@ import { Roles } from '../role/roles-auth.decorator';
 import { GetChatWithUserDto } from './dto/get-chat-with-user.dto';
 import { UserBlockGuard } from '../user/user-block.guard';
 import { UserDeletedGuard } from '../user/user-deleted.guard';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Чаты')
 @Controller('chat')
 export class ChatController {
   constructor(private chatService: ChatService) {}

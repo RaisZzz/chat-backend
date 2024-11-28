@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
 import { LanguageService } from './language.service';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { Language } from './language.model';
 import { CreateLanguageDto } from './dto/create-language.dto';
@@ -8,6 +8,7 @@ import { RolesGuard } from '../role/roles.guard';
 import { Roles } from '../role/roles-auth.decorator';
 import { DeleteDto } from '../base/delete.dto';
 
+@ApiTags('Языки')
 @Controller('language')
 export class LanguageController {
   constructor(private languageService: LanguageService) {}

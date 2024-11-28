@@ -2,10 +2,11 @@ import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { MainStat, StatisticService } from './statistic.service';
 import { StatisticFilterDto } from './dto/statistic-filter.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RolesGuard } from '../role/roles.guard';
 import { Roles } from '../role/roles-auth.decorator';
 
+@ApiTags('Статистика')
 @Controller('statistic')
 export class StatisticController {
   constructor(private statisticService: StatisticService) {}
