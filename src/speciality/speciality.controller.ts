@@ -1,7 +1,12 @@
 import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
 import { CreateSpecialityDto } from './dto/create-speciality.dto';
 import { SpecialityService } from './speciality.service';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Speciality } from './speciality.model';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../role/roles.guard';
@@ -16,6 +21,7 @@ export class SpecialityController {
   @ApiOperation({ summary: 'Создание специальности' })
   @ApiResponse({ status: 200, type: Speciality })
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('/create')
   create(@Body() specialityDto: CreateSpecialityDto) {
@@ -24,6 +30,7 @@ export class SpecialityController {
 
   @ApiOperation({ summary: 'Получить все специальности' })
   @ApiResponse({ status: 200, type: [Speciality] })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('/get_all')
   getAll() {
@@ -33,6 +40,7 @@ export class SpecialityController {
   @ApiOperation({ summary: 'Удалить специальность' })
   @ApiResponse({ status: 200 })
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete('/delete')
   delete(@Body() deleteDto: DeleteDto) {

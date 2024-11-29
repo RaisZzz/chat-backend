@@ -9,7 +9,12 @@ import {
 } from '@nestjs/common';
 import { CreateOrganisationDto } from './dto/create-organisation.dto';
 import { OrganisationService } from './organisation.service';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { OrganisationType } from './organisation.model';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../role/roles.guard';
@@ -24,6 +29,7 @@ export class OrganisationController {
   @ApiOperation({ summary: 'Создание вида организации' })
   @ApiResponse({ status: 200, type: OrganisationType })
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('/create')
   create(@Body() organisationDto: CreateOrganisationDto) {
@@ -32,6 +38,7 @@ export class OrganisationController {
 
   @ApiOperation({ summary: 'Получить все виды организаций' })
   @ApiResponse({ status: 200, type: [OrganisationType] })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('/get_all')
   getAll(@Req() req) {
@@ -41,6 +48,7 @@ export class OrganisationController {
   @ApiOperation({ summary: 'Удалить организацию' })
   @ApiResponse({ status: 200 })
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete('/delete')
   delete(@Body() deleteDto: DeleteDto) {

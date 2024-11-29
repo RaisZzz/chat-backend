@@ -7,7 +7,12 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { NotificationsService } from './notifications.service';
 import { ReadNotificationDto } from './dto/read-notification.dto';
@@ -23,6 +28,7 @@ export class NotificationsController {
 
   @ApiOperation({ summary: 'Получить все уведомления' })
   @ApiResponse({ status: 200, type: [Notification] })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, SmsGuard)
   @Get('/get_all')
   create(@Req() req, @Query() offsetDto: OffsetDto): Promise<Notification[]> {
@@ -31,6 +37,7 @@ export class NotificationsController {
 
   @ApiOperation({ summary: 'Пометить уведомление прочитанным' })
   @ApiResponse({ status: 200, type: SuccessInterface })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, SmsGuard)
   @Post('/read')
   read(

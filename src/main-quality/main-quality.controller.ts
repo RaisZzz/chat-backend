@@ -9,7 +9,12 @@ import {
 } from '@nestjs/common';
 import { CreateMainQualityDto } from './dto/create-main-quality.dto';
 import { MainQualityService } from './main-quality.service';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { MainQuality } from './main-quality.model';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../role/roles.guard';
@@ -24,6 +29,7 @@ export class MainQualityController {
   @ApiOperation({ summary: 'Создание главного качества' })
   @ApiResponse({ status: 200, type: MainQuality })
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('/create')
   create(@Body() createMainQualityDto: CreateMainQualityDto) {
@@ -32,6 +38,7 @@ export class MainQualityController {
 
   @ApiOperation({ summary: 'Получить все главные качества' })
   @ApiResponse({ status: 200, type: [MainQuality] })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('/get_all')
   getAll(@Req() req) {
@@ -41,6 +48,7 @@ export class MainQualityController {
   @ApiOperation({ summary: 'Удалить главное качество' })
   @ApiResponse({ status: 200 })
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete('/delete')
   delete(@Body() deleteDto: DeleteDto) {

@@ -1,7 +1,12 @@
 import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
 import { CreateParentsDto } from './dto/create-parents.dto';
 import { ParentsService } from './parents.service';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Parents } from './parents.model';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../role/roles.guard';
@@ -16,6 +21,7 @@ export class ParentsController {
   @ApiOperation({ summary: 'Создание "родителей"' })
   @ApiResponse({ status: 200, type: Parents })
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('/create')
   create(@Body() educationDto: CreateParentsDto) {
@@ -24,6 +30,7 @@ export class ParentsController {
 
   @ApiOperation({ summary: 'Получить все виды "родителей"' })
   @ApiResponse({ status: 200, type: [Parents] })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('/get_all')
   getAll() {
@@ -33,6 +40,7 @@ export class ParentsController {
   @ApiOperation({ summary: 'Удалить "родителей"' })
   @ApiResponse({ status: 200 })
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete('/delete')
   delete(@Body() deleteDto: DeleteDto) {

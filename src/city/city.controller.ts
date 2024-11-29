@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CityService } from './city.service';
 import { RolesGuard } from '../role/roles.guard';
@@ -13,6 +13,7 @@ export class CityController {
 
   @ApiOperation({ summary: 'Получить все города' })
   @Get('/get_all')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   getAll() {
     return this.cityService.getAll();
@@ -20,6 +21,7 @@ export class CityController {
 
   @ApiOperation({ summary: 'Изменить' })
   @Post('edit')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   edit(@Body() editDto: EditDataItemDto) {

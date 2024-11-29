@@ -24,7 +24,12 @@ import { NoSmsGuard } from './no-sms.guard';
 import { SmsDto } from './dto/sms.dto';
 import { SuccessInterface } from '../base/success.interface';
 import { GetUserByPhoneDto } from './dto/get-user-by-phone.dto';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { UploadPhotoDto } from './dto/upload-photo.dto';
 import { SetFCMTokenDto } from './dto/set-fcm-token.dto';
@@ -62,6 +67,7 @@ export class UserController {
   @ApiOperation({ summary: 'Получить всех пользователей' })
   @ApiResponse({ status: 200, type: [User] })
   @Get('get_all')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   getAllUsers(@Req() req, @Query() getUsersDto: GetUsersDto): Promise<User[]> {
     return this.userService.getUsers(req.user, getUsersDto);
@@ -70,6 +76,7 @@ export class UserController {
   @ApiOperation({ summary: 'Получить всех пользователей (для админа)' })
   @ApiResponse({ status: 200, type: [User] })
   @Get('get_all_admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, SmsGuard, RolesGuard)
   @Roles('admin')
   getAllUsersAdmin(
@@ -82,6 +89,7 @@ export class UserController {
   @ApiOperation({ summary: 'Вернуть последнего дизлайкнутого пользователя' })
   @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('return_last')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   returnLast(
     @Req() req,
@@ -93,6 +101,7 @@ export class UserController {
   @ApiOperation({ summary: 'Получить пользователей в сети' })
   @ApiResponse({ status: 200 })
   @Get('get_users_online')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   getAnotherUsersOnline(@Req() req): Promise<Record<number, any>> {
     return this.userService.getAnotherUsersOnline(req.user);
@@ -101,6 +110,7 @@ export class UserController {
   @ApiOperation({ summary: 'Редактировать информацию' })
   @ApiResponse({ status: 200, type: User })
   @Post('update_info')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   updateInfo(@Req() req, @Body() updateUserDto: UpdateUserDto): Promise<User> {
     return this.userService.updateUserInfo(req.user, updateUserDto);
@@ -109,6 +119,7 @@ export class UserController {
   @ApiOperation({ summary: 'Изменить настройки' })
   @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('set-settings')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, SmsGuard)
   setSettings(
     @Req() req,
@@ -120,6 +131,7 @@ export class UserController {
   @ApiOperation({ summary: 'Изменить геопозицию' })
   @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('geo')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, UserBlockGuard, UserDeletedGuard)
   changeGeo(
     @Req() req,
@@ -131,6 +143,7 @@ export class UserController {
   @ApiOperation({ summary: 'Получить пользователя по ID' })
   @ApiResponse({ status: 200, type: User })
   @Get('get-by-id')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   getUserById(@Req() req, @Query() getUserByIdDto: GetUserById): Promise<User> {
     return this.userService.getUserById(req.user, getUserByIdDto);
@@ -139,6 +152,7 @@ export class UserController {
   @ApiOperation({ summary: 'Получить информацию о пользователе' })
   @ApiResponse({ status: 200, type: SuccessInterface })
   @Get('get-user-info')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, SmsGuard)
   getUserInfo(
     @Req() req,
@@ -150,6 +164,7 @@ export class UserController {
   @ApiOperation({ summary: 'Отправить FCM токен' })
   @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('set-fcm-token')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   setFCMToken(
     @Req() req,
@@ -161,6 +176,7 @@ export class UserController {
   @ApiOperation({ summary: 'Удалить сессию устройства' })
   @ApiResponse({ status: 200, type: SuccessInterface })
   @Delete('delete-device-session')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   disableFCMToken(
     @Req() req,
@@ -175,6 +191,7 @@ export class UserController {
   @ApiOperation({ summary: 'Проверить СМС код' })
   @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('check_sms_code')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, NoSmsGuard, UserBlockGuard, UserDeletedGuard)
   checkSmsCode(
     @Req() req,
@@ -185,6 +202,7 @@ export class UserController {
 
   @ApiOperation({ summary: 'Загрузка фото' })
   @Post('upload_photo')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   @UseInterceptors(
     FileFieldsInterceptor([{ name: 'photos', maxCount: 1 }], {
@@ -205,6 +223,7 @@ export class UserController {
 
   @ApiOperation({ summary: 'Установить главное фото' })
   @ApiResponse({ status: 200 })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   @Post('set_main_photo')
   setMainPhoto(
@@ -217,6 +236,7 @@ export class UserController {
   @ApiOperation({ summary: 'Удалить фото' })
   @ApiResponse({ status: 200 })
   @Delete('delete_photo')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   deletePhoto(
     @Body() deletePhotoDto: DeletePhotoDto,
@@ -227,6 +247,7 @@ export class UserController {
 
   @ApiOperation({ summary: 'Отправка фото для верификации' })
   @Post('send_verification_photo')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   @UseInterceptors(
     FileFieldsInterceptor([{ name: 'photos', maxCount: 1 }], {
@@ -243,6 +264,7 @@ export class UserController {
   @ApiOperation({ summary: 'Установить статус верификации (для админа)' })
   @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('set_verification_status')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   setUserVerificationStatus(
@@ -255,6 +277,7 @@ export class UserController {
   @ApiOperation({ summary: 'Заблокировать пользователя (для админа)' })
   @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('block')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   blockUser(@Body() blockDto: BlockUserDto): Promise<SuccessInterface> {
@@ -264,6 +287,7 @@ export class UserController {
   @ApiOperation({ summary: 'Разблокировать пользователя' })
   @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('unblock')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   unblockUser(@Body() unblockDto: UnblockUserDto): Promise<SuccessInterface> {
@@ -273,6 +297,7 @@ export class UserController {
   @ApiOperation({ summary: 'Удалить аккаунт' })
   @ApiResponse({ status: 200, type: SuccessInterface })
   @Delete('delete_account')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   deleteAccount(@Req() req): Promise<SuccessInterface> {
     return this.userService.deleteAccount(req.user);
@@ -281,6 +306,7 @@ export class UserController {
   @ApiOperation({ summary: 'Восстановить аккаунт' })
   @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('recovery_account')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   recoveryAccount(@Req() req): Promise<SuccessInterface> {
     return this.userService.recoveryAccount(req.user);
@@ -289,6 +315,7 @@ export class UserController {
   @ApiOperation({ summary: 'Установить видимость статуса "В сети"' })
   @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('set_online_visibility')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   setOnlineVisibility(
     @Req() req,

@@ -21,7 +21,12 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { SmsGuard } from '../user/sms.guard';
 import { ReadMessagesDto } from './dto/read-messages.dto';
 import { BaseDto } from '../base/base.dto';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Сообщения')
 @Controller('message')
@@ -31,6 +36,7 @@ export class MessageController {
   @ApiOperation({ summary: 'Получить все сообщения' })
   @ApiResponse({ status: 200, type: [Message] })
   @Get('get_all')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   getAll(@Req() req, @Query() getDto: GetMessagesDto): Promise<Message[]> {
     return this.messageService.getAll(req.user, getDto);
@@ -39,6 +45,7 @@ export class MessageController {
   @ApiOperation({ summary: 'Отправить сообщение' })
   @ApiResponse({ status: 200, type: Message })
   @Post('send')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileFieldsInterceptor(
@@ -70,6 +77,7 @@ export class MessageController {
   @ApiOperation({ summary: 'Лайкнуть сообщения' })
   @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('like')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   likeMessage(
     @Req() req,
@@ -81,6 +89,7 @@ export class MessageController {
   @ApiOperation({ summary: 'Пометить сообщение доставленым' })
   @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('set-received')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   setMessageReceived(
     @Req() req,
@@ -95,6 +104,7 @@ export class MessageController {
   @ApiOperation({ summary: 'Пометить сообщение прочитаным' })
   @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('read-messages')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, SmsGuard)
   readMessages(
     @Req() req,
@@ -106,6 +116,7 @@ export class MessageController {
   @ApiOperation({ summary: 'Отправить недоставленные сообщения по сокетам' })
   @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('send-unreceived')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   sendUnreceivedMessages(
     @Req() req,

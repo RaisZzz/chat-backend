@@ -1,7 +1,12 @@
 import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
 import { CreateInterestDto } from './dto/create-interest.dto';
 import { InterestService } from './interest.service';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Interest } from './interest.model';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../role/roles.guard';
@@ -16,6 +21,7 @@ export class InterestController {
   @ApiOperation({ summary: 'Создание интереса' })
   @ApiResponse({ status: 200, type: Interest })
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('/create')
   create(@Body() interestDto: CreateInterestDto) {
@@ -24,6 +30,7 @@ export class InterestController {
 
   @ApiOperation({ summary: 'Получить все интересы' })
   @ApiResponse({ status: 200, type: [Interest] })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('/get_all')
   getAll() {
@@ -33,6 +40,7 @@ export class InterestController {
   @ApiOperation({ summary: 'Удалить интерес' })
   @ApiResponse({ status: 200 })
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete('/delete')
   delete(@Body() deleteDto: DeleteDto) {

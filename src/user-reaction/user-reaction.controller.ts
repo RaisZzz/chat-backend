@@ -21,7 +21,12 @@ import { OffsetDto } from '../base/offset.dto';
 import { BaseDto } from '../base/base.dto';
 import { UserBlockGuard } from '../user/user-block.guard';
 import { UserDeletedGuard } from '../user/user-deleted.guard';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Симпатии')
 @Controller('user-reaction')
@@ -31,6 +36,7 @@ export class UserReactionController {
   @ApiOperation({ summary: 'Получить все симпатии' })
   @ApiResponse({ status: 200, type: [UserReaction] })
   @Get('get_all')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   getAllUserReactions(
     @Req() req,
@@ -42,6 +48,7 @@ export class UserReactionController {
   @ApiOperation({ summary: 'Отправить симпатию' })
   @ApiResponse({ status: 200, type: SendReactionResponse })
   @Post('send')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   send(
     @Req() req,
@@ -53,6 +60,7 @@ export class UserReactionController {
   @ApiOperation({ summary: 'Пометить симпатию доставленной' })
   @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('set-received')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   setChatReceived(
     @Req() req,
@@ -64,6 +72,7 @@ export class UserReactionController {
   @ApiOperation({ summary: 'Отправить недоставленные симпатия по сокетам' })
   @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('send-unreceived')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   sendUnreceived(
     @Req() req,

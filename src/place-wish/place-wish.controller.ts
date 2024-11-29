@@ -9,7 +9,12 @@ import {
 } from '@nestjs/common';
 import { CreatePlaceWishDto } from './dto/create-place-wish.dto';
 import { PlaceWishService } from './place-wish.service';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { PlaceWish } from './place-wish.model';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../role/roles.guard';
@@ -24,6 +29,7 @@ export class PlaceWishController {
   @ApiOperation({ summary: 'Создание пожелания местожительства' })
   @ApiResponse({ status: 200, type: PlaceWish })
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('/create')
   create(@Body() placeWishDto: CreatePlaceWishDto) {
@@ -32,6 +38,7 @@ export class PlaceWishController {
 
   @ApiOperation({ summary: 'Получить все пожелания местожительства' })
   @ApiResponse({ status: 200, type: [PlaceWish] })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('/get_all')
   getAll(@Req() req) {
@@ -41,6 +48,7 @@ export class PlaceWishController {
   @ApiOperation({ summary: 'Удалить пожелание местожительства' })
   @ApiResponse({ status: 200 })
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete('/delete')
   delete(@Body() deleteDto: DeleteDto) {

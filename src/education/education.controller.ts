@@ -9,7 +9,12 @@ import {
 } from '@nestjs/common';
 import { CreateEducationDto } from './dto/create-education.dto';
 import { EducationService } from './education.service';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Education } from './education.model';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../role/roles.guard';
@@ -24,6 +29,7 @@ export class EducationController {
   @ApiOperation({ summary: 'Создание образования' })
   @ApiResponse({ status: 200, type: Education })
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('/create')
   create(@Body() educationDto: CreateEducationDto) {
@@ -32,6 +38,7 @@ export class EducationController {
 
   @ApiOperation({ summary: 'Получить все виды образования' })
   @ApiResponse({ status: 200, type: [Education] })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('/get_all')
   getAll(@Req() req) {
@@ -41,6 +48,7 @@ export class EducationController {
   @ApiOperation({ summary: 'Удалить образование' })
   @ApiResponse({ status: 200 })
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete('/delete')
   delete(@Body() deleteDto: DeleteDto) {

@@ -9,7 +9,12 @@ import {
 } from '@nestjs/common';
 import { CreateFamilyPositionDto } from './dto/create-family-position.dto';
 import { FamilyPositionService } from './family-position.service';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { FamilyPosition } from './family-position.model';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../role/roles.guard';
@@ -24,6 +29,7 @@ export class FamilyPositionController {
   @ApiOperation({ summary: 'Создание семейного положения' })
   @ApiResponse({ status: 200, type: FamilyPosition })
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('/create')
   create(@Body() familyPositionDto: CreateFamilyPositionDto) {
@@ -32,6 +38,7 @@ export class FamilyPositionController {
 
   @ApiOperation({ summary: 'Получить все виды семейного положения' })
   @ApiResponse({ status: 200, type: [FamilyPosition] })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('/get_all')
   getAll(@Req() req) {
@@ -41,6 +48,7 @@ export class FamilyPositionController {
   @ApiOperation({ summary: 'Удалить семейное положение' })
   @ApiResponse({ status: 200 })
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete('/delete')
   delete(@Body() deleteDto: DeleteDto) {

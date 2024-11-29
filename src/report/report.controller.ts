@@ -7,7 +7,12 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ReportService, ReportsStat } from './report.service';
 import { SendReportDto } from './dto/send-report.dto';
@@ -29,6 +34,7 @@ export class ReportController {
 
   @ApiOperation({ summary: 'Отправить жалобу' })
   @ApiResponse({ status: 200, type: Report })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   @Post('/send')
   send(@Req() req, @Body() reportDto: SendReportDto): Promise<Report> {
@@ -38,6 +44,7 @@ export class ReportController {
   @ApiOperation({ summary: 'Получить все жалобы (для админа)' })
   @ApiResponse({ status: 200, type: [Report] })
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/get_all')
   getAll(@Query() filterDto: GetReportsDto): Promise<Report[]> {
@@ -47,6 +54,7 @@ export class ReportController {
   @ApiOperation({ summary: 'Статистика по жалобам (для админа)' })
   @ApiResponse({ status: 200, type: ReportsStat })
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/get_stat')
   getStat(@Query() filterDto: StatisticFilterDto): Promise<ReportsStat> {
@@ -56,6 +64,7 @@ export class ReportController {
   @ApiOperation({ summary: 'Ответить на жалобу (для админа)' })
   @ApiResponse({ status: 200, type: Report })
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('/answer')
   answer(@Req() req, @Body() answerDto: AnswerReportDto): Promise<Report> {
@@ -65,6 +74,7 @@ export class ReportController {
   @ApiOperation({ summary: 'Изменить статус (для админа)' })
   @ApiResponse({ status: 200, type: Report })
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('/set_resolved')
   setResolved(@Body() resolvedDto: SetResolvedDto): Promise<Report> {

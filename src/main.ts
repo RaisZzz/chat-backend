@@ -33,6 +33,7 @@ async function bootstrap() {
     .setDescription('Документация Nikohlik REST API')
     .setVersion('2.0.0')
     .addTag('raiszzz')
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' })
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('/api_v2/docs', app, document);

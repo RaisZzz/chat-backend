@@ -12,7 +12,12 @@ import {
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { PaymeEndpointDto } from './dto/payme-endpoint.dto';
 import { Purchase } from './purchase.model';
@@ -45,6 +50,7 @@ export class PurchaseController {
   @ApiOperation({ summary: 'Получение всех товаров' })
   @ApiResponse({ status: 200, type: [Purchase] })
   @Get('/get_all')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   getAll() {
     return this.purchaseService.getAll();
@@ -54,6 +60,7 @@ export class PurchaseController {
   @ApiResponse({ status: 200, type: [Purchase] })
   @Get('/get_all_admin')
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   getAllAdmin() {
     return this.purchaseService.getAllAdmin();
@@ -63,6 +70,7 @@ export class PurchaseController {
   @ApiResponse({ status: 200, type: Purchase })
   @Post('/add_admin')
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   addAdmin(@Body() createDto: CreatePurchaseDto): Promise<Purchase> {
     return this.purchaseService.addAdmin(createDto);
@@ -72,6 +80,7 @@ export class PurchaseController {
   @ApiResponse({ status: 200, type: Purchase })
   @Post('/edit_admin')
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   editAdmin(@Body() editDto: EditPurchaseDto): Promise<Purchase> {
     return this.purchaseService.editAdmin(editDto);
@@ -81,6 +90,7 @@ export class PurchaseController {
   @ApiResponse({ status: 200, type: UserPurchase })
   @Post('/refund')
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   refund(@Body() refundDto: RefundTransactionDto): Promise<UserPurchase> {
     return this.purchaseService.refundTransaction(refundDto);
@@ -89,6 +99,7 @@ export class PurchaseController {
   @ApiOperation({ summary: 'Создать транзакцию' })
   @ApiResponse({ status: 200, type: UserPurchase })
   @Get('/get_order_id')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   getOrderId(
     @Req() req,
@@ -150,6 +161,7 @@ export class PurchaseController {
   @ApiOperation({ summary: 'Получение всех транзакций пользователя' })
   @ApiResponse({ status: 200, type: [UserPurchase] })
   @Get('/get_transactions')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, SmsGuard, UserBlockGuard, UserDeletedGuard)
   getTransactions(@Req() req, @Query() offsetDto: OffsetDto) {
     return this.purchaseService.getTransactions(req.user, offsetDto);
@@ -161,6 +173,7 @@ export class PurchaseController {
   @ApiResponse({ status: 200, type: [UserPurchase] })
   @Get('/get_all_transactions')
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   getAllTransactions(@Query() param: GetPurchaseAdminDto) {
     return this.purchaseService.getAllTransactions(param);

@@ -19,7 +19,12 @@ import { RecoveryDto } from './dto/recovery.dto';
 import { CheckRecoveryDto } from './dto/check-recovery.dto';
 import { RecoveryPasswordDto } from './dto/recovery-password.dto';
 import { SuccessInterface } from '../base/success.interface';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Авторизация')
 @Controller('auth')
@@ -36,6 +41,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Авторизация' })
   @ApiResponse({ status: 200 })
   @Post('/')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   auth(
     @Req() req,
@@ -48,6 +54,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Получить данные для приложения' })
   @ApiResponse({ status: 200, type: AuthData })
   @Get('/data')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   getDataItems(): Promise<AuthData> {
     return this.authService.getDataItems();
@@ -78,6 +85,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Переотправить СМС код' })
   @ApiResponse({ status: 200, type: SuccessInterface })
   @Post('resent-sms-code')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   resentSmsCode(@Req() req): Promise<SuccessInterface> {
     return this.authService.resentSmsCode(req.user);

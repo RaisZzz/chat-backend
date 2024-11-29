@@ -1,6 +1,11 @@
 import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
 import { LanguageService } from './language.service';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { Language } from './language.model';
 import { CreateLanguageDto } from './dto/create-language.dto';
@@ -16,6 +21,7 @@ export class LanguageController {
   @ApiOperation({ summary: 'Создание интереса' })
   @ApiResponse({ status: 200, type: Language })
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('/create')
   create(@Body() languageDto: CreateLanguageDto) {
@@ -24,6 +30,7 @@ export class LanguageController {
 
   @ApiOperation({ summary: 'Получить все интересы' })
   @ApiResponse({ status: 200, type: [Language] })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('/get_all')
   getAll() {
@@ -33,6 +40,7 @@ export class LanguageController {
   @ApiOperation({ summary: 'Удалить интерес' })
   @ApiResponse({ status: 200 })
   @Roles('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete('/delete')
   delete(@Body() deleteDto: DeleteDto) {
