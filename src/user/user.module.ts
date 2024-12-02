@@ -13,6 +13,7 @@ import { Image } from '../image/image.model';
 import { UserDevice } from './user-device.model';
 import { ChatModule } from '../chat/chat.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { SmsModule } from '../sms/sms.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
     ImageModule,
     ChatModule,
     NotificationsModule,
+    SmsModule,
   ],
   controllers: [UserController],
   providers: [UserService],

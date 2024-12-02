@@ -206,7 +206,7 @@ export class AuthService {
       await newUser.$set('roles', [userRole]);
 
       // TODO: LIMIT SMS SENTS
-      const smsCode: string = this.generateSmsCode();
+      const smsCode: string = generateSmsCode();
       await newUser.update({ code: smsCode });
       this.smsService.sendSmsCode(newUser.phone, SmsType.auth, smsCode, 'ru');
     }
@@ -216,7 +216,7 @@ export class AuthService {
 
   async resentSmsCode(user: User): Promise<SuccessInterface> {
     // TODO: LIMIT SMS SENTS
-    const smsCode: string = this.generateSmsCode();
+    const smsCode: string = generateSmsCode();
     await user.update({ code: smsCode });
     this.smsService.sendSmsCode(user.phone, SmsType.auth, smsCode, 'ru');
     return { success: true };
@@ -292,7 +292,7 @@ export class AuthService {
     }
 
     // TODO: LIMIT SMS SENTS
-    const smsCode: string = this.generateSmsCode();
+    const smsCode: string = generateSmsCode();
     await user.update({ code: smsCode });
     this.smsService.sendSmsCode(user.phone, SmsType.auth, smsCode, 'ru');
 
@@ -342,20 +342,6 @@ export class AuthService {
     await user.update({ password: hashPassword, code: null });
 
     return await this.authData(user, passwordDto.deviceId, res);
-  }
-
-  private generateSmsCode(): string {
-    // TODO: REMOVE TEST
-    return '0000';
-    let code = '';
-    for (let i = 0; i < 4; i++) {
-      const number = Math.round(Math.random() * 10);
-      code += number >= 0 && number <= 9 ? number : 9;
-    }
-    if (code.length !== 4) {
-      code = '4023';
-    }
-    return code;
   }
 
   private setUserDeleteTimeout(user: User, time: number) {
@@ -516,4 +502,18 @@ export class AuthService {
       refreshToken: newRefreshToken,
     };
   }
+}
+
+export function generateSmsCode(): string {
+  // TODO: REMOVE TEST
+  return '0000';
+  let code = '';
+  for (let i = 0; i < 4; i++) {
+    const number = Math.round(Math.random() * 10);
+    code += number >= 0 && number <= 9 ? number : 9;
+  }
+  if (code.length !== 4) {
+    code = '4023';
+  }
+  return code;
 }

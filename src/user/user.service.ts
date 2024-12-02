@@ -41,6 +41,9 @@ import { BlockUserDto } from './dto/block-user.dto';
 import { UnblockUserDto } from './dto/unblock-user.dto';
 import { SetOnlineVisibilityDto } from './dto/set-online-visibility.dto';
 import { ApiProperty } from '@nestjs/swagger';
+import { ChangePhoneDto } from './dto/change-phone.dto';
+import { generateSmsCode } from '../auth/auth.service';
+import { SmsService, SmsType } from '../sms/sms.service';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const md5 = require('md5');
 
@@ -71,6 +74,9 @@ export class UserInfoResponse {
   readonly userSettings: UserSettings;
 }
 
+const userChangePhoneSmsCodeField: string = 'change_phone_sms_code';
+const userChangePhoneNewPhoneField: string = 'change_phone_new_phone';
+
 @Injectable()
 export class UserService {
   constructor(
@@ -85,6 +91,7 @@ export class UserService {
     private imageService: ImageService,
     private socketGateway: SocketGateway,
     private notificationsService: NotificationsService,
+    private smsService: SmsService,
   ) {}
 
   async getUserInfo(user: User, baseDto: BaseDto): Promise<UserInfoResponse> {
@@ -886,6 +893,100 @@ export class UserService {
     await user.update({ onlineVisibility: setDto.flag });
 
     this.socketGateway.sendUserOnline(user.id, setDto.flag);
+
+    return { success: true };
+  }
+
+  async requestPhoneChangeSms(
+    user: User,
+    changeDto: ChangePhoneDto,
+  ): Promise<SuccessInterface> {
+    if (user.phone === changeDto.newPhone) {
+      throw new HttpException(
+        new Error(ErrorType.PhoneInvalid),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const userWithPhoneExist: User = await this.userRepository.findOne({
+      where: { phone: changeDto.newPhone },
+    });
+
+    if (userWithPhoneExist) {
+      throw new HttpException(
+        new Error(ErrorType.UserExist),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const smsCode: string = generateSmsCode();
+
+    await this.redisService.hSet(
+      `user_${user.id}`,
+      userChangePhoneSmsCodeField,
+      smsCode,
+    );
+    await this.redisService.hSet(
+      `user_${user.id}`,
+      userChangePhoneNewPhoneField,
+      changeDto.newPhone,
+    );
+
+    this.smsService.sendSmsCode(
+      changeDto.newPhone,
+      SmsType.changePhone,
+      smsCode,
+      'ru',
+    );
+
+    return { success: true };
+  }
+
+  async changePhone(user: User, changeDto: SmsDto): Promise<SuccessInterface> {
+    const newPhone = await this.redisService.hGet(
+      `user_${user.id}`,
+      userChangePhoneNewPhoneField,
+    );
+    const smsCode = await this.redisService.hGet(
+      `user_${user.id}`,
+      userChangePhoneSmsCodeField,
+    );
+
+    if (!newPhone || !smsCode) {
+      throw new HttpException(
+        new Error(ErrorType.Forbidden),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    if (smsCode !== changeDto.code) {
+      throw new HttpException(
+        new Error(ErrorType.SmsCodeInvalid),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const userWithPhoneExist: User = await this.userRepository.findOne({
+      where: { phone: newPhone },
+    });
+
+    if (userWithPhoneExist) {
+      throw new HttpException(
+        new Error(ErrorType.UserExist),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    await this.redisService.hDel(
+      `user_${user.id}`,
+      userChangePhoneNewPhoneField,
+    );
+    await this.redisService.hDel(
+      `user_${user.id}`,
+      userChangePhoneSmsCodeField,
+    );
+
+    await user.update({ phone: newPhone });
 
     return { success: true };
   }

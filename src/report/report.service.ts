@@ -72,7 +72,6 @@ export class ReportService {
     });
     if (
       !reportedUser ||
-      user.id === sendDto.reportedId ||
       reportedUser.roles.map((role) => role.value).includes('admin')
     ) {
       throw new HttpException(

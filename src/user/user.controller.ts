@@ -51,6 +51,7 @@ import { UnblockUserDto } from './dto/unblock-user.dto';
 import { UserBlockGuard } from './user-block.guard';
 import { UserDeletedGuard } from './user-deleted.guard';
 import { SetOnlineVisibilityDto } from './dto/set-online-visibility.dto';
+import { ChangePhoneDto } from './dto/change-phone.dto';
 
 @ApiTags('Пользователи')
 @Controller('user')
@@ -322,5 +323,26 @@ export class UserController {
     @Body() setDto: SetOnlineVisibilityDto,
   ): Promise<SuccessInterface> {
     return this.userService.setOnlineVisibility(req.user, setDto);
+  }
+
+  @ApiOperation({ summary: 'Запросить СМС код для изменения телефона' })
+  @ApiResponse({ status: 200, type: SuccessInterface })
+  @Post('change_phone_request_sms')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  requestChangePhoneSms(
+    @Req() req,
+    @Body() changeDto: ChangePhoneDto,
+  ): Promise<SuccessInterface> {
+    return this.userService.requestPhoneChangeSms(req.user, changeDto);
+  }
+
+  @ApiOperation({ summary: 'Изменить телефон' })
+  @ApiResponse({ status: 200, type: SuccessInterface })
+  @Post('change_phone')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  changePhone(@Req() req, @Body() smsDto: SmsDto): Promise<SuccessInterface> {
+    return this.userService.changePhone(req.user, smsDto);
   }
 }
