@@ -44,6 +44,18 @@ import { MainQuality } from './main-quality/main-quality.model';
 import { UserMainQuality } from './main-quality/user-main-quality.model';
 import { StatisticModule } from './statistic/statistic.module';
 import { CityModule } from './city/city.module';
+import { SpecialityModule } from './speciality/speciality.module';
+import { EducationModule } from './education/education.module';
+import { OrganisationModule } from './organisation-type/organisation.module';
+import { FamilyPositionModule } from './family-position/family-position.module';
+import { ParentsModule } from './parents/parents.module';
+import { ReligionModule } from './religion/religion.module';
+import { PlaceWishModule } from './place-wish/place-wish.module';
+import { InterestModule } from './interest/interest.module';
+import { LanguageModule } from './language/language.module';
+import { ChildrenModule } from './children/children.module';
+import { WeddingWishModule } from './wedding-wish/wedding-wish.module';
+import { MainQualityModule } from './main-quality/main-quality.module';
 
 @Module({
   imports: [
@@ -121,6 +133,18 @@ import { CityModule } from './city/city.module';
     PurchaseModule,
     StatisticModule,
     CityModule,
+    SpecialityModule,
+    EducationModule,
+    OrganisationModule,
+    FamilyPositionModule,
+    ParentsModule,
+    ReligionModule,
+    PlaceWishModule,
+    InterestModule,
+    LanguageModule,
+    ChildrenModule,
+    WeddingWishModule,
+    MainQualityModule,
   ],
 })
 export class AppModule {}
