@@ -5,6 +5,7 @@ import { Religion } from './religion.model';
 import { DeleteDto } from '../base/delete.dto';
 import { SuccessInterface } from '../base/success.interface';
 import { Error, ErrorType } from '../error.class';
+import { EditDataItemDto } from '../base/edit-data-item.dto';
 
 @Injectable()
 export class ReligionService {
@@ -34,5 +35,25 @@ export class ReligionService {
       where: { id: deleteDto.id },
     });
     return { success: !!response };
+  }
+
+  async edit(editDto: EditDataItemDto) {
+    const item = await this.religionRepository.findOne({
+      where: { id: editDto.id },
+    });
+    if (!item) {
+      throw new HttpException(
+        new Error(ErrorType.Forbidden),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    await item.update({
+      title: editDto.title,
+      title_en: editDto.titleEn,
+      title_uz: editDto.titleUz,
+      title_uz_cyr: editDto.titleUzCyr,
+    });
+
+    return item;
   }
 }

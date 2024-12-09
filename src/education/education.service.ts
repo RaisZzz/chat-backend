@@ -6,6 +6,8 @@ import { User } from 'src/user/user.model';
 import { SuccessInterface } from '../base/success.interface';
 import { DeleteDto } from '../base/delete.dto';
 import { Error, ErrorType } from '../error.class';
+import { EditDataItemDto } from '../base/edit-data-item.dto';
+import { City } from '../city/city.model';
 
 @Injectable()
 export class EducationService {
@@ -45,5 +47,25 @@ export class EducationService {
       where: { id: deleteDto.id },
     });
     return { success: !!response };
+  }
+
+  async edit(editDto: EditDataItemDto) {
+    const item = await this.educationRepository.findOne({
+      where: { id: editDto.id },
+    });
+    if (!item) {
+      throw new HttpException(
+        new Error(ErrorType.Forbidden),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    await item.update({
+      title: editDto.title,
+      title_en: editDto.titleEn,
+      title_uz: editDto.titleUz,
+      title_uz_cyr: editDto.titleUzCyr,
+    });
+
+    return item;
   }
 }

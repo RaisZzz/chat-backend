@@ -3,7 +3,7 @@ import { ChildrenController } from './children.controller';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { User } from '../user/user.model';
 import { Children } from './children.model';
-import { ChildrenService } from './religion.service';
+import { ChildrenService } from './children.service';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({

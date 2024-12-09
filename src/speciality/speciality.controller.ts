@@ -12,6 +12,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../role/roles.guard';
 import { Roles } from '../role/roles-auth.decorator';
 import { DeleteDto } from '../base/delete.dto';
+import { EditDataItemDto } from '../base/edit-data-item.dto';
 
 @ApiTags('Специальность')
 @Controller('speciality')
@@ -45,5 +46,14 @@ export class SpecialityController {
   @Delete('/delete')
   delete(@Body() deleteDto: DeleteDto) {
     return this.specialityService.delete(deleteDto);
+  }
+
+  @ApiOperation({ summary: 'Изменить' })
+  @Post('edit')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  edit(@Body() editDto: EditDataItemDto) {
+    return this.specialityService.edit(editDto);
   }
 }

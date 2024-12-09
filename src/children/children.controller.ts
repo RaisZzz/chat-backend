@@ -8,10 +8,11 @@ import {
 } from '@nestjs/swagger';
 import { Children } from './children.model';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { ChildrenService } from './religion.service';
+import { ChildrenService } from './children.service';
 import { RolesGuard } from '../role/roles.guard';
 import { Roles } from '../role/roles-auth.decorator';
 import { DeleteDto } from '../base/delete.dto';
+import { EditDataItemDto } from '../base/edit-data-item.dto';
 
 @ApiTags('Дети')
 @Controller('children')
@@ -45,5 +46,14 @@ export class ChildrenController {
   @Delete('/delete')
   delete(@Body() deleteDto: DeleteDto) {
     return this.childrenService.delete(deleteDto);
+  }
+
+  @ApiOperation({ summary: 'Изменить' })
+  @Post('edit')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  edit(@Body() editDto: EditDataItemDto) {
+    return this.childrenService.edit(editDto);
   }
 }
