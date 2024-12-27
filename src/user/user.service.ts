@@ -758,11 +758,20 @@ export class UserService {
   }
 
   async getUserById(user: User, getDto: GetUserById): Promise<User> {
-    return await this.userRepository.findOne({
+    const userExist: User = await this.userRepository.findOne({
       include: { all: true },
       attributes: { exclude: excludedUserAttributes },
       where: { id: getDto.userId, sex: user.sex == 0 ? 1 : 0 },
     });
+
+    if (!userExist) {
+      throw new HttpException(
+        new Error(ErrorType.UserNotFound),
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    return userExist;
   }
 
   async setUserVerificationStatus(
