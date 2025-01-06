@@ -1,7 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
 
 export class CreateWeddingWishDto {
+  @ApiProperty({ example: 0, description: 'Пол (0 - женский, 1 - мужской)' })
+  @IsInt()
+  @Min(0)
+  @Max(1)
+  readonly sex: number;
+
   @ApiProperty({ example: 'Высшее', description: 'Пожелание после свадьбы' })
   @IsString()
   @IsNotEmpty()

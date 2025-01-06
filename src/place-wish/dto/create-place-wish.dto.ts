@@ -1,8 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
-import { GetPlaEWishDto } from './get-plaсe-wish.dto';
+import { IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
+import { GetPlaceWishDto } from './get-plaсe-wish.dto';
 
-export class CreatePlaceWishDto extends GetPlaEWishDto {
+export class CreatePlaceWishDto extends GetPlaceWishDto {
+  @ApiProperty({ example: 0, description: 'Пол (0 - женский, 1 - мужской)' })
+  @IsInt()
+  @Min(0)
+  @Max(1)
+  readonly sex: number;
+
   @ApiProperty({
     example: 'Имеется своё жилье',
     description: 'Пожелание местожительства',
