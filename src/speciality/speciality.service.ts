@@ -14,7 +14,12 @@ export class SpecialityService {
   ) {}
 
   async create(dto: CreateSpecialityDto) {
-    return await this.specialityRepository.create(dto);
+    try {
+      return await this.specialityRepository.create(dto);
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
   }
 
   async getAll() {
