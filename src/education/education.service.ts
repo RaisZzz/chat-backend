@@ -21,13 +21,15 @@ export class EducationService {
 
   async getAll(user: User): Promise<Education[]> {
     const isAdmin = user.roles.some((role) => ['admin'].includes(role.value));
-    return await this.educationRepository.findAll(
+    const educations = await this.educationRepository.findAll(
       !isAdmin
         ? {
             where: { sex: user.sex },
           }
         : {},
     );
+    console.log(isAdmin, user.sex, educations);
+    return educations;
   }
 
   async getAllBySex(sex: number): Promise<Education[]> {
