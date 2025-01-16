@@ -28,7 +28,7 @@ export class EducationService {
           }
         : {},
     );
-    console.log(isAdmin, user.sex, educations);
+    console.log(isAdmin, user.id, user.sex, educations);
     return educations;
   }
 
