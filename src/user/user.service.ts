@@ -202,8 +202,8 @@ export class UserService {
         },
       });
     const userReports: Report[] = await this.reportRepository.findAll({
-      attributes: ['reportedId'],
-      where: { ownerId: user.id },
+      attributes: ['ownerId', 'reportedId'],
+      where: { [Op.or]: { ownerId: user.id, reportedId: user.id } },
     });
     const [chatsWithUser] = await this.sequelize.query(`
       SELECT user_id FROM "chat_user"
@@ -217,7 +217,9 @@ export class UserService {
     const excludingUsersIds: number[] = [
       user.id,
       ...userReactions.map((r) => r.recipientId),
-      ...userReports.map((r) => r.reportedId),
+      ...userReports.map((r) =>
+        r.reportedId === user.id ? r.ownerId : r.reportedId,
+      ),
       ...chatsWithUser.map((c) => parseInt(c['user_id']) || 0),
     ];
     if (Array.isArray(getUsersDto.usersIds)) {
