@@ -358,6 +358,7 @@ export class AuthService {
           await this.chatUserRepository.destroy({
             where: { userId: userCheck.id },
           });
+          console.log('DESTROY USER', userCheck);
           await userCheck.destroy();
         } catch (e) {
           console.log(e);
