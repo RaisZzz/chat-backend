@@ -377,9 +377,6 @@ export class UserService {
         ${getUsersDto.religions?.length ? `and religion_id IN (${getUsersDto.religions})` : ''}
         ${getUsersDto.hasChildrens?.length ? `and has_children_id IN (${getUsersDto.hasChildrens})` : ''}
         ${getUsersDto.parents?.length ? `and parents_id IN (${getUsersDto.parents})` : ''}
-        order by created_at desc
-        offset ${getUsersDto.offset ?? 0}
-        limit 20
       ) a
       where age >= ${ageMin}
       and age <= ${ageMax}
@@ -389,46 +386,12 @@ export class UserService {
       ${getUsersDto.placeWishes?.length ? `and "placeWishesIds" && '{${getUsersDto.placeWishes}}'` : ''}
       ${getUsersDto.weddingWishes?.length ? `and "weddingWishesIds" && '{${getUsersDto.weddingWishes}}'` : ''}
       ${getUsersDto.mainQualities?.length ? `and "mainQualitiesIds" && '{${getUsersDto.mainQualities}}'` : ''}
+      order by created_at desc
+      offset ${getUsersDto.offset ?? 0}
+      limit 20
     `,
       { mapToModel: true, model: User },
     );
-
-    console.log(`
-      select * from (
-        select *,
-        (EXTRACT(year FROM age(current_date, birthdate))) as "age",
-        ${userAdditionalInfoQuery},
-        (select array(select image_id from user_verification_image where user_id = "user".id)) as "verificationImages"
-        from "user"
-        where id <> ${user.id}
-        ${getUsersDto.wearsHijab?.length && (getUsersDto.wearsHijab.includes(true) || getUsersDto.wearsHijab.includes('true')) ? 'and sex = 0' : ''}
-        and ('admin' <> ANY(select value from role where id in (select role_id from user_role where user_id = "user".id)))
-        ${filterQuery ? `and (${filterQuery})` : ''}
-        ${verifiedQuery ? `and (${verifiedQuery})` : ''}
-        ${blockedQuery ?? ''}
-        ${getUsersDto.birthPlaceId?.length ? `and birth_place_id IN (${getUsersDto.birthPlaceId})` : ''}
-        ${getUsersDto.livePlaceId?.length ? `and live_place_id IN (${getUsersDto.livePlaceId})` : ''}
-        ${getUsersDto.educations?.length ? `and education_id IN (${getUsersDto.educations})` : ''}
-        ${getUsersDto.organisationTypes?.length ? `and organisation_id IN (${getUsersDto.organisationTypes})` : ''}
-        ${getUsersDto.readNamaz?.length ? `and read_namaz IN (${getUsersDto.readNamaz})` : ''}
-        ${getUsersDto.wearsHijab?.length ? `and wears_hijab IN (${getUsersDto.wearsHijab})` : ''}
-        ${getUsersDto.familyPositions?.length ? `and family_position_id IN (${getUsersDto.familyPositions})` : ''}
-        ${getUsersDto.religions?.length ? `and religion_id IN (${getUsersDto.religions})` : ''}
-        ${getUsersDto.hasChildrens?.length ? `and has_children_id IN (${getUsersDto.hasChildrens})` : ''}
-        ${getUsersDto.parents?.length ? `and parents_id IN (${getUsersDto.parents})` : ''}
-        order by created_at desc
-        offset ${getUsersDto.offset ?? 0}
-        limit 20
-      ) a
-      where age >= ${ageMin}
-      and age <= ${ageMax}
-      ${getUsersDto.interests?.length ? `and "interestsIds" && '{${getUsersDto.interests}}'` : ''}
-      ${getUsersDto.languages?.length ? `and "languagesIds" && '{${getUsersDto.languages}}'` : ''}
-      ${getUsersDto.specialities?.length ? `and "specialitiesIds" && '{${getUsersDto.specialities}}'` : ''}
-      ${getUsersDto.placeWishes?.length ? `and "placeWishesIds" && '{${getUsersDto.placeWishes}}'` : ''}
-      ${getUsersDto.weddingWishes?.length ? `and "weddingWishesIds" && '{${getUsersDto.weddingWishes}}'` : ''}
-      ${getUsersDto.mainQualities?.length ? `and "mainQualitiesIds" && '{${getUsersDto.mainQualities}}'` : ''}
-    `);
 
     for (const someUser of users) {
       excludedMainUserAttributes.forEach(
