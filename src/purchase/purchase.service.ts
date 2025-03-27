@@ -109,8 +109,20 @@ export class PurchaseService {
   }
 
   async addAdmin(createDto: CreatePurchaseDto): Promise<Purchase> {
+    const name = createDto.name.trim().toLowerCase();
+
+    const purchaseExist = await this.purchaseRepository.findOne({
+      where: { name },
+    });
+    if (purchaseExist) {
+      throw new HttpException(
+        new Error(ErrorType.ItemAlreadyExist),
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
     return await this.purchaseRepository.create({
-      name: createDto.name,
+      name,
       description: createDto.description,
       description_en: createDto.description_en,
       description_uz: createDto.description_uz,

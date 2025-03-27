@@ -18,7 +18,7 @@ export class Purchase extends Model<Purchase, CreatePurchaseDto> {
   })
   id: number;
 
-  @ApiProperty({ example: 'silver', description: 'name товара' })
+  @ApiProperty({ example: 'silver', description: 'name товара (unique)' })
   @Column({
     type: DataType.STRING,
     unique: true,
