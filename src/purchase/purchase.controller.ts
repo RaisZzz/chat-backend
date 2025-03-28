@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpException,
@@ -41,6 +42,8 @@ import { Roles } from '../role/roles-auth.decorator';
 import { UserBlockGuard } from '../user/user-block.guard';
 import { OffsetDto } from '../base/offset.dto';
 import { UserDeletedGuard } from '../user/user-deleted.guard';
+import { DeletePurchaseDto } from './dto/delete-purchase.dto';
+import { SuccessInterface } from '../base/success.interface';
 
 @ApiTags('Покупки')
 @Controller('purchase')
@@ -74,6 +77,16 @@ export class PurchaseController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   addAdmin(@Body() createDto: CreatePurchaseDto): Promise<Purchase> {
     return this.purchaseService.addAdmin(createDto);
+  }
+
+  @ApiOperation({ summary: 'Удалить продукт (для админа)' })
+  @ApiResponse({ status: 200, type: SuccessInterface })
+  @Delete('/delete')
+  @Roles('admin')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  delete(@Body() deleteDto: DeletePurchaseDto): Promise<SuccessInterface> {
+    return this.purchaseService.delete(deleteDto);
   }
 
   @ApiOperation({ summary: 'Изменить продукт (для админа)' })

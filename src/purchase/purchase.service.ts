@@ -24,6 +24,8 @@ import { firstValueFrom } from 'rxjs';
 import { createHash } from 'crypto';
 import { OffsetDto } from '../base/offset.dto';
 import { Error, ErrorType } from '../error.class';
+import { DeletePurchaseDto } from './dto/delete-purchase.dto';
+import { SuccessInterface } from '../base/success.interface';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const md5 = require('md5');
 
@@ -137,6 +139,22 @@ export class PurchaseService {
       superLikes: createDto.superLikes,
       returns: createDto.returns,
     });
+  }
+
+  async delete(deleteDto: DeletePurchaseDto): Promise<SuccessInterface> {
+    const purchase: Purchase = await this.purchaseRepository.findOne({
+      where: { id: deleteDto.purchaseId },
+    });
+    if (!purchase) {
+      throw new HttpException(
+        new Error(ErrorType.Forbidden),
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    await purchase.destroy();
+
+    return { success: true };
   }
 
   async editAdmin(editDto: EditPurchaseDto): Promise<Purchase> {
